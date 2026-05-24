@@ -4,5 +4,6 @@ dist/
 *.local
 .env
 .env.*.local
-src/auto-imports.d.ts
-src/components.d.ts
+apps/editor/src/auto-imports.d.ts
+apps/editor/components.d.ts
+packages/core/dist/

@@ -1,0 +1,48 @@
+{
+  "name": "@flowgame/vue",
+  "version": "0.1.0",
+  "description": "FlowGame workflow editor Vue 3 components",
+  "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss"
+  ],
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    },
+    "./style.css": "./src/style.scss"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.json --skipLibCheck"
+  },
+  "dependencies": {
+    "@flowgame/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@arco-design/web-vue": "^2.56.0",
+    "@tinyflow-ai/ui": "^1.3.4",
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "@arco-design/web-vue": "2.56.0",
+    "@flowgame/core": "workspace:*",
+    "@tinyflow-ai/ui": "^1.3.4",
+    "@vitejs/plugin-vue": "^4.3.4",
+    "sass": "^1.66.1",
+    "typescript": "~5.4.5",
+    "vite": "^4.4.9",
+    "vite-plugin-dts": "^4.5.4",
+    "vue": "^3.3.4",
+    "vue-tsc": "^2.1.6"
+  }
+}

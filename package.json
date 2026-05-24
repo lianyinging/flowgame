@@ -1,32 +1,18 @@
 {
-  "name": "flowgame-editor",
+  "name": "flowgame",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "typecheck": "vue-tsc --noEmit",
-    "preview": "vite preview"
+    "dev": "pnpm --filter flowgame-editor dev",
+    "dev:playground": "pnpm --filter playground-vue dev",
+    "build": "pnpm -r build",
+    "build:core": "pnpm --filter @flowgame/core build",
+    "build:vue": "pnpm --filter @flowgame/vue build",
+    "build:editor": "pnpm --filter flowgame-editor build",
+    "typecheck": "pnpm -r typecheck"
   },
-  "dependencies": {
-    "@arco-design/web-vue": "2.56.0",
-    "@tinyflow-ai/ui": "^1.3.4",
-    "axios": "^1.5.0",
-    "dayjs": "^1.11.10",
-    "file-saver": "^2.0.5",
-    "vue": "^3.3.4",
-    "vue-router": "^4.2.4"
-  },
-  "devDependencies": {
-    "@arco-plugins/vite-vue": "^1.4.5",
-    "@vitejs/plugin-vue": "^4.3.4",
-    "@vitejs/plugin-vue-jsx": "^3.1.0",
-    "sass": "^1.66.1",
-    "typescript": "~5.4.5",
-    "unplugin-auto-import": "^0.16.6",
-    "unplugin-vue-components": "^0.25.2",
-    "vite": "^4.4.9",
-    "vue-tsc": "^2.1.6"
+  "engines": {
+    "node": ">=18"
   }
 }
