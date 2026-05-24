@@ -2,7 +2,7 @@ import type { TinyflowData } from '@tinyflow-ai/ui'
 import { getTinyflowHostRoot } from '../tinyflow/tinyflow-host'
 
 export const START_API_NODE_TYPE = 'node_start_api'
-export const START_NODE_TYPE = 'startNode'
+export const START_NODE_TYPE = ''
 
 export interface StartApiWorkflowIssue {
   code: string

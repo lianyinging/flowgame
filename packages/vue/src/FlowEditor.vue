@@ -134,16 +134,18 @@ function applyWorkflowRules(
   options?: { silent?: boolean, skipSetData?: boolean }
 ) {
   const before = workflow
+  const afterStartApi = normalizeStartApiWorkflow(workflow)
+  /** 仅当「Api接口开始」规则实际改动了 nodes/edges 时再提示（避免加普通节点误报） */
+  const startApiStructureChanged = isStartApiWorkflowChanged(workflow, afterStartApi)
   let next = ensureNodeExpandDefault(
     normalizeLlmApiNodeParams(
-      normalizeKnowledgeNodeParams(normalizeStartApiWorkflow(workflow))
+      normalizeKnowledgeNodeParams(afterStartApi)
     )
   )
   if (saveForm.flowName.trim())
     next = syncMethodKeyInWorkflow(next, saveForm.flowName.trim())
 
-  const structureChanged = isStartApiWorkflowChanged(workflow, next)
-  if (structureChanged && !options?.silent) {
+  if (startApiStructureChanged && !options?.silent) {
     const now = Date.now()
     if (now - lastStartApiRuleWarnAt > 2500) {
       Message.warning('「Api接口开始」仅可作为流程起点，已自动修正连线')
@@ -153,7 +155,7 @@ function applyWorkflowRules(
 
   const dataChanged = JSON.stringify(workflow) !== JSON.stringify(next)
   if (tinyflowRef.value && dataChanged) {
-    if (structureChanged || !options?.skipSetData) {
+    if (startApiStructureChanged || !options?.skipSetData) {
       syncingMethodKey.value = true
       tinyflowRef.value.setData(next)
       syncingMethodKey.value = false
