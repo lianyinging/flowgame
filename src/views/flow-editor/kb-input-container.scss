@@ -1,0 +1,61 @@
+/** 与 Tinyflow 画布 input-container（svelte-32f1pk）一致 */
+.tf-kb-input-container,
+.flowgame-kb-base-picker.input-container {
+  display: grid;
+  grid-template-columns: 40% 50% 10%;
+  row-gap: 5px;
+  column-gap: 3px;
+  width: 100%;
+
+  .input-header {
+    font-size: 12px;
+    color: var(--tf-muted-foreground, var(--color-text-3));
+  }
+
+  .input-item {
+    display: flex;
+    align-items: center;
+    min-width: 0;
+
+    :deep(.arco-input-wrapper),
+    :deep(.arco-select),
+    :deep(.arco-select-view),
+    :deep(.arco-tree-select) {
+      width: 100%;
+    }
+
+    /* 对齐 Tinyflow tf-input / tf-select：36px 高、圆角 calc(14px * 0.8) */
+    :deep(.arco-input-wrapper:not(.arco-input-disabled)),
+    :deep(.arco-select-view-single),
+    :deep(.arco-tree-select-view) {
+      min-height: 36px;
+      height: 36px;
+      border-radius: calc(var(--tf-radius, 14px) * 0.8);
+      border-color: var(--tf-input, #e2e8f0);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      font-size: 16px;
+    }
+
+    :deep(.arco-input) {
+      height: 34px;
+      font-size: 16px;
+    }
+
+    :deep(.arco-select-view-value),
+    :deep(.arco-tree-select-view-value) {
+      font-size: 16px;
+    }
+  }
+
+  .tf-kb-input-container__more {
+    justify-content: center;
+  }
+
+  .tf-param-name-label {
+    width: 100%;
+    font-size: 13px;
+    line-height: 36px;
+    color: var(--tf-muted-foreground, var(--color-text-3));
+    user-select: none;
+  }
+}

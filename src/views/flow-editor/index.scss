@@ -1,0 +1,360 @@
+.flowgram-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 120px);
+  min-height: 560px;
+  padding: 16px;
+  background: var(--color-bg-2);
+  border-radius: 4px;
+}
+
+.flowgram-page__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  margin-bottom: 12px;
+}
+
+.flowgram-page__title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-text-1);
+}
+
+.flowgram-page__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.flowgram-page__canvas-area {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.flow-canvas-toolbar {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateX(-50%);
+  pointer-events: none;
+
+  &__group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 6px;
+    background: #fff;
+    border: 1px solid #e5e6eb;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    pointer-events: auto;
+  }
+
+  &__group--main {
+    padding: 4px 8px 4px 6px;
+  }
+
+  &__group--actions {
+    padding: 4px 6px 4px 8px;
+    gap: 6px;
+  }
+
+  &__zoom {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    min-width: 72px;
+    height: 32px;
+    padding: 0 10px;
+    border: 1px solid #e5e6eb;
+    border-radius: 8px;
+    background: #f7f8fa;
+    color: #1d2129;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover {
+      background: #f2f3f5;
+    }
+  }
+
+  &__zoom-value {
+    min-width: 40px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__chevron {
+    flex-shrink: 0;
+    color: #86909c;
+  }
+
+  &__divider {
+    width: 1px;
+    height: 20px;
+    margin: 0 4px;
+    background: #e5e6eb;
+    flex-shrink: 0;
+  }
+
+  &__icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #4e5969;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      background: #f2f3f5;
+      color: #1d2129;
+    }
+
+    &--active {
+      color: rgb(var(--primary-6));
+      background: rgb(var(--primary-1));
+    }
+  }
+
+  &__add-node {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    margin-left: 2px;
+    padding: 0 14px 0 10px;
+    border: none;
+    border-radius: 8px;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover {
+      background: #e0e7ff;
+    }
+
+    &--active {
+      background: #e0e7ff;
+      box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.35);
+    }
+  }
+
+  &__run {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 14px 0 10px;
+    border: none;
+    border-radius: 8px;
+    background: #00b42a;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, background 0.15s;
+
+    &:hover:not(:disabled) {
+      background: #009a29;
+    }
+
+    &:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+  }
+
+  &__zoom-menu {
+    min-width: 120px;
+    padding: 4px;
+  }
+
+  &__zoom-menu-item {
+    display: block;
+    width: 100%;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #1d2129;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background: #f2f3f5;
+    }
+
+    &--active {
+      color: rgb(var(--primary-6));
+      background: rgb(var(--primary-1));
+    }
+  }
+
+  &__zoom-menu-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid #f2f3f5;
+  }
+
+  &__zoom-menu-action {
+    flex: 1;
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+    background: #f7f8fa;
+    color: #4e5969;
+    font-size: 12px;
+    cursor: pointer;
+
+    &:hover {
+      background: #f2f3f5;
+    }
+  }
+}
+
+.flowgram-page__canvas-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  :deep(.arco-spin) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  :deep(.arco-spin-children) {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.flowgram-page__canvas {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  border: 1px solid var(--color-border-2);
+  border-radius: 4px;
+  overflow: visible;
+  background: var(--color-bg-1);
+
+  &--with-inspector {
+    border-radius: 4px 0 0 4px;
+  }
+
+  /* Api接口开始：methodKey 只读文本（非 input） */
+  :deep(.flowgame-method-key-display) {
+    width: 100%;
+    min-height: 32px;
+    padding: 6px 10px;
+    font-size: 13px;
+    line-height: 20px;
+    border-radius: 4px;
+    border: 1px solid var(--tf-border, #e5e6eb);
+    background: var(--tf-muted, #f2f3f5);
+    color: var(--tf-muted-foreground, #4e5969);
+    word-break: break-all;
+    cursor: default;
+    user-select: text;
+  }
+
+  :deep(.flowgame-method-key-hint) {
+    margin-top: 4px;
+    margin-bottom: 10px;
+    font-size: 12px;
+    color: var(--tf-muted-foreground, #86909c);
+  }
+
+  &--readonly {
+    :deep(.tinyflow) {
+      pointer-events: none;
+    }
+  }
+
+}
+
+.flowgram-page__inspector {
+  flex-shrink: 0;
+  width: 420px;
+  min-height: 0;
+  border: 1px solid var(--color-border-2);
+  border-left: none;
+  border-radius: 0 4px 4px 0;
+  overflow: visible;
+  background: var(--color-bg-1);
+  pointer-events: auto;
+}
+
+.flowgram-page__result {
+  margin: 0;
+  max-height: 60vh;
+  overflow: auto;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  background: var(--color-fill-2);
+  border-radius: 4px;
+}
+
+.flowgram-var-tree {
+  width: 100%;
+  min-width: 180px;
+
+  &__empty {
+    font-size: 12px;
+    color: var(--tf-muted-foreground, var(--color-text-3));
+    line-height: 1.5;
+    padding: 4px 0;
+  }
+
+  &__hint {
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--tf-muted-foreground, var(--color-text-3));
+    line-height: 1.4;
+  }
+
+  &__node-title {
+    font-size: 12px;
+
+    &--copyable {
+      cursor: pointer;
+
+      &:hover {
+        color: rgb(var(--primary-6));
+      }
+    }
+  }
+
+  :deep(.arco-tree-node-title) {
+    font-size: 12px;
+  }
+}
