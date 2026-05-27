@@ -11,6 +11,14 @@ import {
   buildKnowledgeLimitPatch,
   buildUpstreamRefSelectTree,
   cloneParameters,
+  DEFAULT_HTML_TEMPLATE,
+  defaultMemoryWriteParameters,
+  HTML_TEMPLATE_NODE_TYPE,
+  MEMORY_READ_NODE_TYPE,
+  MEMORY_WRITE_NODE_TYPE,
+  memoryReadNodeOutputDefs,
+  memoryWriteNodeOutputDefs,
+  parseMemoryWriteGroups,
   CODE_NODE_CODE_PLACEHOLDER,
   CODE_NODE_ENGINE_OPTIONS,
   createKnowledgeNodeDefaultOutputDefs,
@@ -37,6 +45,10 @@ import {
 } from '@flowgame/core'
 import KnowledgeBasePickerBlock from './KnowledgeBasePickerBlock.vue'
 import KnowledgeInputParametersBlock from './KnowledgeInputParametersBlock.vue'
+import MemoryReadInputParametersBlock from './MemoryReadInputParametersBlock.vue'
+import MemoryWriteGroupsBlock from './MemoryWriteGroupsBlock.vue'
+import HtmlTemplateInputParametersBlock from './HtmlTemplateInputParametersBlock.vue'
+import HtmlTemplateEditorWithPreview from './HtmlTemplateEditorWithPreview.vue'
 import OutputDefInspectorRow from './OutputDefInspectorRow.vue'
 import { IconDelete, IconPlus } from '@arco-design/web-vue/es/icon'
 
@@ -65,6 +77,18 @@ const showOutputSection = computed(() => isInspectorOutputDefsEnabled(nodeType.v
 const showOutputValueColumn = computed(() => nodeType.value === 'endNode')
 const isKnowledgeNode = computed(() => isKnowledgeNodeType(nodeType.value))
 const isCodeNode = computed(() => isCodeNodeType(nodeType.value))
+const isMemoryWriteNode = computed(() => nodeType.value === MEMORY_WRITE_NODE_TYPE)
+const isMemoryReadNode = computed(() => nodeType.value === MEMORY_READ_NODE_TYPE)
+const isHtmlTemplateNode = computed(() => nodeType.value === HTML_TEMPLATE_NODE_TYPE)
+const htmlTemplateText = computed(() => {
+  const tpl = nodeData.value.template
+  if (typeof tpl === 'string' && tpl.trim())
+    return tpl
+  return DEFAULT_HTML_TEMPLATE
+})
+const inspectorFormSections = computed(() =>
+  isHtmlTemplateNode.value ? [] : formSections.value
+)
 const codeEngine = computed(() => readCodeNodeEngine(nodeData.value))
 const codeText = computed(() => readCodeNodeCode(nodeData.value))
 
@@ -162,6 +186,40 @@ watch(
   { immediate: true }
 )
 
+function ensureMemoryNodeInspectorDefaults() {
+  if (!props.node?.id || props.readonly)
+    return
+  if (isMemoryWriteNode.value) {
+    if (!parseMemoryWriteGroups(parameters.value).length)
+      patchParameters(defaultMemoryWriteParameters())
+    if (!outputDefs.value.length) {
+      patchOutputDefs(
+        cloneParameters(memoryWriteNodeOutputDefs).map(p => ({
+          ...p,
+          id: p.id ?? newParameterId('out')
+        }))
+      )
+    }
+    return
+  }
+  if (isMemoryReadNode.value && !outputDefs.value.length) {
+    patchOutputDefs(
+      cloneParameters(memoryReadNodeOutputDefs).map(p => ({
+        ...p,
+        id: p.id ?? newParameterId('out')
+      }))
+    )
+  }
+}
+
+watch(
+  () => [props.node?.id, isMemoryWriteNode.value, isMemoryReadNode.value] as const,
+  () => {
+    ensureMemoryNodeInspectorDefaults()
+  },
+  { immediate: true }
+)
+
 function onKnowledgeBaseChange(value: string | undefined) {
   patchData(buildKnowledgeBasePatch(value ?? ''))
 }
@@ -175,7 +233,7 @@ const upstreamRefTree = computed(() => {
 const allowAddInput = computed(() => {
   if (props.readonly)
     return false
-  if (isKnowledgeNode.value)
+  if (isKnowledgeNode.value || isMemoryWriteNode.value)
     return false
   if (!customDef.value)
     return true
@@ -292,6 +350,29 @@ function addParameter() {
   ])
 }
 
+function addHtmlTemplateParameter() {
+  const used = new Set(
+    parameters.value.map(p => (p.name || '').trim()).filter(Boolean)
+  )
+  let i = parameters.value.length + 1
+  let name = `param${i}`
+  while (used.has(name)) {
+    i += 1
+    name = `param${i}`
+  }
+  patchParameters([
+    ...parameters.value,
+    {
+      id: newParameterId('html_in'),
+      name,
+      dataType: 'String',
+      refType: 'ref',
+      ref: '',
+      description: `模板占位符 {{ ${name} }} 将替换为引用或固定值`
+    }
+  ])
+}
+
 function removeParameter(index: number) {
   const next = cloneParameters(parameters.value)
   next.splice(index, 1)
@@ -383,6 +464,79 @@ function onTextInput(handler: (value: string) => void) {
           :readonly="readonly"
           @update="updateKnowledgeParameter"
         />
+      </section>
+
+      <section
+        v-else-if="showInputSection && isMemoryWriteNode"
+        class="tf-node-panel__block"
+      >
+        <div class="heading">
+          <h3 class="tf-node-panel__heading-text">
+            输入参数
+          </h3>
+        </div>
+        <MemoryWriteGroupsBlock
+          :parameters="parameters"
+          :upstream-ref-tree="upstreamRefTree"
+          :readonly="readonly"
+          @replace="patchParameters"
+        />
+      </section>
+
+      <section
+        v-else-if="showInputSection && isMemoryReadNode"
+        class="tf-node-panel__block"
+      >
+        <div class="heading">
+          <h3 class="tf-node-panel__heading-text">
+            输入参数
+          </h3>
+        </div>
+        <p v-if="!parameters.length" class="tf-node-panel__none-text">
+          无输入参数
+        </p>
+        <MemoryReadInputParametersBlock
+          v-else
+          :parameters="parameters"
+          :upstream-ref-tree="upstreamRefTree"
+          :readonly="readonly"
+          @update="updateParameter"
+        />
+      </section>
+
+      <section
+        v-else-if="showInputSection && isHtmlTemplateNode"
+        class="tf-node-panel__block"
+      >
+        <div class="heading">
+          <h3 class="tf-node-panel__heading-text">
+            输入参数
+          </h3>
+          <button
+            v-if="allowAddInput"
+            type="button"
+            class="input-btn-more tf-node-panel__add-btn"
+            :disabled="readonly"
+            @click="addHtmlTemplateParameter"
+          >
+            <IconPlus />
+          </button>
+        </div>
+        <p v-if="!parameters.length" class="tf-node-panel__none-text">
+          无输入参数
+        </p>
+        <template v-else>
+          <p class="tf-node-panel__field-desc">
+            参数名称对应模板中的 <code v-pre>{{ 参数名称 }}</code>；值类型为「引用」时从上游节点选择变量（与画布一致）
+          </p>
+          <HtmlTemplateInputParametersBlock
+            :parameters="parameters"
+            :upstream-ref-tree="upstreamRefTree"
+            :readonly="readonly"
+            @update="updateParameter"
+            @remove="removeParameter"
+          />
+        </template>
       </section>
 
       <section v-else-if="showInputSection" class="tf-node-panel__block">
@@ -505,6 +659,21 @@ function onTextInput(handler: (value: string) => void) {
         </KnowledgeBasePickerBlock>
       </section>
 
+      <section v-if="isHtmlTemplateNode" class="tf-node-panel__block">
+        <div class="heading tf-node-panel__form-heading">
+          <h3 class="tf-node-panel__heading-text">
+            HTML 模板
+          </h3>
+        </div>
+        <HtmlTemplateEditorWithPreview
+          :model-value="htmlTemplateText"
+          :parameters="parameters"
+          variant="inspector"
+          :readonly="readonly"
+          @update:model-value="(v: string) => patchField('template', v ?? '')"
+        />
+      </section>
+
       <!-- 动态代码：执行引擎与执行代码（与画布 codeNode 一致） -->
       <section v-if="isCodeNode" class="tf-node-panel__block">
         <div class="heading tf-node-panel__form-heading">
@@ -546,8 +715,8 @@ function onTextInput(handler: (value: string) => void) {
       </section>
 
       <!-- 2. 节点配置（forms：heading + setting-title / setting-item） -->
-      <section v-if="formSections.length" class="tf-node-panel__block">
-        <template v-for="(field, index) in formSections" :key="`${field.type}-${field.name || field.label}-${index}`">
+      <section v-if="inspectorFormSections.length" class="tf-node-panel__block">
+        <template v-for="(field, index) in inspectorFormSections" :key="`${field.type}-${field.name || field.label}-${index}`">
           <div v-if="field.type === 'heading'" class="heading tf-node-panel__form-heading">
             <h3 class="tf-node-panel__heading-text">
               {{ field.label }}
@@ -682,7 +851,7 @@ function onTextInput(handler: (value: string) => void) {
       </section>
 
       <p
-        v-if="!showInputSection && !formSections.length && !showOutputSection && !isKnowledgeNode && !isCodeNode"
+        v-if="!showInputSection && !inspectorFormSections.length && !showOutputSection && !isKnowledgeNode && !isMemoryWriteNode && !isMemoryReadNode && !isHtmlTemplateNode && !isCodeNode"
         class="tf-node-panel__none-text"
       >
         {{ getNodeTypeLabel(nodeType) }}：请在画布节点内展开配置（内置节点表单项与画布一致）。

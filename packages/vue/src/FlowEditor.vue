@@ -26,8 +26,10 @@ import {
   isFlowRunFailed,
   isStartApiWorkflowChanged,
   listKbBasesCached,
+  normalizeHtmlTemplateNodeParams,
   normalizeKnowledgeNodeParams,
   normalizeLlmApiNodeParams,
+  normalizeMemoryNodeParams,
   normalizeStartApiWorkflow,
   parseFlowNameFromRedisKey,
   parseFlowRunSummary,
@@ -63,6 +65,8 @@ import VariableTreeContent from './components/flow-editor/VariableTreeContent.vu
 import NodeInspectorPanel from './components/flow-editor/NodeInspectorPanel.vue'
 import CanvasFloatingToolbar from './components/flow-editor/CanvasFloatingToolbar.vue'
 import FlowRunProgressModal from './components/flow-editor/FlowRunProgressModal.vue'
+import FlowListPanelModal from './components/flow-editor/FlowListPanelModal.vue'
+import FlowKnowledgePanelModal from './components/flow-editor/FlowKnowledgePanelModal.vue'
 
 const props = withDefaults(defineProps<{
   /** 只读查看模式 */
@@ -73,10 +77,13 @@ const props = withDefaults(defineProps<{
   redisKey?: string
   /** 覆盖顶部标题 */
   title?: string
+  /** 内置流程列表、知识库弹窗（默认开启，接入方无需再写 Modal） */
+  builtinBusinessModals?: boolean
 }>(), {
   readonly: false,
   flowName: '',
-  redisKey: ''
+  redisKey: '',
+  builtinBusinessModals: true
 })
 
 const emit = defineEmits<{
@@ -117,6 +124,8 @@ const syncingMethodKey = ref(false)
 const syncingInspector = ref(false)
 const inspectorNodeId = ref<string | null>(null)
 const minimapVisible = ref(true)
+const flowListPanelVisible = ref(false)
+const flowKnowledgePanelVisible = ref(false)
 const selectedNode = computed<InspectorFlowNode | null>(() => {
   if (!inspectorNodeId.value)
     return null
@@ -137,8 +146,12 @@ function applyWorkflowRules(
   /** 仅当「Api接口开始」规则实际改动了 nodes/edges 时再提示（避免加普通节点误报） */
   const startApiStructureChanged = isStartApiWorkflowChanged(workflow, afterStartApi)
   let next = ensureNodeExpandDefault(
-    normalizeLlmApiNodeParams(
-      normalizeKnowledgeNodeParams(afterStartApi)
+    normalizeHtmlTemplateNodeParams(
+      normalizeMemoryNodeParams(
+        normalizeLlmApiNodeParams(
+          normalizeKnowledgeNodeParams(afterStartApi)
+        )
+      )
     )
   )
   if (saveForm.flowName.trim())
@@ -347,11 +360,21 @@ async function openFlowFromListPanel(payload: { mode: FlowEditorFormMode, record
 }
 
 function onOpenFlowListPanel() {
-  emit('open-flow-list')
+  if (props.builtinBusinessModals)
+    flowListPanelVisible.value = true
+  else
+    emit('open-flow-list')
 }
 
 function onOpenFlowKnowledgePanel() {
-  emit('open-flow-knowledge')
+  if (props.builtinBusinessModals)
+    flowKnowledgePanelVisible.value = true
+  else
+    emit('open-flow-knowledge')
+}
+
+function onOpenFlowFromListPanel(payload: { mode: FlowEditorFormMode, record?: FlowListIndexItem }) {
+  void openFlowFromListPanel(payload)
 }
 
 async function loadWorkflowData() {
@@ -709,6 +732,18 @@ defineExpose({
       :plan="runState.plan"
       :executions="runState.executions"
       :summary="runState.summary"
+    />
+
+    <FlowListPanelModal
+      v-if="builtinBusinessModals"
+      v-model:visible="flowListPanelVisible"
+      :editor-readonly="isViewMode"
+      @open="onOpenFlowFromListPanel"
+    />
+
+    <FlowKnowledgePanelModal
+      v-if="builtinBusinessModals"
+      v-model:visible="flowKnowledgePanelVisible"
     />
 
     <Modal

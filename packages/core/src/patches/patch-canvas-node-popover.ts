@@ -107,6 +107,73 @@ const NODE_POPOVER_STYLES = `
   align-items: center;
   color: var(--tf-muted-foreground, #86909c);
 }
+
+.flowgame-memory-write-canvas .flowgame-mw-group-divider {
+  grid-column: 1 / -1;
+  margin: 6px 0 2px;
+  border: none;
+  border-top: 1px dashed var(--tf-border, #e5e6eb);
+}
+
+.flowgame-mw-add-group-mount {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.flowgame-memory-write-add-group__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 6px;
+  padding: 6px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgb(var(--primary-6, 22, 93, 255));
+  background: transparent;
+  border: 1px dashed rgb(var(--primary-3, 190, 218, 255));
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.flowgame-html-template-canvas-preview {
+  width: 100%;
+  margin-top: 4px;
+  pointer-events: auto;
+}
+
+.flowgame-html-template-canvas-preview .flowgame-html-template-editor__canvas-preview-btn {
+  display: inline-flex;
+  margin-top: 4px;
+  padding: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgb(var(--primary-6, 22, 93, 255));
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.flowgame-html-template-canvas-preview .flowgame-html-template-editor__canvas-preview-btn:hover {
+  text-decoration: underline;
+}
+
+.flowgame-html-template-canvas-preview .flowgame-html-template-editor__iframe-wrap--canvas {
+  margin-top: 6px;
+  min-height: 160px;
+  border: 1px solid var(--tf-border, #e5e6eb);
+  border-radius: 5px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.flowgame-html-template-canvas-preview .flowgame-html-template-editor__iframe {
+  display: block;
+  width: 100%;
+  height: 160px;
+  border: none;
+  background: #fff;
+}
 `
 
 function injectNodePopoverStyles(hostRoot: ShadowRoot | HTMLElement) {

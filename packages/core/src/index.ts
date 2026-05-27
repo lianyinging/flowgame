@@ -19,12 +19,45 @@ export * from './api/flow-game/qdrant'
 export * from './api/flow-game/redis'
 
 // Custom nodes
-export { flowGameCustomNodes } from './nodes'
+export {
+  flowGameCustomNodes,
+  nodeHtmlTemplate,
+  nodeMemoryRead,
+  nodeMemoryWrite,
+  HTML_TEMPLATE_NODE_TYPE,
+  HTML_TEMPLATE_PLACEHOLDER,
+  DEFAULT_HTML_TEMPLATE,
+  MEMORY_READ_NODE_TYPE,
+  MEMORY_WRITE_NODE_TYPE,
+  memoryReadNodeOutputDefs,
+  memoryWriteNodeOutputDefs,
+  memoryReadNodeDefaultParameters,
+  htmlTemplateNodeDefaultParameters
+} from './nodes'
 
 // Workflow
 export { initialData } from './workflow/initial-data'
 export { normalizeKnowledgeNodeParams } from './workflow/normalize-knowledge-node-params'
 export { normalizeLlmApiNodeParams } from './workflow/normalize-llmapi-node-params'
+export { normalizeMemoryNodeParams } from './workflow/normalize-memory-node-params'
+export { normalizeHtmlTemplateNodeParams } from './workflow/normalize-html-template-node-params'
+export {
+  defaultMemoryWriteParameters,
+  parseMemoryWriteGroups,
+  appendMemoryWriteGroup,
+  removeMemoryWriteGroupBySuffix,
+  contextKeyParamName,
+  memoryValueParamName,
+  type MemoryWriteGroupView
+} from './workflow/memory-write-groups'
+export { formatHtmlTemplate } from './workflow/format-html-template'
+export { wrapHtmlPreviewDocument } from './workflow/html-preview-document'
+export {
+  buildHtmlTemplatePreviewMap,
+  mergeHtmlTemplatePreviewMap
+} from './workflow/html-template-preview-map'
+export { readHtmlTemplateFromNodeBody, resolveHtmlTemplateSource } from './workflow/read-html-template-source'
+export { applyHtmlPreviewToIframe, disposeHtmlPreviewIframe } from './workflow/html-preview-iframe'
 export { collapseAllNodePanels, ensureNodeExpandDefault } from './workflow/normalize-node-expand'
 export { syncMethodKeyInWorkflow } from './workflow/sync-method-key'
 export {

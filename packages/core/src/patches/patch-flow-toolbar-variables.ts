@@ -29,6 +29,7 @@ const VARS_TAB_ATTR = 'data-flowgame-vars-tab'
 const VARS_BODY_CLASS = 'tf-toolbar-container-vars'
 const LISTENERS_ATTR = 'data-flowgame-vars-listeners'
 const STYLE_ID = 'flowgame-toolbar-vars-style'
+const TAB_ATTR = 'data-flowgame-tab'
 
 export type ToolbarTab = 'base' | 'tools' | 'variables'
 
@@ -39,15 +40,19 @@ const SHADOW_TOOLBAR_STYLES = `
 .tf-toolbar-container-header .tf-tabs {
   flex-wrap: wrap !important;
   justify-content: flex-start !important;
+  align-content: flex-start;
+  gap: 6px !important;
   width: 100% !important;
   box-sizing: border-box;
 }
 .tf-toolbar-container-header .tf-tabs .tf-tabs-item {
-  flex: 1 1 calc(50% - 3px) !important;
+  flex: 0 1 calc(50% - 3px) !important;
   flex-grow: 0 !important;
   min-width: calc(50% - 3px) !important;
   max-width: calc(50% - 3px) !important;
   box-sizing: border-box;
+  text-align: center;
+  justify-content: center;
 }
 .${VARS_BODY_CLASS} {
   flex-direction: column;
@@ -60,44 +65,54 @@ const SHADOW_TOOLBAR_STYLES = `
 `
 
 function injectToolbarStyles(hostRoot: ShadowRoot | HTMLElement) {
-  if (hostRoot instanceof ShadowRoot) {
-    if (hostRoot.getElementById(STYLE_ID))
-      return
-    const style = document.createElement('style')
-    style.id = STYLE_ID
-    style.textContent = SHADOW_TOOLBAR_STYLES
-    hostRoot.appendChild(style)
+  const existing = hostRoot instanceof ShadowRoot
+    ? hostRoot.getElementById(STYLE_ID)
+    : hostRoot.querySelector<HTMLStyleElement>(`#${STYLE_ID}`)
+  if (existing) {
+    existing.textContent = SHADOW_TOOLBAR_STYLES
     return
   }
-  if (hostRoot.querySelector(`#${STYLE_ID}`))
-    return
   const style = document.createElement('style')
   style.id = STYLE_ID
   style.textContent = SHADOW_TOOLBAR_STYLES
   hostRoot.appendChild(style)
 }
 
-function setToolbarTab(toolbar: Element, active: ToolbarTab) {
+function updateToolbarTabActive(toolbar: Element, active: ToolbarTab) {
   const tabs = toolbar.querySelector('.tf-toolbar-container-header .tf-tabs')
-  const baseEl = toolbar.querySelector('.tf-toolbar-container-base') as HTMLElement | null
-  const toolsEl = toolbar.querySelector('.tf-toolbar-container-tools') as HTMLElement | null
-  const varsEl = toolbar.querySelector(`.${VARS_BODY_CLASS}`) as HTMLElement | null
-  if (!tabs || !baseEl || !toolsEl || !varsEl)
+  if (!tabs)
     return
-
   tabs.querySelectorAll('.tf-tabs-item').forEach((item) => {
     const el = item as HTMLElement
     if (el.hasAttribute(VARS_TAB_ATTR)) {
       el.classList.toggle('active', active === 'variables')
       return
     }
-    const tab = el.getAttribute('data-flowgame-tab') as ToolbarTab | null
+    const tab = el.getAttribute(TAB_ATTR) as ToolbarTab | null
     el.classList.toggle('active', tab === active)
   })
+}
 
-  baseEl.style.display = active === 'base' ? 'flex' : 'none'
-  toolsEl.style.display = active === 'tools' ? 'flex' : 'none'
-  varsEl.style.display = active === 'variables' ? 'flex' : 'none'
+/** 流程变量 Tab：隐藏 Tinyflow 自带面板；基础/业务工具交给 Tinyflow 自己切换 display */
+function setToolbarTab(toolbar: Element, active: ToolbarTab) {
+  const baseEl = toolbar.querySelector('.tf-toolbar-container-base') as HTMLElement | null
+  const toolsEl = toolbar.querySelector('.tf-toolbar-container-tools') as HTMLElement | null
+  const varsEl = toolbar.querySelector(`.${VARS_BODY_CLASS}`) as HTMLElement | null
+  if (!baseEl || !toolsEl || !varsEl)
+    return
+
+  updateToolbarTabActive(toolbar, active)
+
+  if (active === 'variables') {
+    baseEl.style.display = 'none'
+    toolsEl.style.display = 'none'
+    varsEl.style.display = 'flex'
+    return
+  }
+
+  varsEl.style.display = 'none'
+  baseEl.style.removeProperty('display')
+  toolsEl.style.removeProperty('display')
 }
 
 /** 在 Tinyflow 左侧工具栏增加「流程变量」Tab，并返回变量树挂载容器 */
@@ -142,10 +157,17 @@ export function patchFlowToolbarVariables(canvas: HTMLElement | undefined): HTML
   if (toolbar.getAttribute(LISTENERS_ATTR) !== '1') {
     tabs.querySelectorAll(`.tf-tabs-item:not([${VARS_TAB_ATTR}])`).forEach((item, index) => {
       const tab: ToolbarTab = index === 0 ? 'base' : 'tools'
-      item.setAttribute('data-flowgame-tab', tab)
-      item.addEventListener('click', () => {
+      item.setAttribute(TAB_ATTR, tab)
+    })
+    tabs.addEventListener('click', (e) => {
+      const target = (e.target as HTMLElement).closest('.tf-tabs-item') as HTMLElement | null
+      if (!target || !toolbar.contains(target))
+        return
+      if (target.hasAttribute(VARS_TAB_ATTR))
+        return
+      const tab = target.getAttribute(TAB_ATTR) as ToolbarTab | null
+      if (tab === 'base' || tab === 'tools')
         setToolbarTab(toolbar, tab)
-      })
     })
     toolbar.setAttribute(LISTENERS_ATTR, '1')
   }

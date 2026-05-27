@@ -1,0 +1,149 @@
+/**
+ * ProComponent 依赖的布局工具类（主项目由 UnoCSS 提供，独立项目用此文件替代）
+ */
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.items-start {
+  align-items: flex-start;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.flex-1 {
+  flex: 1;
+  min-width: 0;
+}
+
+.pb-2 {
+  padding-bottom: 8px;
+}
+
+.pt4 {
+  padding-top: 16px;
+}
+
+.mb-2 {
+  margin-bottom: 8px;
+}
+
+.mt-4 {
+  margin-top: 16px;
+}
+
+.mt-2 {
+  margin-top: 8px;
+}
+
+.mr-2 {
+  margin-right: 8px;
+}
+
+.gap-16px {
+  gap: 16px;
+}
+
+.w80px {
+  width: 80px;
+}
+
+.min-w200px {
+  min-width: 200px;
+}
+
+.w-full {
+  width: 100%;
+}
+
+[class~='text-#0066FF'] {
+  color: #0066ff;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.border-b-1 {
+  border-bottom-width: 1px;
+}
+
+.border-b-solid {
+  border-bottom-style: solid;
+}
+
+[class~='border-b-#eee'] {
+  border-bottom-color: #eee;
+}
+
+.border-t-1 {
+  border-top-width: 1px;
+}
+
+.border-t-solid {
+  border-top-style: solid;
+}
+
+[class~='border-t-#e5e6eb'] {
+  border-top-color: #e5e6eb;
+}
+
+.px24px {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.relative {
+  position: relative;
+}
+
+.absolute {
+  position: absolute;
+}
+
+.bottom-0 {
+  bottom: 0;
+}
+
+.-left-24px {
+  left: -24px;
+}
+
+/* ProTable 工具栏：新建按钮与刷新/设置同一行 */
+.pro-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 8px;
+  min-height: 32px;
+
+  &__left {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+}

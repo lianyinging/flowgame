@@ -68,13 +68,14 @@ export default defineConfig({
 | `flow-name` | `string` | 流程名称（加载 Redis） |
 | `redis-key` | `string` | Redis 键 |
 | `title` | `string` | 覆盖顶部标题 |
+| `builtin-business-modals` | `boolean` | 是否内置流程列表/知识库弹窗（默认 `true`） |
 
 ### 事件
 
 | 事件 | 说明 |
 |------|------|
-| `open-flow-list` | 点击工具栏「流程列表」 |
-| `open-flow-knowledge` | 点击「知识库配置」 |
+| `open-flow-list` | 点击「流程列表」且 `builtin-business-modals=false` 时触发 |
+| `open-flow-knowledge` | 点击「知识库配置」且 `builtin-business-modals=false` 时触发 |
 | `saved` | 保存成功 `{ flowName }` |
 | `executed` | 试运行结束 `{ phase: 'success' \| 'error' }` |
 
@@ -86,7 +87,7 @@ export default defineConfig({
 | `reloadFromProps()` | 按 props 重新加载 |
 | `getWorkflow()` | 当前工作流 JSON |
 
-流程列表、知识库管理弹窗需宿主应用自行实现（参考官方 `apps/editor`）。
+默认已内置流程列表、知识库配置弹窗（需配置 `configureFlowGameClient` 与后端 API）。若需自定义 UI，设置 `:builtin-business-modals="false"` 并监听 `open-flow-list` / `open-flow-knowledge`。
 
 ## 许可
 

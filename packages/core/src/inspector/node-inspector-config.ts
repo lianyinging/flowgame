@@ -18,6 +18,9 @@ export const NODE_TYPE_LABELS: Record<string, string> = {
   llmNode: '大模型',
   httpNode: 'Http 请求',
   knowledgeNodePlus: '知识库 Plus',
+  memoryWriteNode: '记忆写入',
+  memoryReadNode: '记忆提取',
+  htmlTemplateNode: 'HTML模板',
   codeNode: '动态代码',
   templateNode: '内容模板',
   loopNode: '循环',
@@ -34,8 +37,12 @@ const RESERVED_DATA_KEYS = new Set([
   'images',
   'methodKey',
   'engine',
-  'code'
+  'code',
+  'template'
 ])
+
+/** 画布用自定义参数 UI、侧栏仍展示「输入参数」的节点 */
+const INSPECTOR_INPUT_ALWAYS_TYPES = new Set(['memoryWriteNode'])
 
 export function getNodeTypeLabel(type?: string) {
   if (!type)
@@ -72,6 +79,8 @@ export function getInspectorFormFields(type?: string): CustomNodeForm[] {
 }
 
 export function isInspectorParametersEnabled(type?: string): boolean {
+  if (type && INSPECTOR_INPUT_ALWAYS_TYPES.has(type))
+    return true
   const def = getCustomNodeDef(type)
   if (!def)
     return true
