@@ -1,3 +1,4 @@
+import './style.scss'
 import FlowEditor from './FlowEditor.vue'
 
 export { FlowEditor }

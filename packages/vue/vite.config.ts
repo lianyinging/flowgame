@@ -13,6 +13,7 @@ export default defineConfig({
     })
   ],
   build: {
+    cssCodeSplit: false,
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'FlowGameVue',
@@ -27,7 +28,10 @@ export default defineConfig({
         '@tinyflow-ai/ui',
         '@flowgame/core',
         /^@flowgame\/core\//
-      ]
+      ],
+      output: {
+        assetFileNames: 'style.css'
+      }
     },
     outDir: 'dist',
     emptyOutDir: true

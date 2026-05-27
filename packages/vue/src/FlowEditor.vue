@@ -63,7 +63,6 @@ import VariableTreeContent from './components/flow-editor/VariableTreeContent.vu
 import NodeInspectorPanel from './components/flow-editor/NodeInspectorPanel.vue'
 import CanvasFloatingToolbar from './components/flow-editor/CanvasFloatingToolbar.vue'
 import FlowRunProgressModal from './components/flow-editor/FlowRunProgressModal.vue'
-import './style.scss'
 
 const props = withDefaults(defineProps<{
   /** 只读查看模式 */

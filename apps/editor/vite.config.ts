@@ -22,11 +22,25 @@ export default defineConfig({
     })
   ],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-      '@flowgame/core': path.resolve(__dirname, '../../packages/core/src/index.ts'),
-      '@flowgame/vue': path.resolve(__dirname, '../../packages/vue/src/index.ts')
-    }
+    alias: [
+      // 必须写在 @flowgame/vue 之前，否则 style.css 会被解析成 index.ts/style.css
+      {
+        find: '@flowgame/vue/style.css',
+        replacement: path.resolve(__dirname, '../../packages/vue/src/style.scss')
+      },
+      {
+        find: '@flowgame/vue',
+        replacement: path.resolve(__dirname, '../../packages/vue/src/index.ts')
+      },
+      {
+        find: '@flowgame/core',
+        replacement: path.resolve(__dirname, '../../packages/core/src/index.ts')
+      },
+      {
+        find: '@',
+        replacement: path.resolve(__dirname, 'src')
+      }
+    ]
   },
   css: {
     preprocessorOptions: {

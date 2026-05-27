@@ -6,11 +6,15 @@
   "scripts": {
     "dev": "pnpm --filter flowgame-editor dev",
     "dev:playground": "pnpm --filter playground-vue dev",
-    "build": "pnpm -r build",
+    "build": "pnpm build:packages && pnpm build:editor",
+    "build:packages": "pnpm --filter @flowgame/core build && pnpm --filter @flowgame/vue build",
     "build:core": "pnpm --filter @flowgame/core build",
     "build:vue": "pnpm --filter @flowgame/vue build",
     "build:editor": "pnpm --filter flowgame-editor build",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "pack:core": "pnpm -C packages/core pack",
+    "pack:vue": "pnpm -C packages/vue pack",
+    "pack:packages": "pnpm build:packages && pnpm pack:core && pnpm pack:vue"
   },
   "engines": {
     "node": ">=18"
