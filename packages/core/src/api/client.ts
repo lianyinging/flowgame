@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance } from 'axios'
+import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
 
 export interface FlowgameApiResponse<T = unknown> {
   code: number
@@ -33,10 +33,18 @@ export function getFlowGameApiBaseURL() {
   return apiBaseURL
 }
 
-const flowgameRequest: AxiosInstance = axios.create({
+/** 响应拦截器返回 `response.data`（业务 envelope），而非 AxiosResponse */
+export type FlowgameRequest = Omit<AxiosInstance, 'get' | 'post' | 'put' | 'delete'> & {
+  get<T = FlowgameApiResponse>(url: string, config?: AxiosRequestConfig): Promise<T>
+  post<T = FlowgameApiResponse>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>
+  put<T = FlowgameApiResponse>(url: string, data?: unknown, config?: AxiosRequestConfig): Promise<T>
+  delete<T = FlowgameApiResponse>(url: string, config?: AxiosRequestConfig): Promise<T>
+}
+
+const flowgameRequest = axios.create({
   baseURL: apiBaseURL,
   timeout: 120000
-})
+}) as FlowgameRequest
 
 flowgameRequest.interceptors.response.use(
   (response) => {
@@ -45,7 +53,7 @@ flowgameRequest.interceptors.response.use(
       onErrorHandler(body?.msg || body?.message || '请求失败')
       return Promise.reject(body)
     }
-    return body
+    return body as typeof response.data
   },
   (error) => {
     const detail = error.response?.data?.detail

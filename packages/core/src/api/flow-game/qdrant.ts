@@ -74,11 +74,11 @@ export async function listKbBasesCached(force = false): Promise<KbBaseItem[]> {
     kbBasesInflight = listKbBasesApi()
       .then((res) => {
         kbBasesCache = res.data?.bases ?? []
-        return kbBasesCache
+        return kbBasesCache ?? []
       })
-      .catch(() => {
+      .catch((): KbBaseItem[] => {
         kbBasesCache = []
-        return kbBasesCache!
+        return []
       })
       .finally(() => {
         kbBasesInflight = null

@@ -8,7 +8,7 @@
 
 | 容器 | 镜像来源 | 默认宿主机端口 | 作用 |
 |------|----------|----------------|------|
-| `web` | 在服务器上 `docker build`（`flowgame` 仓库） | **8009** | Nginx 托管编辑器静态页，并将 `/api` 反向代理到后端 |
+| `web` | 在服务器上 `docker build`（`flowgame` 仓库） | **8009**（映射 `8009:8009`） | Nginx 托管编辑器静态页，并将 `/api` 反向代理到后端 |
 | `api` | 在服务器上 `docker build`（`flowgame_python` 仓库） | **8008** | FastAPI：工作流执行、Redis 流程存储、Qdrant 知识库 |
 | `redis` | `redis:7-alpine` | 不对外暴露 | 流程保存与列表 |
 | `qdrant` | `qdrant/qdrant` | 不对外暴露 | 向量知识库 |
@@ -18,7 +18,7 @@
 数据流：
 
 ```
-浏览器 → web(Nginx:80) → 静态资源
+浏览器 → web(Nginx:8009) → 静态资源
                       └→ /api/* → api:8008 → redis / qdrant / LLM
 ```
 
@@ -258,6 +258,7 @@ sudo ufw allow 8008/tcp
 |------|------|
 | `build api` 报错找不到 `flowgame_python` | 确认两个仓库并列克隆，路径为 `../flowgame_python` |
 | `api` 一直 `starting` / `unhealthy` | `docker compose logs api` 查看；常见为依赖安装慢或端口被占用 |
+| `curl -I http://127.0.0.1:8009` 报 `Connection reset by peer` | 确认 `nginx.conf` 为 **`listen 8009`**，且 `docker-compose` 端口映射为 **`8009:8009`**（内外一致）；API 反代仍用 **`http://api:8008`**，不要写宿主机 IP |
 | 页面能开，保存/列表失败 | 检查 `redis` 容器是否运行：`docker compose ps redis` |
 | 知识库失败 | 检查 `qdrant` 容器；配置 `EMBEDDING_API_URL` 或挂载本地模型 |
 | 试运行「模型调用」失败 | 在节点属性里检查 `apiKey`、`modelApiUrl`、`modelName`（存在流程 JSON 中） |

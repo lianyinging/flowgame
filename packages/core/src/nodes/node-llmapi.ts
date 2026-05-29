@@ -1,4 +1,5 @@
 import type { CustomNode } from '@tinyflow-ai/ui'
+import { nodeFormHeading } from './node-form-heading'
 import { llmApiNodeDefaultParameters } from './llmapi-node-parameters'
 import { llmApiNodeOutputDefs } from './llmapi-node-output-defs'
 
@@ -23,7 +24,7 @@ export const nodeLlmApi: CustomNode = {
   outputDefsEnable: true,
   outputDefsAddEnable: false,
   forms: [
-    { type: 'heading', label: '模型接口' },
+    nodeFormHeading('模型接口'),
     {
       type: 'input',
       name: 'modelApiUrl',
@@ -73,7 +74,7 @@ export const nodeLlmApi: CustomNode = {
       placeholder: '60000',
       defaultValue: '60000'
     },
-    { type: 'heading', label: '提示词与采样' },
+    nodeFormHeading('提示词与采样'),
     {
       type: 'textarea',
       name: 'systemPrompt',
@@ -114,7 +115,7 @@ export const nodeLlmApi: CustomNode = {
         { label: 'JSON Object', value: 'json_object' }
       ]
     },
-    { type: 'heading', label: '高级' },
+    nodeFormHeading('高级'),
     {
       type: 'textarea',
       name: 'extraHeaders',

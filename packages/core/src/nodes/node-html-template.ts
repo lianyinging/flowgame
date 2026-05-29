@@ -1,4 +1,5 @@
 import type { CustomNode } from '@tinyflow-ai/ui'
+import { nodeFormHeading } from './node-form-heading'
 import {
   mountHtmlTemplateCanvasPreview,
   updateHtmlTemplateCanvasPreview
@@ -44,7 +45,7 @@ export const nodeHtmlTemplate: CustomNode = {
   outputDefsEnable: true,
   outputDefsAddEnable: false,
   forms: [
-    { type: 'heading', label: 'HTML 模板' },
+    nodeFormHeading('HTML 模板'),
     {
       type: 'textarea',
       name: 'template',

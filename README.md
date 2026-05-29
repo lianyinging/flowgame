@@ -18,6 +18,7 @@
 - [七、常用脚本](#七常用脚本)
 - [八、常见问题](#八常见问题)
 - [九、Docker 部署（服务器）](#九docker-部署服务器)
+- [十、npm 发布（维护者）](#十npm-发布维护者)
 - [许可与第三方依赖](#许可与第三方依赖)
 
 ---
@@ -337,7 +338,7 @@ flowgame/
 | 找不到 `@flowgame/core` | 同时安装 **core** 与 **vue** 两个 tgz |
 | 画布无样式 / 节点图标巨大 | 确认引入 `@tinyflow-ai/ui/dist/index.css` 与 `@flowgame/vue/style.css`；重新 `pnpm pack:packages` |
 | 新节点不显示 | 删除测试项目 `node_modules/.vite` 后重启 `pnpm dev` |
-| `form-data` 无 default export | 勿随意 `optimizeDeps.exclude` @flowgame 包；清 `.vite` 缓存 |
+| `form-data` 无 default export | 勿随意 `optimizeDeps.exclude` `@flowgame` 包；清 `.vite` 缓存 |
 | 试运行 / 保存失败 | 启动 flowgame_python，端口与 Vite 代理一致（8008） |
 | Arco 组件报错 | `app.use(ArcoVue)` 且引入 `arco.css` |
 | 流程列表只弹 Message | 使用较新的 `@flowgame/vue` tgz（内置弹窗需后端 `/api`） |
@@ -362,6 +363,14 @@ docker compose up -d --build
 浏览器访问 **http://服务器IP:8009**。
 
 完整步骤、目录结构、更新与排错见 **[Docker部署.md](Docker部署.md)**。
+
+---
+
+## 十、npm 发布（维护者）
+
+将 `@flowgame/core`、`@flowgame/vue` 发布到 npm：升版本 → `pnpm pack:packages` 验证 → 先 publish core 再 publish vue。
+
+完整检查清单与命令见 **[npm发布流程.md](npm发布流程.md)**。
 
 ---
 

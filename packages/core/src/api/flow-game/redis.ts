@@ -1,4 +1,4 @@
-import flowgameRequest from '../client'
+import flowgameRequest, { type FlowgameApiResponse } from '../client'
 import type { FlowGameWorkflow } from './index'
 import {
   FLOW_LIST_INDEX_KEY,
@@ -28,19 +28,19 @@ export interface FlowListIndexData {
 const REDIS_BASE = '/v1/flowGame/redis'
 
 export function getRedisApi(redisKey: string) {
-  return flowgameRequest.get<RedisEntryData>(REDIS_BASE, { params: { redisKey } })
+  return flowgameRequest.get<FlowgameApiResponse<RedisEntryData>>(REDIS_BASE, { params: { redisKey } })
 }
 
 export function createRedisApi(redisKey: string, value: unknown) {
-  return flowgameRequest.post<RedisEntryData>(REDIS_BASE, { redisKey, value })
+  return flowgameRequest.post<FlowgameApiResponse<RedisEntryData>>(REDIS_BASE, { redisKey, value })
 }
 
 export function updateRedisApi(redisKey: string, value: unknown) {
-  return flowgameRequest.put<RedisEntryData>(REDIS_BASE, { redisKey, value })
+  return flowgameRequest.put<FlowgameApiResponse<RedisEntryData>>(REDIS_BASE, { redisKey, value })
 }
 
 export function deleteRedisApi(redisKey: string) {
-  return flowgameRequest.delete<{ redisKey: string; deleted: number }>(REDIS_BASE, {
+  return flowgameRequest.delete<FlowgameApiResponse<{ redisKey: string; deleted: number }>>(REDIS_BASE, {
     params: { redisKey }
   })
 }

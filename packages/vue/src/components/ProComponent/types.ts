@@ -21,7 +21,7 @@ export interface VirtualListProps {
   buffer?: number
 }
 
-interface TableColumn extends TableColumnData {
+export interface TableProColumn extends TableColumnData {
   title?: any
   enum?: {
     [key: string | number]:
@@ -43,5 +43,3 @@ interface TableColumn extends TableColumnData {
   renderTableItem?: (record: TableData, rowIndex: number) => HTMLElement
   onChange?: (v: any, record: TableData) => void
 }
-
-export type TableProColumn = TableColumn

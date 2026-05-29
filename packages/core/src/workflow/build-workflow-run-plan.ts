@@ -79,16 +79,16 @@ export function buildWorkflowRunPlan(workflow: TinyflowData): FlowRunPlanNode[] 
       orderedIds.push(node.id)
   }
 
-  return orderedIds
-    .map((id) => {
-      const node = nodeMap.get(id)
-      if (!node)
-        return null
-      return {
-        id,
-        type: node.type,
-        label: nodeLabel(node)
-      }
+  const plan: FlowRunPlanNode[] = []
+  for (const id of orderedIds) {
+    const node = nodeMap.get(id)
+    if (!node)
+      continue
+    plan.push({
+      id,
+      type: node.type,
+      label: nodeLabel(node)
     })
-    .filter((item): item is FlowRunPlanNode => item != null)
+  }
+  return plan
 }

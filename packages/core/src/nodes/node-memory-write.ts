@@ -1,4 +1,5 @@
 import type { CustomNode } from '@tinyflow-ai/ui'
+import { nodeFormHeading } from './node-form-heading'
 import {
   mountMemoryWriteCanvasControls,
   updateMemoryWriteCanvasControls
@@ -29,7 +30,7 @@ export const nodeMemoryWrite: CustomNode = {
   outputDefsEnable: true,
   outputDefsAddEnable: false,
   forms: [
-    { type: 'heading', label: 'Redis 列表' },
+    nodeFormHeading('Redis 列表'),
     {
       type: 'input',
       name: 'maxListSize',

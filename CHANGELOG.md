@@ -13,4 +13,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `@flowgame/vue`: `FlowEditor` component with Arco Design UI
 - Monorepo dev apps: `flowgame-editor`, `playground-vue`
 
-[0.1.0]: https://github.com/YOUR_ORG/flowgame/releases/tag/v0.1.0
+[0.1.0]: https://gitee.com/repeatedly_read/flowgame/releases/tag/v0.1.0

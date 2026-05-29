@@ -1,5 +1,6 @@
 import type { CustomNode } from '@tinyflow-ai/ui'
 import { httpNodeOutputDefs } from './http-node-output-defs'
+import { nodeFormHeading } from './node-form-heading'
 import { renderMethodKeyDisplay } from './method-key-readonly'
 
 /** API 接口开始节点：供外部 HTTP 调用，可配置回调地址与对外返回参数 */
@@ -17,7 +18,7 @@ export const nodeStartApi: CustomNode = {
   outputDefsAddEnable: false,
   outputDefs: httpNodeOutputDefs,
   forms: [
-    { type: 'heading', label: 'API 接口配置' },
+    nodeFormHeading('API 接口配置'),
     {
       type: 'select',
       name: 'requestType',

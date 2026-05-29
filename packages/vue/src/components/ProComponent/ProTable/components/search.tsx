@@ -1,4 +1,4 @@
-import { defineComponent, ref } from 'vue'
+import { defineComponent, ref, type DefineComponent } from 'vue'
 import type { PropType } from 'vue'
 import { Button, Form, FormItem, Grid, GridItem, Space } from '@arco-design/web-vue'
 import { IconRefresh, IconSearch } from '@arco-design/web-vue/es/icon'
@@ -76,4 +76,4 @@ export default defineComponent({
       </div>
     )
   }
-})
+}) as DefineComponent

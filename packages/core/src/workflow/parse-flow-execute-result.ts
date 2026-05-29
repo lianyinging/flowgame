@@ -54,23 +54,23 @@ export function parseNodeExecutions(payload: unknown): FlowNodeExecution[] {
   if (!Array.isArray(list))
     return []
 
-  return list
-    .map((item) => {
-      const row = asRecord(item)
-      if (!row || typeof row.nodeId !== 'string')
-        return null
-      const output = asRecord(row.output) ?? undefined
-      return {
-        nodeId: row.nodeId,
-        nodeName: typeof row.nodeName === 'string' ? row.nodeName : undefined,
-        nodeType: typeof row.nodeType === 'string' ? row.nodeType : undefined,
-        status: normalizeExecutionStatus(row.status),
-        durationMs: typeof row.durationMs === 'number' ? row.durationMs : undefined,
-        output,
-        error: typeof row.error === 'string' ? row.error : undefined
-      }
+  const executions: FlowNodeExecution[] = []
+  for (const item of list) {
+    const row = asRecord(item)
+    if (!row || typeof row.nodeId !== 'string')
+      continue
+    const output = asRecord(row.output) ?? undefined
+    executions.push({
+      nodeId: row.nodeId,
+      nodeName: typeof row.nodeName === 'string' ? row.nodeName : undefined,
+      nodeType: typeof row.nodeType === 'string' ? row.nodeType : undefined,
+      status: normalizeExecutionStatus(row.status),
+      durationMs: typeof row.durationMs === 'number' ? row.durationMs : undefined,
+      output,
+      error: typeof row.error === 'string' ? row.error : undefined
     })
-    .filter((item): item is FlowNodeExecution => item != null)
+  }
+  return executions
 }
 
 export function parseFlowRunSummary(payload: unknown): FlowRunSummary {

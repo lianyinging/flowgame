@@ -1,4 +1,5 @@
 import type { CustomNode } from '@tinyflow-ai/ui'
+import { nodeFormHeading } from './node-form-heading'
 import {
   memoryReadNodeDefaultParameters
 } from './memory-node-parameters'
@@ -24,7 +25,7 @@ export const nodeMemoryRead: CustomNode = {
   outputDefsEnable: true,
   outputDefsAddEnable: false,
   forms: [
-    { type: 'heading', label: '读取配置' },
+    nodeFormHeading('读取配置'),
     {
       type: 'input',
       name: 'readLimit',

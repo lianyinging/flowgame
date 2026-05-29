@@ -69,7 +69,7 @@ export function getWorkflowFromTinyflow(
 export function getTinyflowFlowApi(instance?: Tinyflow): TinyflowFlowApi | null {
   if (!instance)
     return null
-  const internal = instance as Tinyflow & { svelteFlowInstance?: TinyflowFlowApi }
+  const internal = instance as unknown as { svelteFlowInstance?: TinyflowFlowApi }
   return internal.svelteFlowInstance ?? null
 }
 
