@@ -355,7 +355,7 @@ git clone <flowgame-仓库> flowgame
 git clone <flowgame_python-仓库> flowgame_python
 
 cd flowgame/deploy
-cp .env.example .env   # 编辑 DEEPSEEK_API_KEY 等
+cp .env.example .env   # 按需编辑端口等（模型 Key 一般在流程 JSON 里）
 docker compose up -d --build
 ```
 

@@ -86,10 +86,14 @@ cd /opt/flowgame/flowgame/deploy
 cp .env.example .env
 ```
 
-编辑 `.env`，**至少填写 LLM Key**（试运行 LLM 节点需要）：
+编辑 `.env`。**模型调用（`llmapiNode`）的 API Key、接口地址、模型名保存在流程 JSON 里**，一般不必在服务器 `.env` 配置 LLM。
+
+仅当流程中仍使用旧版 **`llmNode`（大模型）** 节点时，才需要取消注释并填写：
 
 ```env
 DEEPSEEK_API_KEY=sk-xxxxxxxx
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
 ```
 
 可选修改宿主机端口（默认前端 8009、API 8008）：
@@ -256,7 +260,8 @@ sudo ufw allow 8008/tcp
 | `api` 一直 `starting` / `unhealthy` | `docker compose logs api` 查看；常见为依赖安装慢或端口被占用 |
 | 页面能开，保存/列表失败 | 检查 `redis` 容器是否运行：`docker compose ps redis` |
 | 知识库失败 | 检查 `qdrant` 容器；配置 `EMBEDDING_API_URL` 或挂载本地模型 |
-| 试运行 LLM 失败 | 检查 `.env` 中 `DEEPSEEK_API_KEY` 等 LLM 配置 |
+| 试运行「模型调用」失败 | 在节点属性里检查 `apiKey`、`modelApiUrl`、`modelName`（存在流程 JSON 中） |
+| 试运行旧版「大模型」失败 | 检查 `.env` 中 `DEEPSEEK_API_KEY` 等（仅 `llmNode` 使用） |
 | 前端改了代码不生效 | 执行 `docker compose up -d --build web`（生产镜像是构建产物，非热更新） |
 | 端口冲突 | 修改 `deploy/.env` 中 `FLOWGAME_WEB_PORT` / `FLOWGAME_API_PORT` |
 
