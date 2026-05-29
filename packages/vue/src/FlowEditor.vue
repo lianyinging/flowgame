@@ -103,7 +103,7 @@ const pageTitle = computed(() => {
     : props.flowName.trim()
   if (isViewMode.value)
     return name ? `查看流程：${name}` : '查看流程'
-  return name ? `编辑流程：${name}` : 'AI 工作流编排（Tinyflow）'
+  return name ? `编辑流程：${name}` : 'AI 工作流编排（FlowGame）'
 })
 const pageLoading = ref(false)
 const canvasRef = ref<HTMLElement>()

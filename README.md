@@ -17,6 +17,7 @@
 - [六、仓库结构与改哪里](#六仓库结构与改哪里)
 - [七、常用脚本](#七常用脚本)
 - [八、常见问题](#八常见问题)
+- [九、Docker 部署（服务器）](#九docker-部署服务器)
 - [许可与第三方依赖](#许可与第三方依赖)
 
 ---
@@ -340,6 +341,27 @@ flowgame/
 | 试运行 / 保存失败 | 启动 flowgame_python，端口与 Vite 代理一致（8008） |
 | Arco 组件报错 | `app.use(ArcoVue)` 且引入 `arco.css` |
 | 流程列表只弹 Message | 使用较新的 `@flowgame/vue` tgz（内置弹窗需后端 `/api`） |
+
+---
+
+## 九、Docker 部署（服务器）
+
+适合：在已安装 Docker 的服务器上拉代码、本地构建镜像并运行完整环境（前端 + API + Redis + Qdrant）。
+
+```bash
+# 两个仓库并列克隆到同一父目录
+mkdir -p /opt/flowgame && cd /opt/flowgame
+git clone <flowgame-仓库> flowgame
+git clone <flowgame_python-仓库> flowgame_python
+
+cd flowgame/deploy
+cp .env.example .env   # 编辑 DEEPSEEK_API_KEY 等
+docker compose up -d --build
+```
+
+浏览器访问 **http://服务器IP:8009**。
+
+完整步骤、目录结构、更新与排错见 **[Docker部署.md](Docker部署.md)**。
 
 ---
 

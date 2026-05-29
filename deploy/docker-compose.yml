@@ -1,0 +1,57 @@
+# 在 flowgame/deploy 目录执行：docker compose up -d --build
+# 要求同级目录存在 flowgame_python 仓库（与 flowgame 并列克隆）
+
+services:
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "${FLOWGAME_WEB_PORT:-8009}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ../../flowgame_python
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      FLOWGAME_HOST: 0.0.0.0
+      FLOWGAME_PORT: 8008
+      REDIS_HOST: redis
+      QDRANT_HOST: qdrant
+    ports:
+      - "${FLOWGAME_API_PORT:-8008}:8008"
+    depends_on:
+      redis:
+        condition: service_started
+      qdrant:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8008/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.5
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  qdrant_data:

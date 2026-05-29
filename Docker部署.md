@@ -1,0 +1,275 @@
+# FlowGame Docker 部署指南
+
+本文说明如何在**已安装 Docker** 的服务器上，通过 **拉取代码 → 本地构建镜像 → 启动容器** 的方式部署完整 FlowGame 环境（前端编辑器 + Python API + Redis + Qdrant）。
+
+---
+
+## 一、架构说明
+
+| 容器 | 镜像来源 | 默认宿主机端口 | 作用 |
+|------|----------|----------------|------|
+| `web` | 在服务器上 `docker build`（`flowgame` 仓库） | **8009** | Nginx 托管编辑器静态页，并将 `/api` 反向代理到后端 |
+| `api` | 在服务器上 `docker build`（`flowgame_python` 仓库） | **8008** | FastAPI：工作流执行、Redis 流程存储、Qdrant 知识库 |
+| `redis` | `redis:7-alpine` | 不对外暴露 | 流程保存与列表 |
+| `qdrant` | `qdrant/qdrant` | 不对外暴露 | 向量知识库 |
+
+浏览器访问：**http://服务器IP:8009**
+
+数据流：
+
+```
+浏览器 → web(Nginx:80) → 静态资源
+                      └→ /api/* → api:8008 → redis / qdrant / LLM
+```
+
+---
+
+## 二、服务器前置条件
+
+| 项目 | 要求 |
+|------|------|
+| Docker | 20.10+ |
+| Docker Compose | v2（`docker compose` 子命令） |
+| Git | 用于拉取代码 |
+| 磁盘 | 建议 ≥ 10 GB（Python 依赖与向量模型可能较大） |
+| 内存 | 建议 ≥ 4 GB；若容器内使用本地 Embedding 模型，建议 ≥ 8 GB |
+
+验证：
+
+```bash
+docker --version
+docker compose version
+```
+
+---
+
+## 三、目录布局（重要）
+
+FlowGame 前端与后端是**两个独立 Git 仓库**，`docker-compose.yml` 要求它们**并列放在同一父目录**下：
+
+```
+/opt/flowgame/                 # 父目录（名称可自定）
+├── flowgame/                  # 本仓库（前端 Monorepo）
+│   └── deploy/
+│       ├── docker-compose.yml
+│       ├── Dockerfile
+│       ├── nginx.conf
+│       └── .env               # 部署时从 .env.example 复制
+└── flowgame_python/           # Python 后端仓库
+    └── Dockerfile
+```
+
+`deploy/docker-compose.yml` 中：
+
+- 前端构建上下文：`flowgame/` 根目录
+- 后端构建上下文：`../flowgame_python`（相对 `flowgame/deploy` 即 `../../flowgame_python`）
+
+---
+
+## 四、首次部署（逐步操作）
+
+### 1. 创建目录并克隆代码
+
+```bash
+sudo mkdir -p /opt/flowgame
+cd /opt/flowgame
+
+# 替换为你的实际仓库地址
+git clone <flowgame-前端仓库地址> flowgame
+git clone <flowgame_python-后端仓库地址> flowgame_python
+```
+
+### 2. 配置环境变量
+
+```bash
+cd /opt/flowgame/flowgame/deploy
+cp .env.example .env
+```
+
+编辑 `.env`，**至少填写 LLM Key**（试运行 LLM 节点需要）：
+
+```env
+DEEPSEEK_API_KEY=sk-xxxxxxxx
+```
+
+可选修改宿主机端口（默认前端 8009、API 8008）：
+
+```env
+FLOWGAME_WEB_PORT=8009
+FLOWGAME_API_PORT=8008
+```
+
+### 3. 构建并启动（在服务器上打包镜像）
+
+```bash
+cd /opt/flowgame/flowgame/deploy
+docker compose up -d --build
+```
+
+首次构建会：
+
+1. **web**：Node 20 + pnpm 安装依赖 → `pnpm build` 生成静态资源 → 打入 Nginx 镜像
+2. **api**：Python 3.10 安装 `requirements.txt` → 启动 uvicorn
+3. 拉取 Redis、Qdrant 官方镜像并创建数据卷
+
+查看进度：
+
+```bash
+docker compose logs -f
+```
+
+### 4. 验证
+
+```bash
+# 容器状态（api 应为 healthy）
+docker compose ps
+
+# 后端健康检查
+curl http://127.0.0.1:8008/health
+
+# 前端页面
+curl -I http://127.0.0.1:8009
+```
+
+浏览器打开：`http://<服务器IP>:8009`
+
+API 文档（经 Nginx 转发）：`http://<服务器IP>:8009/docs`
+
+---
+
+## 五、日常运维命令
+
+均在 `flowgame/deploy` 目录执行。
+
+| 操作 | 命令 |
+|------|------|
+| 启动 | `docker compose up -d` |
+| 停止 | `docker compose down` |
+| 停止并删除数据卷 | `docker compose down -v` |
+| 查看日志 | `docker compose logs -f` |
+| 只看 API 日志 | `docker compose logs -f api` |
+| 重新构建并启动 | `docker compose up -d --build` |
+| 仅重建前端 | `docker compose up -d --build web` |
+| 仅重建后端 | `docker compose up -d --build api` |
+
+---
+
+## 六、更新代码后重新部署
+
+```bash
+cd /opt/flowgame
+
+# 拉取最新代码
+git -C flowgame pull
+git -C flowgame_python pull
+
+# 重新构建并滚动更新
+cd flowgame/deploy
+docker compose up -d --build
+```
+
+若只改了前端 UI / 节点：
+
+```bash
+docker compose up -d --build web
+```
+
+若只改了 Python 后端：
+
+```bash
+docker compose up -d --build api
+```
+
+---
+
+## 七、单独构建镜像（不用 compose）
+
+适合调试 Dockerfile 或推送到私有 Registry。
+
+### 前端
+
+```bash
+cd /opt/flowgame/flowgame
+docker build -f deploy/Dockerfile -t flowgame-web:latest .
+```
+
+### 后端
+
+```bash
+cd /opt/flowgame/flowgame_python
+docker build -t flowgame-api:latest .
+```
+
+---
+
+## 八、Embedding（知识库向量）说明
+
+知识库检索需要 Embedding。后端优先级：
+
+1. **`.env` 中配置 `EMBEDDING_API_URL`**（生产推荐）— 独立 HTTP 向量服务
+2. **容器内本地模型** — 首次可能从 HuggingFace 下载 `BAAI/bge-small-zh-v1.5`，耗时长、占内存
+
+生产环境建议在 `.env` 中配置：
+
+```env
+EMBEDDING_API_URL=http://your-embedding-host/embed
+```
+
+若必须使用本地模型，可将模型目录挂载进 `api` 容器（在 `docker-compose.yml` 的 `api` 下增加）：
+
+```yaml
+volumes:
+  - /path/on/host/model:/app/model:ro
+```
+
+并在 `.env` 中设置：
+
+```env
+EMBEDDING_MODEL_PATH=/app/model/BAAI/bge-small-zh-v1.5
+```
+
+---
+
+## 九、防火墙与反向代理
+
+### 防火墙
+
+若使用 `ufw`，放行前端端口：
+
+```bash
+sudo ufw allow 8009/tcp
+# 若需直接访问 API 文档
+sudo ufw allow 8008/tcp
+```
+
+### Nginx / HTTPS（可选）
+
+生产环境建议在宿主机再用一层 Nginx/Caddy 做 HTTPS，将域名反代到 `127.0.0.1:8009`。容器内 Nginx 已处理 `/api` 转发，**无需在宿主机再拆前后端**。
+
+---
+
+## 十、常见问题
+
+| 现象 | 处理 |
+|------|------|
+| `build api` 报错找不到 `flowgame_python` | 确认两个仓库并列克隆，路径为 `../flowgame_python` |
+| `api` 一直 `starting` / `unhealthy` | `docker compose logs api` 查看；常见为依赖安装慢或端口被占用 |
+| 页面能开，保存/列表失败 | 检查 `redis` 容器是否运行：`docker compose ps redis` |
+| 知识库失败 | 检查 `qdrant` 容器；配置 `EMBEDDING_API_URL` 或挂载本地模型 |
+| 试运行 LLM 失败 | 检查 `.env` 中 `DEEPSEEK_API_KEY` 等 LLM 配置 |
+| 前端改了代码不生效 | 执行 `docker compose up -d --build web`（生产镜像是构建产物，非热更新） |
+| 端口冲突 | 修改 `deploy/.env` 中 `FLOWGAME_WEB_PORT` / `FLOWGAME_API_PORT` |
+
+---
+
+## 十一、相关文件索引
+
+| 文件 | 说明 |
+|------|------|
+| `deploy/docker-compose.yml` | 一键编排 web / api / redis / qdrant |
+| `deploy/Dockerfile` | 前端多阶段构建（Node 构建 + Nginx） |
+| `deploy/nginx.conf` | 静态资源 + `/api` 反代 |
+| `deploy/.env.example` | 环境变量模板 |
+| `flowgame_python/Dockerfile` | 后端镜像（uvicorn 生产模式，无 reload） |
+
+本地开发（非 Docker）仍见 [README.md](README.md)；后端说明见 **flowgame_python** 仓库的 `README.md`。

@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.DS_Store
+*.local
+.env
+.env.*
+packages/core/dist
+packages/vue/dist
+apps/editor/dist
+.cursor
+.idea
+*.tgz
