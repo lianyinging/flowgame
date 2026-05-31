@@ -67,7 +67,6 @@ export default defineConfig({
 | `readonly` | `boolean` | 只读查看 |
 | `flow-name` | `string` | 流程名称（加载 Redis） |
 | `redis-key` | `string` | Redis 键 |
-| `title` | `string` | 覆盖顶部标题 |
 | `builtin-business-modals` | `boolean` | 是否内置流程列表/知识库弹窗（默认 `true`） |
 
 ### 事件

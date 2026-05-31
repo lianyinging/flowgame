@@ -20,6 +20,7 @@ import {
   flowRedisKeysForLoad,
   getRedisApi,
   getTinyflowFlowApi,
+  getTinyflowHostRoot,
   getWorkflowFromTinyflow,
   hasStartApiNode,
   initialData,
@@ -75,8 +76,6 @@ const props = withDefaults(defineProps<{
   flowName?: string
   /** Redis 中的流程键 */
   redisKey?: string
-  /** 覆盖顶部标题 */
-  title?: string
   /** 内置流程列表、知识库弹窗（默认开启，接入方无需再写 Modal） */
   builtinBusinessModals?: boolean
 }>(), {
@@ -94,17 +93,6 @@ const emit = defineEmits<{
 }>()
 
 const isViewMode = computed(() => props.readonly)
-const pageTitle = computed(() => {
-  if (props.title)
-    return props.title
-  const redisKey = props.redisKey.trim()
-  const name = redisKey
-    ? parseFlowNameFromRedisKey(redisKey)
-    : props.flowName.trim()
-  if (isViewMode.value)
-    return name ? `查看流程：${name}` : '查看流程'
-  return name ? `编辑流程：${name}` : 'AI 工作流编排（FlowGame）'
-})
 const pageLoading = ref(false)
 const canvasRef = ref<HTMLElement>()
 const tinyflowRef = shallowRef<Tinyflow>()
@@ -423,6 +411,51 @@ watch(
 )
 
 let toolbarVarsObserver: MutationObserver | null = null
+let inspectorHeightObserver: ResizeObserver | null = null
+const inspectorPanelHeight = ref<number | null>(null)
+
+const inspectorPanelStyle = computed(() => {
+  const h = inspectorPanelHeight.value
+  if (!h || h <= 0)
+    return undefined
+  return { height: `${h}px` }
+})
+
+function readLeftToolbarContainerHeight() {
+  const container = getTinyflowHostRoot(canvasRef.value ?? undefined)
+    ?.querySelector('.tf-toolbar-container') as HTMLElement | null
+  if (!container)
+    return null
+  return Math.ceil(container.getBoundingClientRect().height)
+}
+
+function syncInspectorPanelHeight() {
+  inspectorPanelHeight.value = readLeftToolbarContainerHeight()
+}
+
+function setupInspectorHeightSync() {
+  inspectorHeightObserver?.disconnect()
+  const container = getTinyflowHostRoot(canvasRef.value ?? undefined)
+    ?.querySelector('.tf-toolbar-container') as HTMLElement | null
+  if (!container) {
+    inspectorPanelHeight.value = null
+    return
+  }
+  syncInspectorPanelHeight()
+  inspectorHeightObserver = new ResizeObserver(() => syncInspectorPanelHeight())
+  inspectorHeightObserver.observe(container)
+}
+
+function teardownInspectorHeightSync() {
+  inspectorHeightObserver?.disconnect()
+  inspectorHeightObserver = null
+  inspectorPanelHeight.value = null
+}
+
+watch(inspectorNodeId, (id) => {
+  if (id)
+    syncInspectorPanelHeight()
+})
 
 function onMinimapVisibleChange(visible: boolean) {
   minimapVisible.value = visible
@@ -464,11 +497,15 @@ function setupToolbarVariablesWatch() {
     canvas.setAttribute(CANVAS_TOOLBAR_PANEL_LISTENER_ATTR, '1')
   }
 
-  const tryPatch = () => refreshToolbarVariables()
+  const tryPatch = () => {
+    refreshToolbarVariables()
+    syncInspectorPanelHeight()
+  }
   tryPatch()
 
   toolbarVarsObserver = new MutationObserver(tryPatch)
   toolbarVarsObserver.observe(canvas, { childList: true, subtree: true })
+  setupInspectorHeightSync()
 }
 
 function initTinyflow(data: typeof initialData) {
@@ -530,6 +567,7 @@ onUnmounted(() => {
   cleanupNodeInspectorTrigger(canvasRef.value ?? undefined)
   toolbarVarsObserver?.disconnect()
   toolbarVarsObserver = null
+  teardownInspectorHeightSync()
   varsToolbarMount.value = null
   tinyflowRef.value?.destroy()
   tinyflowRef.value = undefined
@@ -686,9 +724,6 @@ defineExpose({
 
 <template>
   <div class="flowgram-page">
-    <div class="flowgram-page__toolbar">
-      <span class="flowgram-page__title">{{ pageTitle }}</span>
-    </div>
     <Spin :loading="pageLoading" class="flowgram-page__canvas-wrap">
       <div class="flowgram-page__canvas-area">
         <CanvasFloatingToolbar
@@ -701,25 +736,24 @@ defineExpose({
           @save="handleSave"
           @update:minimap-visible="onMinimapVisibleChange"
         />
-        <div
-          ref="canvasRef"
-          class="flowgram-page__canvas"
-          :class="{
-            'flowgram-page__canvas--readonly': isViewMode,
-            'flowgram-page__canvas--with-inspector': !!selectedNode
-          }"
-        />
-        <aside v-if="selectedNode" class="flowgram-page__inspector">
-          <NodeInspectorPanel
-            :key="selectedNode.id"
-            :node="selectedNode"
-            :workflow="workflowSnapshot"
-            :readonly="isViewMode"
-            @patch-data="onInspectorPatchData"
-            @patch-parameters="onInspectorPatchParameters"
-            @patch-output-defs="onInspectorPatchOutputDefs"
+        <div class="flowgram-page__canvas-shell">
+          <div
+            ref="canvasRef"
+            class="flowgram-page__canvas"
+            :class="{ 'flowgram-page__canvas--readonly': isViewMode }"
           />
-        </aside>
+          <aside v-if="selectedNode" class="flowgram-page__inspector" :style="inspectorPanelStyle">
+            <NodeInspectorPanel
+              :key="selectedNode.id"
+              :node="selectedNode"
+              :workflow="workflowSnapshot"
+              :readonly="isViewMode"
+              @patch-data="onInspectorPatchData"
+              @patch-parameters="onInspectorPatchParameters"
+              @patch-output-defs="onInspectorPatchOutputDefs"
+            />
+          </aside>
+        </div>
         <Teleport v-if="varsToolbarMount" :to="varsToolbarMount">
           <VariableTreeContent :workflow="workflowSnapshot" />
         </Teleport>

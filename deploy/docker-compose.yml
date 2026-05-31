@@ -42,12 +42,16 @@ services:
   redis:
     image: redis:7-alpine
     command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
 
   qdrant:
     image: qdrant/qdrant:v1.12.5
+    ports:
+      - "${QDRANT_HOST_PORT:-6333}:6333"
     volumes:
       - qdrant_data:/qdrant/storage
     restart: unless-stopped

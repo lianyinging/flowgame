@@ -52,7 +52,7 @@
 |------|------|----------------|
 | **flowgame**（本仓库） | Monorepo：core、vue、官方 Demo、打包脚本 | `.../flowgame` |
 | **flowgame_python** | FastAPI：执行工作流、Redis、Qdrant API | `.../flowgame_python` |
-| **flowgame-test** | 独立 Vue 项目，安装 `.tgz` 验证发布物 | `.../前端测试打包效果/flowgame-test` |
+| **flowgame-test** | 独立 Vue 项目，从 **npm** 安装包做接入验证 | `.../前端测试打包效果/flowgame-test` |
 
 **端口约定（默认）**
 
@@ -151,13 +151,11 @@ pnpm dev
 
 适合：开源接入方、业务方只想要编辑器组件。
 
-> **npm 正式发布后**（包名以 registry 为准）：
-
 ```bash
 pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
 ```
 
-> **当前未上 npm 时**：请用下方 [四、本地 tgz](#四本地-tgz-模拟-npm-安装) 安装两个 `.tgz`，**必须同时安装 core 与 vue**。
+当前 npm 版本：**0.1.0**（可用 `npm view @flowgame/core version` 确认）。
 
 ### 1. 创建 Vue 3 + TypeScript 项目
 
@@ -165,8 +163,7 @@ pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
 pnpm create vite my-flow-app --template vue-ts
 cd my-flow-app
 pnpm install
-pnpm add vue @arco-design/web-vue @tinyflow-ai/ui
-# 若用 tgz，在此步骤改为 pnpm add /path/to/flowgame-core.tgz /path/to/flowgame-vue.tgz
+pnpm add vue @arco-design/web-vue @tinyflow-ai/ui @flowgame/vue @flowgame/core
 ```
 
 ### 2. 配置 `src/main.ts`
@@ -263,32 +260,25 @@ pnpm add /绝对路径/flowgame/packages/core/flowgame-core-0.1.0.tgz \
 
 ---
 
-## 五、用 flowgame-test 验证打包
+## 五、用 flowgame-test 验证 npm 包
 
 维护者专用：目录 `前端测试打包效果/flowgame-test`，与 monorepo **无 workspace 关联**。
 
 ```bash
-# 1. 在 flowgame 打新包
-cd /path/to/flowgame && pnpm pack:packages
-
-# 2. 在测试项目重装
 cd /path/to/flowgame-test
-pnpm add /path/to/flowgame/packages/core/flowgame-core-0.1.0.tgz \
-         /path/to/flowgame/packages/vue/flowgame-vue-0.1.0.tgz
+pnpm install
 rm -rf node_modules/.vite
 pnpm dev
 ```
 
-确认：画布样式正常、左侧节点齐全、流程列表/知识库弹窗可用（需后端）。
-
-仅更新 core 时：
+`package.json` 使用 `@flowgame/core`、`@flowgame/vue` 的 npm 版本（当前 `^0.1.0`）。发新版后：
 
 ```bash
-cd /path/to/flowgame && pnpm -C packages/core build && pnpm -C packages/core pack
-cd /path/to/flowgame-test
-pnpm add /path/to/flowgame/packages/core/flowgame-core-0.1.0.tgz
+pnpm update @flowgame/core @flowgame/vue
 rm -rf node_modules/.vite && pnpm dev
 ```
+
+发版前仍可用 [第四节](#四本地-tgz-模拟-npm-安装) 的 tgz 做本地验证。
 
 ---
 

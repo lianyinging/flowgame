@@ -10,8 +10,8 @@
 |------|----------|----------------|------|
 | `web` | 在服务器上 `docker build`（`flowgame` 仓库） | **8009**（映射 `8009:8009`） | Nginx 托管编辑器静态页，并将 `/api` 反向代理到后端 |
 | `api` | 在服务器上 `docker build`（`flowgame_python` 仓库） | **8008** | FastAPI：工作流执行、Redis 流程存储、Qdrant 知识库 |
-| `redis` | `redis:7-alpine` | 不对外暴露 | 流程保存与列表 |
-| `qdrant` | `qdrant/qdrant` | 不对外暴露 | 向量知识库 |
+| `redis` | `redis:7-alpine` | **6379**（`REDIS_HOST_PORT`） | 流程保存与列表 |
+| `qdrant` | `qdrant/qdrant` | **6333**（`QDRANT_HOST_PORT`） | 向量知识库 |
 
 浏览器访问：**http://服务器IP:8009**
 
@@ -96,12 +96,16 @@ DEEPSEEK_BASE_URL=https://api.deepseek.com
 DEEPSEEK_MODEL=deepseek-chat
 ```
 
-可选修改宿主机端口（默认前端 8009、API 8008）：
+可选修改宿主机端口（默认前端 8009、API 8008、Redis 6379、Qdrant 6333）：
 
 ```env
 FLOWGAME_WEB_PORT=8009
 FLOWGAME_API_PORT=8008
+REDIS_HOST_PORT=6379
+QDRANT_HOST_PORT=6333
 ```
+
+> `REDIS_PORT` / `QDRANT_PORT` 供容器内 `api` 连接 Redis/Qdrant 服务（固定 6379 / 6333），与宿主机映射端口无关。
 
 ### 3. 构建并启动（在服务器上打包镜像）
 

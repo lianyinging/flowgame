@@ -447,6 +447,7 @@ function onTextInput(handler: (value: string) => void) {
         </div>
       </header>
 
+      <div class="flowgram-inspector__body">
       <!-- 1. 输入参数 -->
       <section v-if="showInputSection && isKnowledgeNode" class="tf-node-panel__block">
         <div class="heading">
@@ -856,26 +857,41 @@ function onTextInput(handler: (value: string) => void) {
       >
         {{ getNodeTypeLabel(nodeType) }}：请在画布节点内展开配置（内置节点表单项与画布一致）。
       </p>
+      </div>
     </template>
   </div>
 </template>
 
 <style scoped lang="scss">
 .flowgram-inspector.tf-node-panel {
-  height: 100%;
-  overflow: auto;
-  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: 0;
   background: var(--tf-background, var(--color-bg-1));
   font-size: 13px;
   color: var(--tf-foreground, var(--color-text-1));
 
   .tf-node-panel__header {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-bottom: 12px;
-    padding-bottom: 10px;
+    margin-bottom: 0;
+    padding: 10px;
     border-bottom: 1px solid var(--tf-border, var(--color-border-2));
+    background: var(--tf-background, var(--color-bg-1));
+  }
+
+  .flowgram-inspector__body {
+    flex: 1;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 8px 10px 10px;
   }
 
   .tf-node-panel__node-icon {
