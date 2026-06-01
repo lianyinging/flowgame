@@ -1,172 +1,68 @@
-# FlowGame
+<p align="center">
+  <img src="./logo.png" alt="FlowGame" width="300" />
+</p>
 
-基于 [Tinyflow](https://github.com/tinyflow-ai/tinyflow) 的 **AI 工作流可视化编排** 前端 Monorepo。提供可发布的 `@flowgame/core` 与 `@flowgame/vue`，他人可在自己的 Vue 3 项目中 `pnpm install` 后接入画布与编辑器；工作流执行、流程存储、知识库检索由独立 Python 服务 **flowgame_python** 提供。
+<p align="center">
+  <a href="https://www.npmjs.com/package/@flowgame/vue"><img src="https://img.shields.io/npm/v/@flowgame/vue?label=npm" alt="npm version" /></a>
+  <a href="./packages/core/LICENSE"><img src="https://img.shields.io/npm/l/@flowgame/vue?label=license" alt="license" /></a>
+  <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen" alt="node" />
+</p>
 
----
+简体中文 | [English](./README.en-US.md)
 
-## 目录
+FlowGame 在 [Tinyflow](https://github.com/tinyflow-ai/tinyflow) 画布引擎之上，面向 **AI 工作流** 做了深度扩展：保留 Tinyflow 的拖拽编排体验，并**新增一批业务向自定义节点**，同时配套 **Python 后端** 完成真实执行与数据持久化。
 
-- [你能用它做什么](#你能用它做什么)
-- [环境要求](#环境要求)
-- [相关仓库](#相关仓库)
-- [一、快速开始（在本仓库开发）](#一快速开始在本仓库开发)
-- [二、启动后端（完整功能）](#二启动后端完整功能)
-- [三、在别人 Vue 项目里使用（推荐路径）](#三在别人-vue-项目里使用推荐路径)
-- [四、本地 tgz 模拟 npm 安装](#四本地-tgz-模拟-npm-安装)
-- [五、用 flowgame-test 验证打包](#五用-flowgame-test-验证打包)
-- [六、仓库结构与改哪里](#六仓库结构与改哪里)
-- [七、常用脚本](#七常用脚本)
-- [八、常见问题](#八常见问题)
-- [九、Docker 部署（服务器）](#九docker-部署服务器)
-- [十、npm 发布（维护者）](#十npm-发布维护者)
-- [许可与第三方依赖](#许可与第三方依赖)
+**在 Tinyflow 基础上新增的节点**（`@flowgame/core` 注册）：
 
----
-
-## 你能用它做什么
-
-- 在浏览器中 **拖拽编排** LLM、条件分支、知识库、HTTP、记忆读写、HTML 模板等节点
-- **保存 / 加载** 流程到 Redis（需后端）
-- **试运行** 工作流（同步或流式进度，需 flowgame_python）
-- **知识库** 管理（Qdrant + Embedding，需后端与向量服务）
-- 将编辑器 **嵌入自有产品**：安装 `@flowgame/vue` + `@flowgame/core`，一行 `<FlowEditor />`
-
----
-
-## 环境要求
-
-| 工具 | 版本 |
+| 节点 | 说明 |
 |------|------|
-| Node.js | **18+** |
-| pnpm | **8+**（推荐 `corepack enable` 后使用） |
-| Python（仅后端） | **3.10+** |
-| Redis / Qdrant（可选） | 保存流程、知识库时需要 |
+| **Start API** | 工作流 HTTP 入口，定义对外 API 路径与入参 |
+| **模型调用（LLM API）** | 配置 API Key、接口地址与模型名，调用大模型 |
+| **知识库检索+** | 关联 Qdrant 知识库，支持检索增强（RAG） |
+| **记忆写入 / 读取** | 跨节点、跨轮次读写会话上下文 |
+| **HTML 模板** | 用模板渲染结构化 HTML 输出 |
+
+前端通过 `@flowgame/vue` 的 `FlowEditor` 嵌入任意 Vue 3 项目；**流程试运行、保存到 Redis、知识库向量检索** 等能力由独立后端 **[flowgame_python](https://gitee.com/repeatedly_read/flowgame_python)**（FastAPI + Redis + Qdrant）提供，前后端分离、可按需 Docker 部署。
+
+## 核心能力
+
+- **基于 Tinyflow 扩展**：复用成熟画布与连线能力，并注册 Start API、模型调用、知识库+、记忆读写、HTML 模板等自定义节点。
+- **Python 后端驱动执行**：flowgame_python 负责解析工作流、调用 LLM/HTTP、读写 Redis 与 Qdrant，支持同步与流式试运行。
+- **开箱即用组件**：`FlowEditor` 一行接入，内置流程列表、知识库配置、节点详情面板与试运行入口。
+- **框架分层清晰**：`@flowgame/core` 负责节点与 API 客户端；`@flowgame/vue` 负责 Vue 3 UI，便于二次定制。
+- **多种部署方式**：npm 接入、Monorepo 本地开发、Docker 一键部署（前端 + API + Redis + Qdrant）。
 
 ---
 
-## 相关仓库
+## 快速开始（npm install）
 
-本项目（前端）与后端、测试项目 **分三个目录**，克隆时请分别获取：
+### 环境要求
 
-| 仓库 | 说明 | 典型路径示例 |
-|------|------|----------------|
-| **flowgame**（本仓库） | Monorepo：core、vue、官方 Demo、打包脚本 | `.../flowgame` |
-| **flowgame_python** | FastAPI：执行工作流、Redis、Qdrant API | `.../flowgame_python` |
-| **flowgame-test** | 独立 Vue 项目，从 **npm** 安装包做接入验证 | `.../前端测试打包效果/flowgame-test` |
+| 工具 | 版本                                                                               |
+|------|----------------------------------------------------------------------------------|
+| Node.js | **18+**                                                                          |
+| pnpm / npm / yarn | 任选其一（推荐pnpm）                                                                     |
+| Python 后端（完整功能） | **3.10+**，见 [flowgame_python](https://gitee.com/repeatedly_read/flowgame_python) |
 
-**端口约定（默认）**
-
-| 服务 | 地址 |
-|------|------|
-| 官方编辑器 | http://127.0.0.1:8009 |
-| 最小示例 playground | http://127.0.0.1:8010 |
-| Python API | http://127.0.0.1:8008 |
-| API 文档 | http://127.0.0.1:8008/docs |
-
-前端通过 Vite 将 `/api` 代理到 `8008`，与 `configureFlowGameClient({ baseURL: '/api' })` 配合使用。
-
----
-
-## 一、快速开始（在本仓库开发）
-
-适合：贡献代码、改节点、改编辑器 UI。
-
-### 1. 克隆并安装依赖
-
-```bash
-git clone <你的-flowgame-仓库地址> flowgame
-cd flowgame
-pnpm install
-```
-
-### 2. 启动前端（无需先 build）
-
-```bash
-pnpm dev
-```
-
-浏览器打开 **http://127.0.0.1:8009**。
-
-此时可编辑画布；若未启动后端，**保存、试运行、流程列表、知识库** 等接口会失败，属正常现象。
-
-### 3.（可选）最小接入示例
-
-```bash
-pnpm dev:playground
-```
-
-打开 **http://127.0.0.1:8010**，代码更少，适合对照如何引用 `@flowgame/vue`。
-
----
-
-## 二、启动后端（完整功能）
-
-适合：保存流程、试运行、知识库、记忆节点联调。
-
-### 1. 进入 Python 仓库
-
-```bash
-cd /path/to/flowgame_python
-python3 -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-cp .env.example .env
-```
-
-### 2. 编辑 `.env`（至少确认端口）
-
-```env
-FLOWGAME_PORT=8008
-REDIS_HOST=127.0.0.1
-QDRANT_HOST=127.0.0.1
-# DEEPSEEK_API_KEY=...   # LLM 节点需要
-```
-
-### 3. 启动依赖（按需）
-
-- **Redis**：流程列表与保存（默认 `6379`）
-- **Qdrant**：知识库（默认 `6333`）
-- **Embedding**：`.env` 中配置 `EMBEDDING_API_URL`，或放置本地模型 `model/BAAI/bge-small-zh-v1.5`（见 flowgame_python 的 README）
-
-### 4. 启动 API
-
-```bash
-python run.py
-```
-
-验证：访问 http://127.0.0.1:8008/health ，或 http://127.0.0.1:8008/docs 。
-
-### 5. 再启动前端
-
-```bash
-cd /path/to/flowgame
-pnpm dev
-```
-
-在编辑器中即可使用保存、试运行、知识库等功能。
-
----
-
-## 三、在别人 Vue 项目里使用（推荐路径）
-
-适合：开源接入方、业务方只想要编辑器组件。
-
-```bash
-pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
-```
-
-当前 npm 版本：**0.1.0**（可用 `npm view @flowgame/core version` 确认）。
-
-### 1. 创建 Vue 3 + TypeScript 项目
+### 1. 创建 Vue 3 项目
 
 ```bash
 pnpm create vite my-flow-app --template vue-ts
 cd my-flow-app
 pnpm install
-pnpm add vue @arco-design/web-vue @tinyflow-ai/ui @flowgame/vue @flowgame/core
 ```
 
-### 2. 配置 `src/main.ts`
+### 2. 安装 FlowGame 与 peer 依赖
+
+```bash
+pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
+```
+
+当前 npm 版本：**0.1.1**（可用 `npm view @flowgame/vue version` 确认）。
+
+### 3. 配置入口与样式
+
+**`src/main.ts`**
 
 ```ts
 import { createApp } from 'vue'
@@ -185,7 +81,7 @@ configureFlowGameClient({
 createApp(App).use(ArcoVue).mount('#app')
 ```
 
-### 3. 配置 `src/App.vue`
+**`src/App.vue`**
 
 ```vue
 <script setup lang="ts">
@@ -202,7 +98,7 @@ html, body, #app { margin: 0; height: 100%; overflow: hidden; }
 </style>
 ```
 
-### 4. 配置 `vite.config.ts`（连接后端）
+**`vite.config.ts`**（开发环境代理后端）
 
 ```ts
 import { defineConfig } from 'vite'
@@ -221,160 +117,172 @@ export default defineConfig({
 })
 ```
 
-### 5. 启动
+### 4. 启动后端（可选，完整功能需要）
+
+```bash
+# 在 flowgame_python 仓库
+python run.py   # 默认 http://127.0.0.1:8008
+```
+
+### 5. 启动前端
 
 ```bash
 pnpm dev
 ```
 
-组件 API、事件、`builtin-business-modals` 等详见 [packages/vue/README.md](packages/vue/README.md)。
+浏览器打开开发地址即可使用编辑器。未启动后端时，画布可正常编辑；**保存、试运行、流程列表、知识库** 等接口会失败，属正常现象。
 
 ---
 
-## 四、本地 tgz 模拟 npm 安装
+## 在 Vue 项目里使用
 
-适合：发布前自测、给同事发压缩包安装。
+### 最小接入
 
-在 **flowgame 根目录**：
+安装依赖并按上一节配置 `main.ts`、`App.vue`、`vite.config.ts` 后，在页面中挂载 `<FlowEditor />` 即可。
+
+### FlowEditor 常用 API
+
+| 类型 | 名称 | 说明 |
+|------|------|------|
+| Prop | `readonly` | 只读查看模式 |
+| Prop | `flow-name` / `redis-key` | 从 Redis 加载指定流程 |
+| Prop | `builtin-business-modals` | 是否内置流程列表/知识库弹窗（默认 `true`） |
+| Event | `saved` | 保存成功，`{ flowName }` |
+| Event | `executed` | 试运行结束，`{ phase: 'success' \| 'error' }` |
+| Event | `open-flow-list` / `open-flow-knowledge` | `builtin-business-modals=false` 时触发自定义弹窗 |
+| Expose | `getWorkflow()` | 获取当前工作流 JSON |
+| Expose | `openFlowFromListPanel(payload)` | 从列表打开/新建流程 |
+
+完整 Props / 事件说明见 [packages/vue/README.md](packages/vue/README.md)。
+
+### 自定义后端地址
+
+生产环境可在 Nginx 将 `/api` 反代到 Python 服务，前端保持 `baseURL: '/api'`。若 API 与前端不同域，在 `configureFlowGameClient` 中设置完整 `baseURL`，并配置 CORS。
+
+### 在本仓库开发（贡献者）
 
 ```bash
+git clone https://gitee.com/repeatedly_read/flowgame.git
+cd flowgame
 pnpm install
-pnpm pack:packages
+pnpm dev          # 官方编辑器 → http://127.0.0.1:8009
+pnpm dev:playground  # 最小示例 → http://127.0.0.1:8010
 ```
 
-成功后生成（版本号以 `package.json` 为准）：
-
-- `packages/core/flowgame-core-0.1.0.tgz`
-- `packages/vue/flowgame-vue-0.1.0.tgz`
-
-在目标 Vue 项目中 **一条命令安装两个包**：
-
-```bash
-pnpm add /绝对路径/flowgame/packages/core/flowgame-core-0.1.0.tgz \
-         /绝对路径/flowgame/packages/vue/flowgame-vue-0.1.0.tgz
-```
-
-然后按 [第三节](#三在别人-vue-项目里使用推荐路径) 配置 `main.ts`、`App.vue`、`vite.config.ts`。
-
-更细的排错表见 [本地安装测试.md](本地安装测试.md)。
+开发时 Vite 直接引用 `packages/*/src`，保存即热更新，**无需先 build**。
 
 ---
 
-## 五、用 flowgame-test 验证 npm 包
-
-维护者专用：目录 `前端测试打包效果/flowgame-test`，与 monorepo **无 workspace 关联**。
-
-```bash
-cd /path/to/flowgame-test
-pnpm install
-rm -rf node_modules/.vite
-pnpm dev
-```
-
-`package.json` 使用 `@flowgame/core`、`@flowgame/vue` 的 npm 版本（当前 `^0.1.0`）。发新版后：
-
-```bash
-pnpm update @flowgame/core @flowgame/vue
-rm -rf node_modules/.vite && pnpm dev
-```
-
-发版前仍可用 [第四节](#四本地-tgz-模拟-npm-安装) 的 tgz 做本地验证。
-
----
-
-## 六、仓库结构与改哪里
+## 项目结构
 
 ```
 flowgame/
 ├── packages/
-│   ├── core/          # @flowgame/core — 节点、画布 patch、HTTP API 客户端
-│   └── vue/           # @flowgame/vue — FlowEditor、侧栏、弹窗
+│   ├── core/              # @flowgame/core — 节点、画布 patch、HTTP API 客户端
+│   └── vue/               # @flowgame/vue — FlowEditor、侧栏、弹窗
 ├── apps/
-│   ├── editor/        # 官方 Demo（pnpm dev → 8009）
-│   └── playground-vue/  # 最小示例（8010）
-├── 开发日志.md         # 功能变更记录
-├── 本地安装测试.md
-├── 开源流程.md         # 拆分与发布规划
-└── CHANGELOG.md        # 可发布包版本说明
+│   ├── editor/            # 官方 Demo（pnpm dev → 8009）
+│   └── playground-vue/    # 最小接入示例（8010）
+├── deploy/                # Docker / Nginx 部署配置
+│   ├── docker-compose.yml
+│   ├── Dockerfile
+│   └── nginx.conf
+├── README.md              # 中文说明（本文件）
+├── README.en-US.md        # English
+├── Docker部署.md          # Docker 详细指南
+└── CHANGELOG.md           # 可发布包版本记录
 ```
 
 | 你想改… | 目录 |
 |---------|------|
 | 自定义节点、画布逻辑、API | `packages/core/src` |
 | 编辑器 UI、属性面板 | `packages/vue/src` |
-| 官方 Demo 业务页（流程列表壳层等） | `apps/editor/src` |
+| 官方 Demo 业务页 | `apps/editor/src` |
 
-开发时 Vite 直接引用 `packages/*/src`，**改完保存即热更新，无需 `pnpm build`**。只有打包 tgz 或发布前才需要 `pnpm build:packages`。
+**相关仓库**
 
----
-
-## 七、常用脚本
-
-| 命令 | 说明 |
+| 仓库 | 说明 |
 |------|------|
-| `pnpm dev` | 启动官方编辑器（8009） |
-| `pnpm dev:playground` | 最小示例（8010） |
-| `pnpm build` | 构建 packages + editor |
-| `pnpm build:packages` | 仅构建 core + vue |
-| `pnpm pack:packages` | 构建并生成 `.tgz` |
-| `pnpm typecheck` | 全仓库类型检查 |
+| [flowgame](https://gitee.com/repeatedly_read/flowgame) | 本仓库（前端 Monorepo） |
+| [flowgame_python](https://gitee.com/repeatedly_read/flowgame_python) | Python 执行器、Redis、Qdrant API |
+
+**默认端口**
+
+| 服务 | 地址 |
+|------|------|
+| 官方编辑器 | http://127.0.0.1:8009 |
+| Playground | http://127.0.0.1:8010 |
+| Python API | http://127.0.0.1:8008 |
+| API 文档 | http://127.0.0.1:8008/docs |
 
 ---
 
-## 八、常见问题
+## 常见问题
 
 | 现象 | 处理 |
 |------|------|
-| 找不到 `@flowgame/core` | 同时安装 **core** 与 **vue** 两个 tgz |
-| 画布无样式 / 节点图标巨大 | 确认引入 `@tinyflow-ai/ui/dist/index.css` 与 `@flowgame/vue/style.css`；重新 `pnpm pack:packages` |
-| 新节点不显示 | 删除测试项目 `node_modules/.vite` 后重启 `pnpm dev` |
-| `form-data` 无 default export | 勿随意 `optimizeDeps.exclude` `@flowgame` 包；清 `.vite` 缓存 |
-| 试运行 / 保存失败 | 启动 flowgame_python，端口与 Vite 代理一致（8008） |
-| Arco 组件报错 | `app.use(ArcoVue)` 且引入 `arco.css` |
-| 流程列表只弹 Message | 使用较新的 `@flowgame/vue` tgz（内置弹窗需后端 `/api`） |
+| 找不到 `@flowgame/core` | 需同时安装 `@flowgame/core` 与 `@flowgame/vue` |
+| 画布无样式 / 节点图标巨大 | 确认引入 `@tinyflow-ai/ui/dist/index.css` 与 `@flowgame/vue/style.css` |
+| 升级 npm 包后行为未变 | 删除 `node_modules/.vite` 后重启 `pnpm dev` |
+| 控制台 `form-data` 无 default export | 勿随意 `optimizeDeps.exclude` @flowgame 包；清 `.vite` 缓存 |
+| 试运行 / 保存失败 | 启动 flowgame_python，Vite 代理端口与后端一致（默认 8008） |
+| Arco 组件报错 | `app.use(ArcoVue)` 且引入 `@arco-design/web-vue/dist/arco.css` |
+| 流程列表只弹 Message | 确保 `@flowgame/vue` 为较新版本，且后端 `/api` 可用 |
+| Docker 访问 8009 连接被重置 | 确认 `nginx.conf` 监听 **8009**，端口映射为 `8009:8009` |
 
 ---
 
-## 九、Docker 部署（服务器）
+## Docker 部署
 
-适合：在已安装 Docker 的服务器上拉代码、本地构建镜像并运行完整环境（前端 + API + Redis + Qdrant）。
+适合在已安装 Docker 的服务器上部署 **前端 + API + Redis + Qdrant** 完整环境。
+
+### 目录要求
+
+`flowgame` 与 `flowgame_python` 需**并列**放在同一父目录：
+
+```
+/opt/flowgame/
+├── flowgame/           # 本仓库
+│   └── deploy/
+└── flowgame_python/    # Python 后端
+```
+
+### 快速部署
 
 ```bash
-# 两个仓库并列克隆到同一父目录
 mkdir -p /opt/flowgame && cd /opt/flowgame
-git clone <flowgame-仓库> flowgame
-git clone <flowgame_python-仓库> flowgame_python
+git clone https://gitee.com/repeatedly_read/flowgame.git flowgame
+git clone https://gitee.com/repeatedly_read/flowgame_python.git flowgame_python
 
 cd flowgame/deploy
-cp .env.example .env   # 按需编辑端口等（模型 Key 一般在流程 JSON 里）
+cp .env.example .env    # 按需修改端口等
 docker compose up -d --build
 ```
 
-浏览器访问 **http://服务器IP:8009**。
+### 验证
 
-完整步骤、目录结构、更新与排错见 **[Docker部署.md](Docker部署.md)**。
+```bash
+curl http://127.0.0.1:8008/health
+curl -I http://127.0.0.1:8009
+```
 
----
+浏览器访问：**http://\<服务器IP\>:8009**（API 文档：**http://\<服务器IP\>:8009/docs**）。
 
-## 十、npm 发布（维护者）
+| 容器 | 默认宿主机端口 | 作用 |
+|------|----------------|------|
+| `web` | 8009 | Nginx 托管编辑器，`/api` 反代到后端 |
+| `api` | 8008 | FastAPI 工作流执行 |
+| `redis` | 6379 | 流程存储 |
+| `qdrant` | 6333 | 向量知识库 |
 
-将 `@flowgame/core`、`@flowgame/vue` 发布到 npm：升版本 → `pnpm pack:packages` 验证 → 先 publish core 再 publish vue。
-
-完整检查清单与命令见 **[npm发布流程.md](npm发布流程.md)**。
+完整步骤、环境变量、更新与排错见 **[Docker部署.md](Docker部署.md)**。
 
 ---
 
 ## 许可与第三方依赖
 
-- 本 Monorepo 可发布包：**MIT**（见各包 `LICENSE`）
-- `@tinyflow-ai/ui` — **LGPL-3.0-or-later**（画布引擎，须单独引入 CSS）
-- `@arco-design/web-vue` — MIT
+- `@flowgame/core`、`@flowgame/vue`：**MIT**
+- `@tinyflow-ai/ui`：**LGPL-3.0-or-later**（画布引擎，须单独引入 CSS）
+- `@arco-design/web-vue`：**MIT**
 
 分发产品前请确认 Tinyflow 许可证与您的商用场景兼容。
-
----
-
-## 开发记录
-
-功能与时间线见 [开发日志.md](开发日志.md)。  
-在 Cursor 中开发时，可附加 Skill **flowgame-project**，Agent 会在改功能时同步更新 README 与本日志。
