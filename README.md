@@ -1,5 +1,11 @@
 <p align="center">
-  <img src="./logo.png" alt="FlowGame" width="300" />
+  <a href="https://site.logic-flow.cn" target="_blank">
+    <img
+      src="https://image.cscmgg.com/wechatMiniprogramImages/adminImage/bannerImage/20260601/blstxodlnxg66p.png"
+      alt="LogicFlow logo"
+      width="300"
+    />
+  </a>
 </p>
 
 <p align="center">
