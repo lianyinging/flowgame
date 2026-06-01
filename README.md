@@ -22,7 +22,7 @@ FlowGame 在 [Tinyflow](https://github.com/tinyflow-ai/tinyflow) 画布引擎之
 | **记忆写入 / 读取** | 跨节点、跨轮次读写会话上下文 |
 | **HTML 模板** | 用模板渲染结构化 HTML 输出 |
 
-前端通过 `@flowgame/vue` 的 `FlowEditor` 嵌入任意 Vue 3 项目；**流程试运行、保存到 Redis、知识库向量检索** 等能力由独立后端 **[flowgame_python](https://gitee.com/repeatedly_read/flowgame_python)**（FastAPI + Redis + Qdrant）提供，前后端分离、可按需 Docker 部署。
+前端通过 `@flowgame/vue` 的 `FlowEditor` 嵌入任意 Vue 3 项目；**流程试运行、保存到 Redis、知识库向量检索** 等能力由独立后端 **[flowgame_python](https://github.com/lianyinging/flowgame_python)**（FastAPI + Redis + Qdrant）提供，前后端分离、可按需 Docker 部署。
 
 ## 核心能力
 
@@ -42,7 +42,7 @@ FlowGame 在 [Tinyflow](https://github.com/tinyflow-ai/tinyflow) 画布引擎之
 |------|----------------------------------------------------------------------------------|
 | Node.js | **18+**                                                                          |
 | pnpm / npm / yarn | 任选其一（推荐pnpm）                                                                     |
-| Python 后端（完整功能） | **3.10+**，见 [flowgame_python](https://gitee.com/repeatedly_read/flowgame_python) |
+| Python 后端（完整功能） | **3.10+**，见 [flowgame_python](https://github.com/lianyinging/flowgame_python) |
 
 ### 1. 创建 Vue 3 项目
 
@@ -162,7 +162,7 @@ pnpm dev
 ### 在本仓库开发（贡献者）
 
 ```bash
-git clone https://gitee.com/repeatedly_read/flowgame.git
+git clone https://github.com/lianyinging/flowgame.git
 cd flowgame
 pnpm install
 pnpm dev          # 官方编辑器 → http://127.0.0.1:8009
@@ -203,8 +203,8 @@ flowgame/
 
 | 仓库 | 说明 |
 |------|------|
-| [flowgame](https://gitee.com/repeatedly_read/flowgame) | 本仓库（前端 Monorepo） |
-| [flowgame_python](https://gitee.com/repeatedly_read/flowgame_python) | Python 执行器、Redis、Qdrant API |
+| [flowgame](https://github.com/lianyinging/flowgame) | 本仓库（前端 Monorepo） |
+| [flowgame_python](https://github.com/lianyinging/flowgame_python) | Python 执行器、Redis、Qdrant API |
 
 **默认端口**
 
@@ -251,8 +251,8 @@ flowgame/
 
 ```bash
 mkdir -p /opt/flowgame && cd /opt/flowgame
-git clone https://gitee.com/repeatedly_read/flowgame.git flowgame
-git clone https://gitee.com/repeatedly_read/flowgame_python.git flowgame_python
+git clone https://github.com/lianyinging/flowgame.git flowgame
+git clone https://github.com/lianyinging/flowgame_python.git flowgame_python
 
 cd flowgame/deploy
 cp .env.example .env    # 按需修改端口等

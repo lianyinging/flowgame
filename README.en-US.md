@@ -22,7 +22,7 @@ FlowGame extends the [Tinyflow](https://github.com/tinyflow-ai/tinyflow) canvas 
 | **Memory Write / Read** | Cross-node, cross-turn session context |
 | **HTML Template** | Render structured HTML from templates |
 
-Embed the editor in any Vue 3 app via `@flowgame/vue`’s `FlowEditor`. **Trial runs, Redis flow storage, and vector search** are handled by **[flowgame_python](https://gitee.com/repeatedly_read/flowgame_python)** (FastAPI + Redis + Qdrant) — frontend and backend are separate and deployable via Docker.
+Embed the editor in any Vue 3 app via `@flowgame/vue`’s `FlowEditor`. **Trial runs, Redis flow storage, and vector search** are handled by **[flowgame_python](https://github.com/lianyinging/flowgame_python)** (FastAPI + Redis + Qdrant) — frontend and backend are separate and deployable via Docker.
 
 ## Core Capabilities
 
@@ -42,7 +42,7 @@ Embed the editor in any Vue 3 app via `@flowgame/vue`’s `FlowEditor`. **Trial 
 |------|---------|
 | Node.js | **18+** |
 | pnpm / npm / yarn | Any |
-| Python backend (full features) | **3.10+**, see [flowgame_python](https://gitee.com/repeatedly_read/flowgame_python) |
+| Python backend (full features) | **3.10+**, see [flowgame_python](https://github.com/lianyinging/flowgame_python) |
 
 ### 1. Create a Vue 3 project
 
@@ -162,7 +162,7 @@ In production, proxy `/api` via Nginx to the Python service and keep `baseURL: '
 ### Develop in this monorepo (contributors)
 
 ```bash
-git clone https://gitee.com/repeatedly_read/flowgame.git
+git clone https://github.com/lianyinging/flowgame.git
 cd flowgame
 pnpm install
 pnpm dev              # Official editor → http://127.0.0.1:8009
@@ -203,8 +203,8 @@ flowgame/
 
 | Repo | Description |
 |------|-------------|
-| [flowgame](https://gitee.com/repeatedly_read/flowgame) | This repo (frontend monorepo) |
-| [flowgame_python](https://gitee.com/repeatedly_read/flowgame_python) | Python executor, Redis, Qdrant API |
+| [flowgame](https://github.com/lianyinging/flowgame) | This repo (frontend monorepo) |
+| [flowgame_python](https://github.com/lianyinging/flowgame_python) | Python executor, Redis, Qdrant API |
 
 **Default ports**
 
@@ -251,8 +251,8 @@ Deploy the full stack — **web + API + Redis + Qdrant** — on a server with Do
 
 ```bash
 mkdir -p /opt/flowgame && cd /opt/flowgame
-git clone https://gitee.com/repeatedly_read/flowgame.git flowgame
-git clone https://gitee.com/repeatedly_read/flowgame_python.git flowgame_python
+git clone https://github.com/lianyinging/flowgame.git flowgame
+git clone https://github.com/lianyinging/flowgame_python.git flowgame_python
 
 cd flowgame/deploy
 cp .env.example .env    # Edit ports as needed
