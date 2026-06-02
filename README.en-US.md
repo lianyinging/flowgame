@@ -1,5 +1,11 @@
 <p align="center">
-  <img src="./logo.png" alt="FlowGame" width="300" />
+  <a href="https://flowgame.mgdeep.com" target="_blank">
+    <img
+      src="https://image.cscmgg.com/wechatMiniprogramImages/adminImage/bannerImage/20260601/blstxodlnxg66p.png"
+      alt="FlowGame logo"
+      width="300"
+    />
+  </a>
 </p>
 
 <p align="center">
@@ -10,7 +16,9 @@
 
 [简体中文](./README.md) | English
 
-FlowGame extends the [Tinyflow](https://github.com/tinyflow-ai/tinyflow) canvas engine for **AI workflows**: it keeps Tinyflow’s drag-and-drop editing while adding **new business-oriented custom nodes** and a **Python backend** for real execution and persistence.
+- **FlowGame** extends the [Tinyflow](https://github.com/tinyflow-ai/tinyflow) canvas engine for **AI workflows**: it keeps Tinyflow’s drag-and-drop editing, adds **custom nodes**, and ships with a **Python backend** for real execution and persistence.
+
+- Embed the editor in any Vue 3 app via `@flowgame/vue`’s `FlowEditor`. **Trial runs, Redis flow storage, and vector search** are handled by **[flowgame_python](https://github.com/lianyinging/flowgame_python)** (FastAPI + Redis + Qdrant) — frontend and backend are separate and deployable via Docker.
 
 **Custom nodes added on top of Tinyflow** (registered in `@flowgame/core`):
 
@@ -21,8 +29,6 @@ FlowGame extends the [Tinyflow](https://github.com/tinyflow-ai/tinyflow) canvas 
 | **Knowledge Base+** | Qdrant-backed retrieval for RAG |
 | **Memory Write / Read** | Cross-node, cross-turn session context |
 | **HTML Template** | Render structured HTML from templates |
-
-Embed the editor in any Vue 3 app via `@flowgame/vue`’s `FlowEditor`. **Trial runs, Redis flow storage, and vector search** are handled by **[flowgame_python](https://github.com/lianyinging/flowgame_python)** (FastAPI + Redis + Qdrant) — frontend and backend are separate and deployable via Docker.
 
 ## Core Capabilities
 
@@ -41,7 +47,7 @@ Embed the editor in any Vue 3 app via `@flowgame/vue`’s `FlowEditor`. **Trial 
 | Tool | Version |
 |------|---------|
 | Node.js | **18+** |
-| pnpm / npm / yarn | Any |
+| pnpm / npm / yarn | Any (pnpm recommended) |
 | Python backend (full features) | **3.10+**, see [flowgame_python](https://github.com/lianyinging/flowgame_python) |
 
 ### 1. Create a Vue 3 project
@@ -275,7 +281,7 @@ Open in browser: **http://\<server-ip\>:8009** (API docs: **http://\<server-ip\>
 | `redis` | 6379 | Flow storage |
 | `qdrant` | 6333 | Vector knowledge base |
 
-Full guide: **[Docker部署.md](Docker部署.md)** (Chinese).
+Full guide: **[Docker部署.md](Docker部署.md)**.
 
 ---
 
@@ -285,4 +291,4 @@ Full guide: **[Docker部署.md](Docker部署.md)** (Chinese).
 - `@tinyflow-ai/ui`: **LGPL-3.0-or-later** (canvas engine; CSS must be imported separately)
 - `@arco-design/web-vue`: **MIT**
 
-Verify Tinyflow licensing compatibility before commercial distribution. Changelog: [CHANGELOG.md](CHANGELOG.md).
+Verify Tinyflow licensing compatibility before commercial distribution.

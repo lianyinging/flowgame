@@ -1,8 +1,8 @@
 <p align="center">
-  <a href="https://site.logic-flow.cn" target="_blank">
+  <a href="https://flowgame.mgdeep.com" target="_blank">
     <img
       src="https://image.cscmgg.com/wechatMiniprogramImages/adminImage/bannerImage/20260601/blstxodlnxg66p.png"
-      alt="LogicFlow logo"
+      alt="FlowGame logo"
       width="300"
     />
   </a>
@@ -16,7 +16,9 @@
 
 简体中文 | [English](./README.en-US.md)
 
-FlowGame 在 [Tinyflow](https://github.com/tinyflow-ai/tinyflow) 画布引擎之上，面向 **AI 工作流** 做了深度扩展：保留 Tinyflow 的拖拽编排体验，并**新增一批业务向自定义节点**，同时配套 **Python 后端** 完成真实执行与数据持久化。
+- **FlowGame** 在 [Tinyflow](https://github.com/tinyflow-ai/tinyflow) 画布引擎之上，面向 **AI 工作流** 做了深度扩展：保留 Tinyflow 的拖拽编排体验，并**新增一批自定义节点**，同时配套 **Python 后端** 完成真实执行与数据持久化。
+
+- 前端通过 `@flowgame/vue` 的 `FlowEditor` 嵌入任意 Vue 3 项目；**流程试运行、保存到 Redis、知识库向量检索** 等能力由独立后端 **[flowgame_python](https://github.com/lianyinging/flowgame_python)**（FastAPI + Redis + Qdrant）提供，前后端分离、可按需 Docker 部署。
 
 **在 Tinyflow 基础上新增的节点**（`@flowgame/core` 注册）：
 
@@ -27,8 +29,6 @@ FlowGame 在 [Tinyflow](https://github.com/tinyflow-ai/tinyflow) 画布引擎之
 | **知识库检索+** | 关联 Qdrant 知识库，支持检索增强（RAG） |
 | **记忆写入 / 读取** | 跨节点、跨轮次读写会话上下文 |
 | **HTML 模板** | 用模板渲染结构化 HTML 输出 |
-
-前端通过 `@flowgame/vue` 的 `FlowEditor` 嵌入任意 Vue 3 项目；**流程试运行、保存到 Redis、知识库向量检索** 等能力由独立后端 **[flowgame_python](https://github.com/lianyinging/flowgame_python)**（FastAPI + Redis + Qdrant）提供，前后端分离、可按需 Docker 部署。
 
 ## 核心能力
 
