@@ -7,3 +7,12 @@ dist/
 apps/editor/src/auto-imports.d.ts
 apps/editor/components.d.ts
 packages/core/dist/
+
+# 本地文档 / IDE / 工具（不提交）
+npm发布流程.md
+开发日志.md
+开源流程.md
+本地安装测试.md
+.cursor/
+.idea/
+.vite/
