@@ -1,6 +1,48 @@
-# @flowgame/vue
+<p align="center">
+  <a href="https://flowgame.mgdeep.com" target="_blank">
+    <img
+      src="https://image.cscmgg.com/wechatMiniprogramImages/adminImage/bannerImage/20260601/blstxodlnxg66p.png"
+      alt="FlowGame"
+      width="300"
+    />
+  </a>
+</p>
 
-FlowGame 工作流可视化编辑器 — Vue 3 组件。
+<p align="center">
+  <a href="https://www.npmjs.com/package/@flowgame/vue"><img src="https://img.shields.io/npm/v/@flowgame/vue?label=npm" alt="npm version" /></a>
+  <a href="https://www.npmjs.com/package/@flowgame/vue"><img src="https://img.shields.io/npm/dm/@flowgame/vue?label=downloads" alt="downloads" /></a>
+  <a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="license" /></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/lianyinging/flowgame/blob/master/README.en-US.md">English</a>
+  ·
+  <a href="https://github.com/lianyinging/flowgame">GitHub</a>
+  ·
+  <a href="https://flowgame.mgdeep.com">官网</a>
+</p>
+
+FlowGame 在 [Tinyflow](https://github.com/tinyflow-ai/tinyflow) 画布之上，面向 **AI 工作流** 提供 Vue 3 可视化编排组件。在 Tinyflow 拖拽体验基础上，扩展 Start API、模型调用、知识库+、记忆读写、HTML 模板等节点；配合 [flowgame_python](https://github.com/lianyinging/flowgame_python) 后端完成试运行、Redis 持久化与 Qdrant 检索。
+
+## 特性
+
+- 🎨 **开箱即用**
+
+  `<FlowEditor />` 一行接入，内置流程列表、知识库配置、节点详情面板与试运行入口。
+
+- 🧩 **高可定制**
+
+  基于 `@flowgame/core` 注册自定义节点与画布补丁；通过 Props / 事件 / Expose 扩展业务 UI。
+
+- 🔌 **前后端分离**
+
+  前端负责编排与展示；执行、保存、向量检索由 Python 后端（FastAPI + Redis + Qdrant）提供。
+
+- 📦 **npm 友好**
+
+  与 `@flowgame/core`、`@tinyflow-ai/ui`、`@arco-design/web-vue` 配合，适用于 Vite / Vue 3 项目。
+
+---
 
 ## 安装
 
@@ -8,17 +50,17 @@ FlowGame 工作流可视化编辑器 — Vue 3 组件。
 pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
 ```
 
-## 最小示例
+## 快速开始
+
+**`main.ts`**
 
 ```ts
-// main.ts
 import { createApp } from 'vue'
 import ArcoVue from '@arco-design/web-vue'
 import '@arco-design/web-vue/dist/arco.css'
 import '@tinyflow-ai/ui/dist/index.css'
 import '@flowgame/vue/style.css'
 import { configureFlowGameClient } from '@flowgame/core'
-import { FlowEditor } from '@flowgame/vue'
 import App from './App.vue'
 
 configureFlowGameClient({
@@ -29,8 +71,9 @@ configureFlowGameClient({
 createApp(App).use(ArcoVue).mount('#app')
 ```
 
+**`App.vue`**
+
 ```vue
-<!-- App.vue -->
 <script setup lang="ts">
 import { FlowEditor } from '@flowgame/vue'
 </script>
@@ -45,11 +88,14 @@ html, body, #app { margin: 0; height: 100%; overflow: hidden; }
 </style>
 ```
 
-## 开发环境代理
+**`vite.config.ts`**（开发环境代理后端，默认 `8008`）
 
 ```ts
-// vite.config.ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+
 export default defineConfig({
+  plugins: [vue()],
   server: {
     proxy: {
       '/api': { target: 'http://127.0.0.1:8008', changeOrigin: true }
@@ -60,34 +106,17 @@ export default defineConfig({
 
 ## FlowEditor API
 
-### Props
-
-| 属性 | 类型 | 说明 |
+| 类型 | 名称 | 说明 |
 |------|------|------|
-| `readonly` | `boolean` | 只读查看 |
-| `flow-name` | `string` | 流程名称（加载 Redis） |
-| `redis-key` | `string` | Redis 键 |
-| `builtin-business-modals` | `boolean` | 是否内置流程列表/知识库弹窗（默认 `true`） |
+| Prop | `readonly` | 只读查看 |
+| Prop | `flow-name` / `redis-key` | 从 Redis 加载流程 |
+| Prop | `builtin-business-modals` | 内置流程列表/知识库弹窗（默认 `true`） |
+| Event | `saved` | 保存成功 |
+| Event | `executed` | 试运行结束 |
+| Expose | `getWorkflow()` | 当前工作流 JSON |
 
-### 事件
-
-| 事件 | 说明 |
-|------|------|
-| `open-flow-list` | 点击「流程列表」且 `builtin-business-modals=false` 时触发 |
-| `open-flow-knowledge` | 点击「知识库配置」且 `builtin-business-modals=false` 时触发 |
-| `saved` | 保存成功 `{ flowName }` |
-| `executed` | 试运行结束 `{ phase: 'success' \| 'error' }` |
-
-### Expose
-
-| 方法 | 说明 |
-|------|------|
-| `openFlowFromListPanel(payload)` | 从列表打开/新建流程 |
-| `reloadFromProps()` | 按 props 重新加载 |
-| `getWorkflow()` | 当前工作流 JSON |
-
-默认已内置流程列表、知识库配置弹窗（需配置 `configureFlowGameClient` 与后端 API）。若需自定义 UI，设置 `:builtin-business-modals="false"` 并监听 `open-flow-list` / `open-flow-knowledge`。
+完整文档见 [GitHub README](https://github.com/lianyinging/flowgame/blob/master/README.md)。
 
 ## 许可
 
-Apache-2.0（本包）。依赖 `@tinyflow-ai/ui`（LGPL-3.0-or-later）、`@arco-design/web-vue`（MIT）。
+[Apache License 2.0](https://github.com/lianyinging/flowgame/blob/master/LICENSE)

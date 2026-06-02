@@ -1,6 +1,6 @@
 {
   "name": "@flowgame/core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "FlowGame workflow editor core (framework-agnostic)",
   "type": "module",
   "license": "Apache-2.0",
@@ -24,9 +24,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitee.com/repeatedly_read/flowgame.git",
+    "url": "https://github.com/lianyinging/flowgame.git",
     "directory": "packages/core"
   },
+  "homepage": "https://flowgame.mgdeep.com",
   "keywords": [
     "flowgame",
     "workflow",

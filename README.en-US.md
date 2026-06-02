@@ -64,7 +64,7 @@ pnpm install
 pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
 ```
 
-Current npm version: **0.1.1** (check with `npm view @flowgame/vue version`).
+Current npm version: **0.1.2** (check with `npm view @flowgame/vue version`).
 
 ### 3. Configure entry and styles
 
@@ -287,8 +287,6 @@ Full guide: **[Docker部署.md](Docker部署.md)**.
 
 ## License & Third-Party
 
-- `@flowgame/core`, `@flowgame/vue`: **Apache-2.0**
-- `@tinyflow-ai/ui`: **LGPL-3.0-or-later** (canvas engine; CSS must be imported separately)
-- `@arco-design/web-vue`: **MIT**
+FlowGame (`@flowgame/core`, `@flowgame/vue`) is licensed under **[Apache License 2.0](LICENSE)**.
 
-Verify Tinyflow licensing compatibility before commercial distribution.
+Peer dependencies such as `@tinyflow-ai/ui` (LGPL-3.0-or-later) and `@arco-design/web-vue` use their own licenses — verify compatibility before distribution.

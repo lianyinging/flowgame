@@ -64,7 +64,7 @@ pnpm install
 pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
 ```
 
-当前 npm 版本：**0.1.1**（可用 `npm view @flowgame/vue version` 确认）。
+当前 npm 版本：**0.1.2**（可用 `npm view @flowgame/vue version` 确认）。
 
 ### 3. 配置入口与样式
 
@@ -287,8 +287,6 @@ curl -I http://127.0.0.1:8009
 
 ## 许可与第三方依赖
 
-- `@flowgame/core`、`@flowgame/vue`：**Apache-2.0**
-- `@tinyflow-ai/ui`：**LGPL-3.0-or-later**（画布引擎，须单独引入 CSS）
-- `@arco-design/web-vue`：**MIT**
+FlowGame（`@flowgame/core`、`@flowgame/vue`）采用 **[Apache License 2.0](LICENSE)**。
 
-分发产品前请确认 Tinyflow 许可证与您的商用场景兼容。
+Peer 依赖 `@tinyflow-ai/ui`（LGPL-3.0-or-later）、`@arco-design/web-vue` 等第三方组件使用各自许可证，分发前请确认兼容性。

@@ -5,6 +5,14 @@ All notable changes to the publishable packages (`@flowgame/core`, `@flowgame/vu
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2026-06-01
+
+### Changed
+
+- `@flowgame/core`、`@flowgame/vue`: 许可证由 MIT 调整为 **Apache-2.0**
+- npm 包 README 对齐 LogicFlow 风格（Logo、徽章、特性说明）
+- `repository` / `homepage` 更新为 GitHub 与官网
+
 ## [0.1.1] - 2026-05-29
 
 ### Fixed
@@ -21,5 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `@flowgame/vue`: `FlowEditor` component with Arco Design UI
 - Monorepo dev apps: `flowgame-editor`, `playground-vue`
 
-[0.1.1]: https://gitee.com/repeatedly_read/flowgame/releases/tag/v0.1.1
-[0.1.0]: https://gitee.com/repeatedly_read/flowgame/releases/tag/v0.1.0
+[0.1.2]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.2
+[0.1.1]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.1
+[0.1.0]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.0
