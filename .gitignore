@@ -16,3 +16,5 @@ npm发布流程.md
 .cursor/
 .idea/
 .vite/
+.vscode/
+*.tgz
