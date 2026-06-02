@@ -90,4 +90,4 @@ export default defineConfig({
 
 ## 许可
 
-MIT（本包）。依赖 `@tinyflow-ai/ui`（LGPL-3.0-or-later）、`@arco-design/web-vue`（MIT）。
+Apache-2.0（本包）。依赖 `@tinyflow-ai/ui`（LGPL-3.0-or-later）、`@arco-design/web-vue`（MIT）。

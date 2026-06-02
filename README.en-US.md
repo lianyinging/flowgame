@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@flowgame/vue"><img src="https://img.shields.io/npm/v/@flowgame/vue?label=npm" alt="npm version" /></a>
-  <a href="./packages/core/LICENSE"><img src="https://img.shields.io/npm/l/@flowgame/vue?label=license" alt="license" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache--2.0-blue" alt="license" /></a>
   <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen" alt="node" />
 </p>
 
@@ -287,7 +287,7 @@ Full guide: **[Docker部署.md](Docker部署.md)**.
 
 ## License & Third-Party
 
-- `@flowgame/core`, `@flowgame/vue`: **MIT**
+- `@flowgame/core`, `@flowgame/vue`: **Apache-2.0**
 - `@tinyflow-ai/ui`: **LGPL-3.0-or-later** (canvas engine; CSS must be imported separately)
 - `@arco-design/web-vue`: **MIT**
 

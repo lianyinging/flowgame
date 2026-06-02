@@ -36,4 +36,4 @@ configureFlowGameAuth({
 
 ## 许可
 
-MIT（本包）。画布依赖 `@tinyflow-ai/ui`（LGPL-3.0-or-later），请一并遵守其许可。
+Apache-2.0（本包）。画布依赖 `@tinyflow-ai/ui`（LGPL-3.0-or-later），请一并遵守其许可。
