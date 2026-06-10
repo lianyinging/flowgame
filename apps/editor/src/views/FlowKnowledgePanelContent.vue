@@ -36,9 +36,10 @@ import {
   type QdrantKbDocumentItem
 } from '@flowgame/core'
 import {
-  FLOWGAME_KB_PREFIX,
   KB_DOC_SUFFIX,
   KB_QA_SUFFIX,
+  toDocCollectionName,
+  toQaCollectionName,
   displayKbBaseName,
   isKbBaseNameInput,
   normalizeKbBaseName
@@ -117,8 +118,8 @@ function mapKbBasesToRows(bases: Array<{
   return bases.map(b => ({
     collectionName: b.baseName,
     baseName: b.baseName,
-    qaCollection: b.qaCollection ?? `${FLOWGAME_KB_PREFIX}${b.baseName}${KB_QA_SUFFIX}`,
-    docCollection: b.docCollection ?? `${FLOWGAME_KB_PREFIX}${b.baseName}${KB_DOC_SUFFIX}`,
+    qaCollection: b.qaCollection ?? toQaCollectionName(b.baseName),
+    docCollection: b.docCollection ?? toDocCollectionName(b.baseName),
     qaPointsCount: b.qaPointsCount,
     docPointsCount: b.docPointsCount,
     status: b.status

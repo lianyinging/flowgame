@@ -18,6 +18,7 @@ import {
   FLOWGAME_OPEN_FLOW_LIST_EVENT,
   FLOWGAME_OPEN_NODE_INSPECTOR_EVENT,
   flowRedisKeysForLoad,
+  getFlowListRedisPrefix,
   getRedisApi,
   getTinyflowFlowApi,
   getTinyflowHostRoot,
@@ -108,6 +109,9 @@ const runState = reactive<FlowRunViewState>({
 const saveVisible = ref(false)
 const saveLoading = ref(false)
 const saveForm = reactive({ flowName: '' })
+const saveFlowRedisKeyPlaceholder = computed(
+  () => `Redis Key：${getFlowListRedisPrefix()}流程名称`
+)
 const syncingMethodKey = ref(false)
 const syncingInspector = ref(false)
 const inspectorNodeId = ref<string | null>(null)
@@ -795,7 +799,7 @@ defineExpose({
         >
           <Input
             v-model="saveForm.flowName"
-            placeholder="Redis Key：flow_game:flow_list:流程名称"
+            :placeholder="saveFlowRedisKeyPlaceholder"
             allow-clear
           />
         </FormItem>

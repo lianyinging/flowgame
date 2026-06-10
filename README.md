@@ -64,7 +64,7 @@ pnpm install
 pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
 ```
 
-当前 npm 版本：**0.1.4**（可用 `npm view @flowgame/vue version` 确认）。
+当前 npm 版本：**0.1.5**（可用 `npm view @flowgame/vue version` 确认）。
 
 ### 3. 配置入口与样式
 
@@ -81,6 +81,9 @@ import App from './App.vue'
 
 configureFlowGameClient({
   baseURL: '/api',
+  // 多项目共用 Redis / Qdrant 时可配置（须与 flowgame_python .env 一致）
+  // redisKeyPrefix: 'myapp:',
+  // qdrantKbPrefix: 'myapp_',
   onError: (msg) => alert(msg)
 })
 

@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
+import { configureFlowGameKeyPrefixes } from './flow-game/key-prefix'
 
 export interface FlowgameApiResponse<T = unknown> {
   code: number
@@ -11,6 +12,10 @@ export interface FlowGameClientOptions {
   baseURL?: string
   timeout?: number
   onError?: (message: string) => void
+  /** 可选：Redis 键命名空间前缀，如 `myapp:`；未配置则默认 `flow_game:` */
+  redisKeyPrefix?: string
+  /** 可选：Qdrant 知识库 Collection 前缀，如 `myapp_`；未配置则默认 `flowgame_` */
+  qdrantKbPrefix?: string
 }
 
 let onErrorHandler: (message: string) => void = (msg) => {
@@ -24,6 +29,10 @@ export function configureFlowGameClient(options: FlowGameClientOptions = {}) {
     apiBaseURL = options.baseURL.replace(/\/$/, '') || '/api'
   if (options.onError)
     onErrorHandler = options.onError
+  configureFlowGameKeyPrefixes({
+    redisKeyPrefix: options.redisKeyPrefix,
+    qdrantKbPrefix: options.qdrantKbPrefix
+  })
   flowgameRequest.defaults.baseURL = apiBaseURL
   if (options.timeout !== undefined)
     flowgameRequest.defaults.timeout = options.timeout

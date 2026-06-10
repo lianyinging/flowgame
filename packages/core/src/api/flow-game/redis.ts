@@ -1,9 +1,8 @@
 import flowgameRequest, { type FlowgameApiResponse } from '../client'
 import type { FlowGameWorkflow } from './index'
 import {
-  FLOW_LIST_INDEX_KEY,
-  LEGACY_FLOW_LIST_INDEX_KEY,
   buildFlowRedisKey,
+  getFlowListIndexKey,
   parseFlowNameFromRedisKey
 } from './constants'
 
@@ -59,35 +58,21 @@ async function readFlowListIndexAt(key: string): Promise<FlowListIndexData | nul
 }
 
 export async function getFlowListIndex(): Promise<FlowListIndexData> {
-  const newIndex = await readFlowListIndexAt(FLOW_LIST_INDEX_KEY)
-  const legacyIndex = await readFlowListIndexAt(LEGACY_FLOW_LIST_INDEX_KEY)
-  if (!newIndex?.items.length)
-    return legacyIndex ?? { items: [] }
-  if (!legacyIndex?.items.length)
-    return newIndex
-
-  const byName = new Map<string, FlowListIndexItem>()
-  for (const item of legacyIndex.items)
-    byName.set(item.name, item)
-  for (const item of newIndex.items)
-    byName.set(item.name, item)
-  return {
-    items: [...byName.values()].sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    )
-  }
+  const index = await readFlowListIndexAt(getFlowListIndexKey())
+  return index ?? { items: [] }
 }
 
 async function saveFlowListIndex(data: FlowListIndexData) {
+  const indexKey = getFlowListIndexKey()
   try {
-    const existing = await getRedisApi(FLOW_LIST_INDEX_KEY)
+    const existing = await getRedisApi(indexKey)
     if (existing.data?.exists)
-      return updateRedisApi(FLOW_LIST_INDEX_KEY, data)
+      return updateRedisApi(indexKey, data)
   }
   catch {
     // ignore
   }
-  return createRedisApi(FLOW_LIST_INDEX_KEY, data)
+  return createRedisApi(indexKey, data)
 }
 
 export async function upsertFlowListIndexItem(name: string) {
