@@ -42,7 +42,10 @@ import {
   toQaCollectionName,
   displayKbBaseName,
   isKbBaseNameInput,
-  normalizeKbBaseName
+  isQaCollectionName,
+  normalizeKbBaseName,
+  resolveDocCollectionForApi,
+  resolveQaCollectionForApi
 } from '@flowgame/core'
 import { FLOW_KNOWLEDGE_UPLOAD_TEMPLATE_TXT } from './flow-knowledge/upload-template'
 
@@ -115,23 +118,40 @@ function mapKbBasesToRows(bases: Array<{
   docPointsCount?: number
   status?: string
 }>): KbBaseRow[] {
-  return bases.map(b => ({
-    collectionName: b.baseName,
-    baseName: b.baseName,
-    qaCollection: b.qaCollection ?? toQaCollectionName(b.baseName),
-    docCollection: b.docCollection ?? toDocCollectionName(b.baseName),
-    qaPointsCount: b.qaPointsCount,
-    docPointsCount: b.docPointsCount,
-    status: b.status
-  }))
+  return bases
+    .filter(b => !b.qaCollection || isQaCollectionName(b.qaCollection))
+    .map((b) => {
+      const base = displayKbBaseName(b.baseName || b.qaCollection || b.docCollection || '')
+      return {
+        collectionName: base,
+        baseName: base,
+        qaCollection: toQaCollectionName(base),
+        docCollection: toDocCollectionName(base),
+        qaPointsCount: b.qaPointsCount,
+        docPointsCount: b.docPointsCount,
+        status: b.status
+      }
+    })
 }
 
-function getSelectedKbRow() {
-  return collectionOptions.value.find(c => c.baseName === selectedCollection.value)
+function getSelectedKbBaseName() {
+  const row = collectionOptions.value.find(c => c.baseName === selectedCollection.value)
+  if (row?.baseName)
+    return row.baseName
+  try {
+    return normalizeKbBaseName(selectedCollection.value)
+  }
+  catch {
+    return selectedCollection.value.trim()
+  }
 }
 
 function getSelectedQaCollection() {
-  return getSelectedKbRow()?.qaCollection ?? selectedCollection.value
+  return resolveQaCollectionForApi(getSelectedKbBaseName())
+}
+
+function getSelectedDocCollection() {
+  return resolveDocCollectionForApi(getSelectedKbBaseName())
 }
 
 function applyCollectionList(list: KbBaseRow[]) {
@@ -304,7 +324,7 @@ async function handleDeletePoint(record: { id: string | number }) {
   if (!selectedCollection.value)
     return
   await deleteQdrantPointsApi({
-    collectionName: selectedCollection.value,
+    collectionName: getSelectedQaCollection(),
     pointIds: [record.id]
   })
   Message.success('删除成功')
@@ -319,7 +339,7 @@ function handleBatchDeletePoints() {
     content: `确定删除已选中的 ${selectedKeys.value.length} 条 Q&A 吗？`,
     onBeforeOk: async () => {
       await deleteQdrantPointsApi({
-        collectionName: selectedCollection.value,
+        collectionName: getSelectedQaCollection(),
         pointIds: [...selectedKeys.value]
       })
       Message.success('删除成功')

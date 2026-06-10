@@ -1,5 +1,12 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
-import { configureFlowGameKeyPrefixes } from './flow-game/key-prefix'
+import {
+  configureFlowGameKeyPrefixes,
+  FLOWGAME_QDRANT_KB_PREFIX_HEADER,
+  FLOWGAME_REDIS_KEY_PREFIX_HEADER,
+  getQdrantKbPrefix,
+  getRedisKeyPrefix
+} from './flow-game/key-prefix'
+import { invalidateKbBasesCache } from './flow-game/qdrant'
 
 export interface FlowgameApiResponse<T = unknown> {
   code: number
@@ -33,6 +40,8 @@ export function configureFlowGameClient(options: FlowGameClientOptions = {}) {
     redisKeyPrefix: options.redisKeyPrefix,
     qdrantKbPrefix: options.qdrantKbPrefix
   })
+  if (options.redisKeyPrefix !== undefined || options.qdrantKbPrefix !== undefined)
+    invalidateKbBasesCache()
   flowgameRequest.defaults.baseURL = apiBaseURL
   if (options.timeout !== undefined)
     flowgameRequest.defaults.timeout = options.timeout
@@ -54,6 +63,13 @@ const flowgameRequest = axios.create({
   baseURL: apiBaseURL,
   timeout: 120000
 }) as FlowgameRequest
+
+flowgameRequest.interceptors.request.use((config) => {
+  config.headers = config.headers ?? {}
+  config.headers[FLOWGAME_REDIS_KEY_PREFIX_HEADER] = getRedisKeyPrefix()
+  config.headers[FLOWGAME_QDRANT_KB_PREFIX_HEADER] = getQdrantKbPrefix()
+  return config
+})
 
 flowgameRequest.interceptors.response.use(
   (response) => {

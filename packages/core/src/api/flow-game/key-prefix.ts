@@ -46,3 +46,7 @@ export function getFlowListRedisPrefix() {
 export function getFlowListIndexKey() {
   return `${getFlowListRedisPrefix()}__index__`
 }
+
+/** 与 flowgame_python prefix_middleware 请求头一致 */
+export const FLOWGAME_REDIS_KEY_PREFIX_HEADER = 'X-Flowgame-Redis-Key-Prefix'
+export const FLOWGAME_QDRANT_KB_PREFIX_HEADER = 'X-Flowgame-Qdrant-Kb-Prefix'

@@ -128,3 +128,23 @@ export function isKbBaseNameInput(name: string) {
     return false
   }
 }
+
+/** 任意 base / 物理名 → 当前前缀下的 Q&A Collection 物理名（供 scroll / delete points 等） */
+export function resolveQaCollectionForApi(name: string) {
+  const n = (name || '').trim()
+  if (!n)
+    return ''
+  if (isQaCollectionName(n))
+    return n
+  return toQaCollectionName(n)
+}
+
+/** 任意 base / 物理名 → 当前前缀下的文档 Collection 物理名 */
+export function resolveDocCollectionForApi(name: string) {
+  const n = (name || '').trim()
+  if (!n)
+    return ''
+  if (isDocCollectionName(n))
+    return n
+  return toDocCollectionName(n)
+}

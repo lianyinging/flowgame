@@ -64,7 +64,7 @@ pnpm install
 pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
 ```
 
-当前 npm 版本：**0.1.5**（可用 `npm view @flowgame/vue version` 确认）。
+当前 npm 版本：**0.1.6**（可用 `npm view @flowgame/vue version` 确认）。
 
 ### 3. 配置入口与样式
 

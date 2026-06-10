@@ -5,6 +5,27 @@ All notable changes to the publishable packages (`@flowgame/core`, `@flowgame/vu
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6] - 2026-05-27
+
+### Fixed
+
+- `@flowgame/core`: 每次 API 请求自动携带 `X-Flowgame-Qdrant-Kb-Prefix` / `X-Flowgame-Redis-Key-Prefix`，与 `configureFlowGameClient` 配置一致（需配合 `flowgame_python` 前缀中间件）
+- `@flowgame/vue`: 知识库 Q&A `scroll` / 删点等接口统一用当前 `qdrantKbPrefix` 拼物理 Collection 名，不再沿用接口返回的旧 `flowgame_*` 名称；切换前缀时清空 kb-bases 缓存
+
+## [0.1.5] - 2026-05-27
+
+### Added
+
+- `@flowgame/core`: `configureFlowGameClient` 支持可选 `redisKeyPrefix`、`qdrantKbPrefix`，多项目共用 Redis / Qdrant 时隔离命名空间（须与 `flowgame_python` `.env` 一致）
+
+### Removed
+
+- `@flowgame/core`: 移除 `wx_base:ai:flow_list:` 旧 Redis 前缀兼容逻辑
+
+### Changed
+
+- `@flowgame/vue`: 保存流程弹窗 Redis Key 占位符随当前前缀动态展示
+
 ## [0.1.4] - 2026-05-27
 
 ### Added
@@ -46,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `@flowgame/vue`: `FlowEditor` component with Arco Design UI
 - Monorepo dev apps: `flowgame-editor`, `playground-vue`
 
+[0.1.6]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.6
+[0.1.5]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.5
 [0.1.4]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.4
 [0.1.3]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.3
 [0.1.2]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.2
