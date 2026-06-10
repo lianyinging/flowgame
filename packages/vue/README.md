@@ -79,12 +79,13 @@ import { FlowEditor } from '@flowgame/vue'
 </script>
 
 <template>
-  <FlowEditor class="flow-editor-host" />
+  <div class="flow-editor-host">
+    <FlowEditor />
+  </div>
 </template>
 
 <style>
 html, body, #app { margin: 0; height: 100%; overflow: hidden; }
-.flow-editor-host { display: block; width: 100%; height: 100%; }
 </style>
 ```
 

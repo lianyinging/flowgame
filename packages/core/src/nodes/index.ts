@@ -1,4 +1,5 @@
 import type { TinyflowOptions } from '@tinyflow-ai/ui'
+import { nodeDatabase } from './node-database'
 import { nodeHtmlTemplate } from './node-html-template'
 import { nodeKnowledgePlus } from './node-knowledge'
 import { nodeLlmApi } from './node-llmapi'
@@ -13,7 +14,8 @@ export const flowGameCustomNodes: NonNullable<TinyflowOptions['customNodes']> = 
   knowledgeNodePlus: nodeKnowledgePlus,
   memoryWriteNode: nodeMemoryWrite,
   memoryReadNode: nodeMemoryRead,
-  htmlTemplateNode: nodeHtmlTemplate
+  htmlTemplateNode: nodeHtmlTemplate,
+  databaseNode: nodeDatabase
 }
 
 export { nodeHtmlTemplate, HTML_TEMPLATE_NODE_TYPE, DEFAULT_HTML_TEMPLATE, HTML_TEMPLATE_PLACEHOLDER } from './node-html-template'
@@ -28,3 +30,5 @@ export {
 export { memoryReadNodeOutputDefs, memoryWriteNodeOutputDefs } from './memory-node-output-defs'
 export { htmlTemplateNodeDefaultParameters } from './html-template-node-parameters'
 export { htmlTemplateNodeOutputDefs } from './html-template-node-output-defs'
+export { nodeDatabase, DATABASE_NODE_TYPE, DEFAULT_DATABASE_SQL } from './node-database'
+export { databaseNodeOutputDefs } from './database-node-output-defs'

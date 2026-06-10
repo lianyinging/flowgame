@@ -64,7 +64,7 @@ pnpm install
 pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
 ```
 
-当前 npm 版本：**0.1.2**（可用 `npm view @flowgame/vue version` 确认）。
+当前 npm 版本：**0.1.4**（可用 `npm view @flowgame/vue version` 确认）。
 
 ### 3. 配置入口与样式
 
@@ -95,12 +95,13 @@ import { FlowEditor } from '@flowgame/vue'
 </script>
 
 <template>
-  <FlowEditor class="flow-editor-host" />
+  <div class="flow-editor-host">
+    <FlowEditor />
+  </div>
 </template>
 
 <style>
 html, body, #app { margin: 0; height: 100%; overflow: hidden; }
-.flow-editor-host { display: block; width: 100%; height: 100%; }
 </style>
 ```
 

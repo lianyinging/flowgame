@@ -70,7 +70,7 @@ importers:
     dependencies:
       '@arco-design/web-vue':
         specifier: 2.56.0
-        version: 2.56.0(vue@3.5.34(typescript@5.9.3))
+        version: 2.56.0(vue@3.5.34(typescript@5.4.5))
       '@flowgame/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -81,12 +81,21 @@ importers:
         specifier: ^1.3.4
         version: 1.3.4(@internationalized/date@3.12.1)(svelte@5.55.9)
       vue:
-        specifier: ^3.3.4
-        version: 3.5.34(typescript@5.9.3)
+        specifier: ^3.5.34
+        version: 3.5.34(typescript@5.4.5)
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: ^4.3.4
-        version: 4.6.2(vite@4.5.14(@types/node@16.18.126)(sass@1.100.0))(vue@3.5.34(typescript@5.9.3))
+        version: 4.6.2(vite@4.5.14(@types/node@16.18.126)(sass@1.100.0))(vue@3.5.34(typescript@5.4.5))
+      '@vitejs/plugin-vue-jsx':
+        specifier: ^3.1.0
+        version: 3.1.0(vite@4.5.14(@types/node@16.18.126)(sass@1.100.0))(vue@3.5.34(typescript@5.4.5))
+      sass:
+        specifier: ^1.66.1
+        version: 1.100.0
+      typescript:
+        specifier: ~5.4.5
+        version: 5.4.5
       vite:
         specifier: ^4.4.9
         version: 4.5.14(@types/node@16.18.126)(sass@1.100.0)
@@ -1593,18 +1602,6 @@ snapshots:
       scroll-into-view-if-needed: 2.2.31
       vue: 3.5.34(typescript@5.4.5)
 
-  '@arco-design/web-vue@2.56.0(vue@3.5.34(typescript@5.9.3))':
-    dependencies:
-      '@arco-design/color': 0.4.0
-      b-tween: 0.3.3
-      b-validate: 1.5.3
-      compute-scroll-into-view: 1.0.20
-      dayjs: 1.11.20
-      number-precision: 1.6.0
-      resize-observer-polyfill: 1.5.1
-      scroll-into-view-if-needed: 2.2.31
-      vue: 3.5.34(typescript@5.9.3)
-
   '@arco-plugins/vite-vue@1.4.6':
     dependencies:
       '@babel/generator': 7.29.1
@@ -2107,11 +2104,6 @@ snapshots:
       vite: 4.5.14(@types/node@16.18.126)(sass@1.100.0)
       vue: 3.5.34(typescript@5.4.5)
 
-  '@vitejs/plugin-vue@4.6.2(vite@4.5.14(@types/node@16.18.126)(sass@1.100.0))(vue@3.5.34(typescript@5.9.3))':
-    dependencies:
-      vite: 4.5.14(@types/node@16.18.126)(sass@1.100.0)
-      vue: 3.5.34(typescript@5.9.3)
-
   '@volar/language-core@2.4.15':
     dependencies:
       '@volar/source-map': 2.4.15
@@ -2237,12 +2229,6 @@ snapshots:
       '@vue/compiler-ssr': 3.5.34
       '@vue/shared': 3.5.34
       vue: 3.5.34(typescript@5.4.5)
-
-  '@vue/server-renderer@3.5.34(vue@3.5.34(typescript@5.9.3))':
-    dependencies:
-      '@vue/compiler-ssr': 3.5.34
-      '@vue/shared': 3.5.34
-      vue: 3.5.34(typescript@5.9.3)
 
   '@vue/shared@3.5.34': {}
 
@@ -3049,16 +3035,6 @@ snapshots:
       '@vue/shared': 3.5.34
     optionalDependencies:
       typescript: 5.4.5
-
-  vue@3.5.34(typescript@5.9.3):
-    dependencies:
-      '@vue/compiler-dom': 3.5.34
-      '@vue/compiler-sfc': 3.5.34
-      '@vue/runtime-dom': 3.5.34
-      '@vue/server-renderer': 3.5.34(vue@3.5.34(typescript@5.9.3))
-      '@vue/shared': 3.5.34
-    optionalDependencies:
-      typescript: 5.9.3
 
   webpack-virtual-modules@0.6.2: {}
 

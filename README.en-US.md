@@ -64,7 +64,7 @@ pnpm install
 pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
 ```
 
-Current npm version: **0.1.2** (check with `npm view @flowgame/vue version`).
+Current npm version: **0.1.4** (check with `npm view @flowgame/vue version`).
 
 ### 3. Configure entry and styles
 
@@ -95,12 +95,13 @@ import { FlowEditor } from '@flowgame/vue'
 </script>
 
 <template>
-  <FlowEditor class="flow-editor-host" />
+  <div class="flow-editor-host">
+    <FlowEditor />
+  </div>
 </template>
 
 <style>
 html, body, #app { margin: 0; height: 100%; overflow: hidden; }
-.flow-editor-host { display: block; width: 100%; height: 100%; }
 </style>
 ```
 

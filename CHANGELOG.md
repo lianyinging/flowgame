@@ -5,6 +5,23 @@ All notable changes to the publishable packages (`@flowgame/core`, `@flowgame/vu
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-05-27
+
+### Added
+
+- `@flowgame/core`: 新增 **数据库** 自定义节点（`databaseNode`），位于「基础节点」；支持 MyBatis 风格 SQL 模板（`#{}` / `${}`、`<if>` / `<where>` 等），默认 MySQL；输出 `data`、`rowCount`、`success`、`errorMessage`
+
+## [0.1.3] - 2026-06-02
+
+### Fixed
+
+- `@flowgame/vue`: 修复接入示例中 `flow-editor-host` 与 `FlowEditor` 同元素时 `display: block` 覆盖 flex，导致画布高度塌陷的问题
+- `@flowgame/vue`: 推荐用法改为外层 `<div class="flow-editor-host"><FlowEditor /></div>`，样式已内置进 `style.css`
+
+### Changed
+
+- `@flowgame/core`、`@flowgame/vue`: 版本号同步为 **0.1.3**（core 无功能变更，便于成对安装）
+
 ## [0.1.2] - 2026-06-01
 
 ### Changed
@@ -29,6 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `@flowgame/vue`: `FlowEditor` component with Arco Design UI
 - Monorepo dev apps: `flowgame-editor`, `playground-vue`
 
+[0.1.4]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.4
+[0.1.3]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.3
 [0.1.2]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.2
 [0.1.1]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.1
 [0.1.0]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.0

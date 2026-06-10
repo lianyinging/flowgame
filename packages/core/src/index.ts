@@ -32,7 +32,11 @@ export {
   memoryReadNodeOutputDefs,
   memoryWriteNodeOutputDefs,
   memoryReadNodeDefaultParameters,
-  htmlTemplateNodeDefaultParameters
+  htmlTemplateNodeDefaultParameters,
+  nodeDatabase,
+  DATABASE_NODE_TYPE,
+  DEFAULT_DATABASE_SQL,
+  databaseNodeOutputDefs
 } from './nodes'
 
 // Workflow
