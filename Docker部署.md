@@ -256,7 +256,35 @@ sudo ufw allow 8008/tcp
 
 ---
 
-## 十、常见问题
+## 十、工作流执行日志（可选）
+
+后端支持在 **试运行 / execute** 时记录每个节点的开始、结束、耗时与输出摘要，由环境变量控制。
+
+| 变量 | 说明 | 默认 |
+|------|------|------|
+| `FLOWGAME_EXECUTION_LOG_ENABLED` | 是否开启 | `false` |
+| `FLOWGAME_EXECUTION_LOG_PATH` | 日志文件路径 | 本地 `logs/flowgame-execution.log`；Docker `/var/log/flowgame/execution.log` |
+| `FLOWGAME_EXECUTION_LOG_HOST_DIR` | 仅 compose：宿主机日志目录 | `deploy/logs/api` |
+| `FLOWGAME_EXECUTION_LOG_CONSOLE` | 是否同时输出到控制台 | `true` |
+| `FLOWGAME_EXECUTION_LOG_LEVEL` | `INFO` / `DEBUG` 等 | `INFO` |
+
+在 `deploy/.env` 中开启示例：
+
+```env
+FLOWGAME_EXECUTION_LOG_ENABLED=true
+FLOWGAME_EXECUTION_LOG_PATH=/var/log/flowgame/execution.log
+FLOWGAME_EXECUTION_LOG_HOST_DIR=./logs/api
+```
+
+`docker compose` 已将宿主机 `FLOWGAME_EXECUTION_LOG_HOST_DIR` 挂载到容器 `/var/log/flowgame`，**无需修改 Dockerfile 的 CMD**（仍为 `uvicorn … --port 8008`）。重新构建并启动 api 后查看：
+
+```bash
+tail -f deploy/logs/api/execution.log
+```
+
+---
+
+## 十一、常见问题
 
 | 现象 | 处理 |
 |------|------|
@@ -272,7 +300,7 @@ sudo ufw allow 8008/tcp
 
 ---
 
-## 十一、相关文件索引
+## 十二、相关文件索引
 
 | 文件 | 说明 |
 |------|------|

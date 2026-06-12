@@ -1,5 +1,9 @@
 import type { Parameter, TinyflowData } from '@tinyflow-ai/ui'
-import { LLMAPI_NODE_TYPE } from '../nodes/node-llmapi'
+import {
+  DEFAULT_LLMAPI_MODEL_API_URL,
+  DEFAULT_LLMAPI_MODEL_NAME,
+  LLMAPI_NODE_TYPE
+} from '../nodes/node-llmapi'
 import {
   llmApiNodeDefaultParameters,
   llmApiUserMessageParameter
@@ -26,6 +30,14 @@ function ensureOutputDefs(data: Record<string, unknown>) {
   if (Array.isArray(raw) && raw.length > 0)
     return false
   data.outputDefs = llmApiNodeOutputDefs.map(cloneParam)
+  return true
+}
+
+function ensureStringField(data: Record<string, unknown>, key: string, value: string): boolean {
+  const raw = data[key]
+  if (typeof raw === 'string' && raw.trim())
+    return false
+  data[key] = value
   return true
 }
 
@@ -59,6 +71,10 @@ export function normalizeLlmApiNodeParams(workflow: TinyflowData): TinyflowData 
     }
 
     if (ensureOutputDefs(data))
+      nodeChanged = true
+    if (ensureStringField(data, 'modelApiUrl', DEFAULT_LLMAPI_MODEL_API_URL))
+      nodeChanged = true
+    if (ensureStringField(data, 'modelName', DEFAULT_LLMAPI_MODEL_NAME))
       nodeChanged = true
 
     if (!nodeChanged)
