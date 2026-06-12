@@ -49,7 +49,7 @@ services:
     restart: unless-stopped
 
   qdrant:
-    image: qdrant/qdrant:v1.12.5
+    image: qdrant/qdrant:v1.18.2
     ports:
       - "${QDRANT_HOST_PORT:-6333}:6333"
     volumes:

@@ -1,4 +1,5 @@
 import { getTinyflowHostRoot } from '../tinyflow/tinyflow-host'
+import { patchFlowToolbarNodeCategories } from './patch-flow-toolbar-node-categories'
 
 const BUSINESS_LINK_ATTR = 'data-flowgame-business-link'
 const BUSINESS_MENU_CLICK_ATTR = 'data-flowgame-business-menu-click'
@@ -33,9 +34,46 @@ const TAB_ATTR = 'data-flowgame-tab'
 
 export type ToolbarTab = 'base' | 'tools' | 'variables'
 
+/** 左右侧面板统一高度（右侧详情同步左侧 .tf-toolbar-container） */
+const TOOLBAR_PANEL_HEIGHT = 'min(720px, calc(100vh - 88px))'
+
 const SHADOW_TOOLBAR_STYLES = `
+.tf-toolbar.show {
+  height: ${TOOLBAR_PANEL_HEIGHT} !important;
+  max-height: ${TOOLBAR_PANEL_HEIGHT} !important;
+}
 .tf-toolbar-container {
   min-width: 200px;
+  height: 100% !important;
+  max-height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  box-sizing: border-box;
+}
+.tf-toolbar-container-header {
+  flex-shrink: 0;
+}
+.tf-toolbar-container-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+/* 勿加 display:flex !important，否则会覆盖 Tinyflow 隐藏 Tab 的 inline style */
+.tf-toolbar-container-base {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  flex-direction: column !important;
+}
+.tf-toolbar-container-tools {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  flex-direction: column !important;
 }
 .tf-toolbar-container-header .tf-tabs {
   flex-wrap: wrap !important;
@@ -57,8 +95,8 @@ const SHADOW_TOOLBAR_STYLES = `
 .${VARS_BODY_CLASS} {
   flex-direction: column;
   gap: 4px;
-  flex-grow: 1;
-  max-height: min(420px, calc(100vh - 280px));
+  flex: 1 1 auto;
+  min-height: 0;
   overflow: auto;
   width: 100%;
 }
@@ -195,5 +233,6 @@ export function patchFlowToolbarVariables(canvas: HTMLElement | undefined): HTML
     }
   }
 
+  patchFlowToolbarNodeCategories(canvas)
   return varsEl
 }

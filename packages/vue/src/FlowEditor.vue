@@ -51,6 +51,7 @@ import {
   START_NODE_TYPE,
   syncMethodKeyInWorkflow,
   syncWorkflowNodesToCanvas,
+  validateParallelForkJoinWorkflow,
   validateStartApiWorkflow
 } from '@flowgame/core'
 import type {
@@ -252,6 +253,22 @@ function assertStartApiWorkflowValid(workflow: typeof initialData) {
     return false
   }
   return true
+}
+
+function assertWorkflowRunnable(workflow: typeof initialData) {
+  const issues = [
+    ...validateStartApiWorkflow(workflow),
+    ...validateParallelForkJoinWorkflow(workflow)
+  ]
+  if (!issues.length)
+    return true
+
+  Modal.warning({
+    title: '无法试运行',
+    content: issues.map((issue, index) => `${index + 1}. ${issue.message}`).join('\n'),
+    okText: '知道了'
+  })
+  return false
 }
 
 const provider: TinyflowOptions['provider'] = {
@@ -632,7 +649,7 @@ async function handleExecute() {
     getWorkflowFromTinyflow(tinyflowRef.value, workflowSnapshot.value),
     { silent: true }
   )
-  if (!assertStartApiWorkflowValid(workflow))
+  if (!assertWorkflowRunnable(workflow))
     return
 
   runAbortController?.abort()

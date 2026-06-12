@@ -36,7 +36,16 @@ export {
   nodeDatabase,
   DATABASE_NODE_TYPE,
   DEFAULT_DATABASE_SQL,
-  databaseNodeOutputDefs
+  databaseNodeOutputDefs,
+  nodeFork,
+  FORK_NODE_TYPE,
+  nodeJoinAll,
+  JOIN_ALL_NODE_TYPE,
+  nodeJoinAny,
+  JOIN_ANY_NODE_TYPE,
+  forkNodeOutputDefs,
+  joinAllNodeOutputDefs,
+  joinAnyNodeOutputDefs
 } from './nodes'
 
 // Workflow
@@ -74,6 +83,12 @@ export {
   findStartApiNodes
 } from './workflow/workflow-start-api-rules'
 export type { StartApiWorkflowIssue } from './workflow/workflow-start-api-rules'
+export {
+  findForkNodes,
+  findJoinNodes,
+  validateParallelForkJoinWorkflow
+} from './workflow/workflow-parallel-fork-join-rules'
+export type { ParallelForkJoinIssue } from './workflow/workflow-parallel-fork-join-rules'
 export { buildWorkflowRunPlan } from './workflow/build-workflow-run-plan'
 export {
   buildWorkflowVariableTree,
@@ -104,6 +119,15 @@ export {
   FLOWGAME_OPEN_FLOW_LIST_EVENT,
   patchFlowToolbarVariables
 } from './patches/patch-flow-toolbar-variables'
+export { patchFlowToolbarNodeCategories } from './patches/patch-flow-toolbar-node-categories'
+export {
+  FLOWGAME_NODE_CATEGORIES,
+  getSortedNodeCategories,
+  registerNodeCategories,
+  registerNodeTypeCategories,
+  resolveNodeCategory
+} from './nodes/node-category-registry'
+export type { FlowGameNodeCategory } from './nodes/node-category-registry'
 
 // Inspector utilities
 export * from './inspector/node-inspector-config'
