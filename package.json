@@ -15,7 +15,9 @@
     "pack:core": "pnpm -C packages/core pack",
     "pack:vue": "pnpm -C packages/vue pack",
     "pack:packages": "pnpm build:packages && pnpm pack:core && pnpm pack:vue",
-    "publish:packages": "pnpm -C packages/core publish --access public --registry https://registry.npmjs.org --no-git-checks && pnpm -C packages/vue publish --access public --registry https://registry.npmjs.org --no-git-checks"
+    "publish:core": "pnpm -C packages/core build && npm publish --prefix packages/core --access public --registry https://registry.npmjs.org",
+    "publish:vue": "pnpm -C packages/vue build && npm publish --prefix packages/vue --access public --registry https://registry.npmjs.org",
+    "publish:packages": "pnpm publish:core && pnpm publish:vue"
   },
   "engines": {
     "node": ">=18"
