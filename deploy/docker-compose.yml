@@ -60,6 +60,12 @@ services:
       - "${QDRANT_HOST_PORT:-6333}:6333"
     volumes:
       - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:6333/readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
     restart: unless-stopped
 
 volumes:

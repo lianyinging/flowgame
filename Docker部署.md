@@ -284,14 +284,54 @@ tail -f deploy/logs/api/execution.log
 
 ---
 
-## 十一、常见问题
+## 十一、清空 Qdrant 数据（知识库向量）
+
+当 Qdrant 因旧数据格式无法启动（如 `unknown variant on_disk`），且**不需要保留已有知识库**时，可直接删掉向量卷数据。
+
+**影响**：所有知识库 Collection 与已上传文档的向量都会丢失，需在编辑器里**重新上传**知识库文件。
+
+```bash
+cd deploy
+
+# 停掉 qdrant
+docker compose stop qdrant
+
+# 删掉整个 Qdrant 数据卷（compose 项目名多为 deploy，卷名 deploy_qdrant_data）
+docker volume rm deploy_qdrant_data
+
+# 若卷名不确定：docker volume ls | grep qdrant
+
+# 重新启动
+docker compose up -d qdrant
+
+# 确认就绪
+curl -s http://127.0.0.1:6333/readyz
+```
+
+只删单个不兼容的 Collection（保留其它库）：
+
+```bash
+docker compose stop qdrant
+docker run --rm -v deploy_qdrant_data:/qdrant/storage alpine \
+  rm -rf "/qdrant/storage/collections/flowgame_日常问题_doc"
+docker compose up -d qdrant
+```
+
+Redis 里的**流程 JSON** 不受影响；仅 Qdrant 向量数据被清。
+
+---
+
+## 十二、常见问题
 
 | 现象 | 处理 |
 |------|------|
+| `build api` 卡在 `apt-get` 很久 | 新版 Dockerfile 已去掉 apt 安装；同步代码后 `docker compose build --no-cache api`。若卡在 `pip install`（torch 较大），可配置 `EMBEDDING_API_URL` 或 pip 镜像 |
+| `build api` 报错 `"/.env": not found` | 镜像不再打包 `.env`；在 `deploy/` 下准备 `cp .env.example .env` 并编辑，compose 通过 `env_file` 在**运行时**注入 |
 | `build api` 报错找不到 `flowgame_python` | 确认两个仓库并列克隆，路径为 `../flowgame_python` |
 | `api` 一直 `starting` / `unhealthy` | `docker compose logs api` 查看；常见为依赖安装慢或端口被占用 |
 | `curl -I http://127.0.0.1:8009` 报 `Connection reset by peer` | 确认 `nginx.conf` 为 **`listen 8009`**，且 `docker-compose` 端口映射为 **`8009:8009`**（内外一致）；API 反代仍用 **`http://api:8008`**，不要写宿主机 IP |
 | 页面能开，保存/列表失败 | 检查 `redis` 容器是否运行：`docker compose ps redis` |
+| Qdrant 启动 Panic `unknown variant on_disk` | 卷内数据与当前 Qdrant 版本不兼容；可删旧数据后重启（知识库需重新上传），见下文「清空 Qdrant 数据」 |
 | 知识库失败 | 检查 `qdrant` 容器；配置 `EMBEDDING_API_URL` 或挂载本地模型 |
 | 试运行「模型调用」失败 | 在节点属性里检查 `apiKey`、`modelApiUrl`、`modelName`（存在流程 JSON 中） |
 | 试运行旧版「大模型」失败 | 检查 `.env` 中 `DEEPSEEK_API_KEY` 等（仅 `llmNode` 使用） |
@@ -300,7 +340,7 @@ tail -f deploy/logs/api/execution.log
 
 ---
 
-## 十二、相关文件索引
+## 十三、相关文件索引
 
 | 文件 | 说明 |
 |------|------|
