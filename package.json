@@ -14,7 +14,8 @@
     "typecheck": "pnpm -r typecheck",
     "pack:core": "pnpm -C packages/core pack",
     "pack:vue": "pnpm -C packages/vue pack",
-    "pack:packages": "pnpm build:packages && pnpm pack:core && pnpm pack:vue"
+    "pack:packages": "pnpm build:packages && pnpm pack:core && pnpm pack:vue",
+    "publish:packages": "pnpm -C packages/core publish --access public --registry https://registry.npmjs.org --no-git-checks && pnpm -C packages/vue publish --access public --registry https://registry.npmjs.org --no-git-checks"
   },
   "engines": {
     "node": ">=18"

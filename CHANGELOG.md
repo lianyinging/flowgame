@@ -5,6 +5,19 @@ All notable changes to the publishable packages (`@flowgame/core`, `@flowgame/vu
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.7] - 2026-06-15
+
+### Added
+
+- `@flowgame/core`: **并行分叉**（`forkNode`）、**汇聚（全部）**（`joinAllNode`）、**汇聚（任一）**（`joinAnyNode`）；试运行前校验分叉/汇聚拓扑
+- `@flowgame/core`: **记忆写入** / **记忆读取**（`memoryWriteNode` / `memoryReadNode`）、**HTML 模板**（`htmlTemplateNode`）节点与画布预览
+- `@flowgame/core`: 左侧「基础节点」分类折叠（`node-category-registry` + patch）
+- `@flowgame/vue`: 记忆/HTML 模板侧栏块、知识库/流程列表浮层（`FlowKnowledgePanelModal`、`FlowListPanelModal`）、ProComponent 表格/表单/抽屉
+
+### Changed
+
+- `@flowgame/core`: 模型调用节点默认接口 `https://api.deepseek.com/chat/completions`、默认模型 `deepseek-v4-flash`
+
 ## [0.1.6] - 2026-05-27
 
 ### Fixed
@@ -67,6 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `@flowgame/vue`: `FlowEditor` component with Arco Design UI
 - Monorepo dev apps: `flowgame-editor`, `playground-vue`
 
+[0.1.7]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.7
 [0.1.6]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.6
 [0.1.5]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.5
 [0.1.4]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.4
