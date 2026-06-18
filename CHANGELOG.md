@@ -5,6 +5,13 @@ All notable changes to the publishable packages (`@flowgame/core`, `@flowgame/vu
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.10] - 2026-06-18
+
+### Changed
+
+- `@flowgame/core`: 数据库节点 SQL 模板支持英文分号 `;` 顺序执行多条语句（`${sqlStr}` 传入整段 SQL 亦可）；输出仍为最后一条的 `data` / `rowCount`
+- `flowgame_python`: `DatabaseNode` 实现多语句拆分执行；`#{}` 按语句自动分配预编译参数
+
 ## [0.1.9] - 2026-06-15
 
 ### Added
