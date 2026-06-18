@@ -7,7 +7,7 @@ export const databaseNodeOutputDefs: Parameter[] = [
     dataType: 'Array',
     dataTypeDisabled: true,
     deleteDisabled: true,
-    description: '查询结果 JSON 数组（每行一个对象）；写操作时为 []'
+    description: '查询结果 JSON 数组（每行一个对象）；写操作时为 []；多条 SQL 时取最后一条 SELECT 的结果'
   },
   {
     name: 'rowCount',

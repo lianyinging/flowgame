@@ -45,14 +45,24 @@ export {
   JOIN_ANY_NODE_TYPE,
   forkNodeOutputDefs,
   joinAllNodeOutputDefs,
-  joinAnyNodeOutputDefs
+  joinAnyNodeOutputDefs,
+  nodeOss,
+  OSS_NODE_TYPE,
+  DEFAULT_OSS_OBJECT_KEY_TEMPLATE,
+  OSS_FILE_TYPES,
+  DEFAULT_OSS_FILE_TYPE,
+  getOssFileTypeMeta,
+  ossNodeDefaultParameters,
+  ossNodeOutputDefs
 } from './nodes'
+export type { OssFileType } from './nodes/oss-file-types'
 
 // Workflow
 export { initialData } from './workflow/initial-data'
 export { normalizeKnowledgeNodeParams } from './workflow/normalize-knowledge-node-params'
 export { normalizeLlmApiNodeParams } from './workflow/normalize-llmapi-node-params'
 export { normalizeMemoryNodeParams } from './workflow/normalize-memory-node-params'
+export { normalizeOssNodeParams } from './workflow/normalize-oss-node-params'
 export { normalizeHtmlTemplateNodeParams } from './workflow/normalize-html-template-node-params'
 export {
   defaultMemoryWriteParameters,

@@ -64,7 +64,7 @@ pnpm install
 pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
 ```
 
-Current npm version: **0.1.7** (check with `npm view @flowgame/vue version`).
+Current npm version: **0.1.9** (check with `npm view @flowgame/vue version`).
 
 ### 3. Configure entry and styles
 

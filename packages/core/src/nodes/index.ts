@@ -1,4 +1,5 @@
 import type { TinyflowOptions } from '@tinyflow-ai/ui'
+import { nodeOss } from './node-oss'
 import { nodeDatabase } from './node-database'
 import { nodeFork } from './node-fork'
 import { nodeJoinAll } from './node-join-all'
@@ -19,6 +20,7 @@ export const flowGameCustomNodes: NonNullable<TinyflowOptions['customNodes']> = 
   memoryReadNode: nodeMemoryRead,
   htmlTemplateNode: nodeHtmlTemplate,
   databaseNode: nodeDatabase,
+  ossNode: nodeOss,
   forkNode: nodeFork,
   joinAllNode: nodeJoinAll,
   joinAnyNode: nodeJoinAny
@@ -36,6 +38,11 @@ export {
 export { memoryReadNodeOutputDefs, memoryWriteNodeOutputDefs } from './memory-node-output-defs'
 export { htmlTemplateNodeDefaultParameters } from './html-template-node-parameters'
 export { htmlTemplateNodeOutputDefs } from './html-template-node-output-defs'
+export { nodeOss, OSS_NODE_TYPE, DEFAULT_OSS_OBJECT_KEY_TEMPLATE } from './node-oss'
+export { OSS_FILE_TYPES, DEFAULT_OSS_FILE_TYPE, getOssFileTypeMeta } from './oss-file-types'
+export type { OssFileType } from './oss-file-types'
+export { ossNodeDefaultParameters, ossContentParameter, ossObjectKeyParameter } from './oss-node-parameters'
+export { ossNodeOutputDefs } from './oss-node-output-defs'
 export { nodeDatabase, DATABASE_NODE_TYPE, DEFAULT_DATABASE_SQL } from './node-database'
 export { databaseNodeOutputDefs } from './database-node-output-defs'
 export { nodeFork, FORK_NODE_TYPE } from './node-fork'

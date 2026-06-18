@@ -5,6 +5,25 @@ All notable changes to the publishable packages (`@flowgame/core`, `@flowgame/vu
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9] - 2026-06-15
+
+### Added
+
+- `@flowgame/core`: **对象存储**节点（`ossNode`）：`content` + `fileType`（image/html/txt/json 等）上传阿里云 OSS；支持自定义多个输入参数与 Object Key 模板
+- `flowgame_python`: `OssNode` 执行器与 `OSS_*` 环境变量（需 `pip install oss2`）
+
+### Fixed
+
+- `flowgame_python`: 入参「引用」未选上游但「固定值」已填 HTML/文本时，不再误报 Missing required parameter（如 ossNode content）
+
+## [0.1.8] - 2026-06-15
+
+### Fixed
+
+- `@flowgame/core`: 修复左侧节点分类 `MutationObserver` 在每次 DOM 变动时重复搬移节点，Safari 下易导致页面卡死
+- `@flowgame/core`: HTML 模板预览 iframe 的 blob 回退仅执行一次，避免 `onload` 死循环
+- `@flowgame/vue`: 画布 DOM 补丁合并为 `requestAnimationFrame` 调度，降低 Observer 反馈环风险
+
 ## [0.1.7] - 2026-06-15
 
 ### Added
@@ -80,6 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `@flowgame/vue`: `FlowEditor` component with Arco Design UI
 - Monorepo dev apps: `flowgame-editor`, `playground-vue`
 
+[0.1.9]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.9
+[0.1.8]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.8
 [0.1.7]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.7
 [0.1.6]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.6
 [0.1.5]: https://github.com/lianyinging/flowgame/releases/tag/v0.1.5

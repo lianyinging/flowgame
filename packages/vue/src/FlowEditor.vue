@@ -32,6 +32,7 @@ import {
   normalizeKnowledgeNodeParams,
   normalizeLlmApiNodeParams,
   normalizeMemoryNodeParams,
+  normalizeOssNodeParams,
   normalizeStartApiWorkflow,
   parseFlowNameFromRedisKey,
   parseFlowRunSummary,
@@ -139,10 +140,12 @@ function applyWorkflowRules(
   /** 仅当「Api接口开始」规则实际改动了 nodes/edges 时再提示（避免加普通节点误报） */
   const startApiStructureChanged = isStartApiWorkflowChanged(workflow, afterStartApi)
   let next = ensureNodeExpandDefault(
-    normalizeHtmlTemplateNodeParams(
-      normalizeMemoryNodeParams(
-        normalizeLlmApiNodeParams(
-          normalizeKnowledgeNodeParams(afterStartApi)
+    normalizeOssNodeParams(
+      normalizeHtmlTemplateNodeParams(
+        normalizeMemoryNodeParams(
+          normalizeLlmApiNodeParams(
+            normalizeKnowledgeNodeParams(afterStartApi)
+          )
         )
       )
     )
@@ -432,6 +435,7 @@ watch(
 )
 
 let toolbarVarsObserver: MutationObserver | null = null
+let toolbarPatchRaf = 0
 let inspectorHeightObserver: ResizeObserver | null = null
 const inspectorPanelHeight = ref<number | null>(null)
 
@@ -505,6 +509,16 @@ function onOpenNodeInspectorFromCanvas(event: Event) {
 
 const CANVAS_TOOLBAR_PANEL_LISTENER_ATTR = 'data-flowgame-toolbar-panel-listeners'
 
+function scheduleToolbarDomPatch() {
+  if (toolbarPatchRaf)
+    cancelAnimationFrame(toolbarPatchRaf)
+  toolbarPatchRaf = requestAnimationFrame(() => {
+    toolbarPatchRaf = 0
+    refreshToolbarVariables()
+    syncInspectorPanelHeight()
+  })
+}
+
 function setupToolbarVariablesWatch() {
   toolbarVarsObserver?.disconnect()
   const canvas = canvasRef.value
@@ -518,13 +532,9 @@ function setupToolbarVariablesWatch() {
     canvas.setAttribute(CANVAS_TOOLBAR_PANEL_LISTENER_ATTR, '1')
   }
 
-  const tryPatch = () => {
-    refreshToolbarVariables()
-    syncInspectorPanelHeight()
-  }
-  tryPatch()
+  scheduleToolbarDomPatch()
 
-  toolbarVarsObserver = new MutationObserver(tryPatch)
+  toolbarVarsObserver = new MutationObserver(() => scheduleToolbarDomPatch())
   toolbarVarsObserver.observe(canvas, { childList: true, subtree: true })
   setupInspectorHeightSync()
 }
@@ -588,6 +598,10 @@ onUnmounted(() => {
   cleanupNodeInspectorTrigger(canvasRef.value ?? undefined)
   toolbarVarsObserver?.disconnect()
   toolbarVarsObserver = null
+  if (toolbarPatchRaf) {
+    cancelAnimationFrame(toolbarPatchRaf)
+    toolbarPatchRaf = 0
+  }
   teardownInspectorHeightSync()
   varsToolbarMount.value = null
   tinyflowRef.value?.destroy()

@@ -33,6 +33,7 @@ const nodeTypeCategoryMap: Record<string, string> = {
   knowledgeNodePlus: 'ai',
   searchEngineNode: 'ai',
   databaseNode: 'data',
+  ossNode: 'data',
   forkNode: 'parallel',
   joinAllNode: 'parallel',
   joinAnyNode: 'parallel',

@@ -22,6 +22,7 @@ export const NODE_TYPE_LABELS: Record<string, string> = {
   memoryReadNode: '记忆提取',
   htmlTemplateNode: 'HTML模板',
   databaseNode: '数据库',
+  ossNode: '对象存储',
   forkNode: '并行分叉',
   joinAllNode: '汇聚（全部）',
   joinAnyNode: '汇聚（任一）',
@@ -44,7 +45,10 @@ const RESERVED_DATA_KEYS = new Set([
   'code',
   'template',
   'sqlTemplate',
-  'dbType'
+  'dbType',
+  'fileType',
+  'objectKeyTemplate',
+  'bucket'
 ])
 
 /** 画布用自定义参数 UI、侧栏仍展示「输入参数」的节点 */

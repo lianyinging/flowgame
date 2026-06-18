@@ -275,11 +275,17 @@ function reorganizeToolbarNodeCategories(baseEl: HTMLElement) {
 function bindCategoryLayoutObserver(baseEl: HTMLElement) {
   if (baseEl.getAttribute(OBSERVER_ATTR) === '1')
     return
+  let rafId = 0
   const observer = new MutationObserver(() => {
-    if (needsCategoryLayout(baseEl))
-      reorganizeToolbarNodeCategories(baseEl)
-    else
-      ensureCategoryShell(baseEl)
+    if (!needsCategoryLayout(baseEl))
+      return
+    if (rafId)
+      cancelAnimationFrame(rafId)
+    rafId = requestAnimationFrame(() => {
+      rafId = 0
+      if (needsCategoryLayout(baseEl))
+        reorganizeToolbarNodeCategories(baseEl)
+    })
   })
   observer.observe(baseEl, { childList: true, subtree: true })
   baseEl.setAttribute(OBSERVER_ATTR, '1')
