@@ -416,7 +416,11 @@ function fieldComponent(field: CustomNodeForm) {
 }
 
 function showMethodKeyAfterHeading(field: CustomNodeForm) {
-  return nodeType.value === 'node_start_api' && field.type === 'heading' && field.label === 'API 接口配置'
+  if (field.type !== 'heading')
+    return false
+  if (nodeType.value === 'node_start_api' && field.label === 'API 接口配置')
+    return true
+  return nodeType.value === 'node_start_talk' && field.label === '对话页配置'
 }
 
 /** Arco Input 的 change 仅在失焦时触发，编辑需用 input；Textarea 的 input 会先 emit 再更新，拿到的是旧值，需用 update:model-value */

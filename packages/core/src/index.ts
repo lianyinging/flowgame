@@ -64,6 +64,7 @@ export { normalizeLlmApiNodeParams } from './workflow/normalize-llmapi-node-para
 export { normalizeMemoryNodeParams } from './workflow/normalize-memory-node-params'
 export { normalizeOssNodeParams } from './workflow/normalize-oss-node-params'
 export { normalizeHtmlTemplateNodeParams } from './workflow/normalize-html-template-node-params'
+export { normalizeTalkStartNodeParams } from './workflow/normalize-talk-start-node-params'
 export {
   defaultMemoryWriteParameters,
   parseMemoryWriteGroups,
@@ -93,6 +94,17 @@ export {
   findStartApiNodes
 } from './workflow/workflow-start-api-rules'
 export type { StartApiWorkflowIssue } from './workflow/workflow-start-api-rules'
+export {
+  ASSISTANT_MESSAGE_OUTPUT_NAME,
+  findStartTalkNodes,
+  hasStartTalkNode,
+  isTalkStartWorkflowChanged,
+  normalizeTalkStartWorkflow,
+  patchTalkStartNodeDom,
+  START_TALK_NODE_TYPE,
+  validateTalkStartWorkflow
+} from './workflow/workflow-talk-rules'
+export type { TalkStartWorkflowIssue } from './workflow/workflow-talk-rules'
 export {
   findForkNodes,
   findJoinNodes,

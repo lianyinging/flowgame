@@ -10,10 +10,12 @@ import { nodeLlmApi } from './node-llmapi'
 import { nodeMemoryRead } from './node-memory-read'
 import { nodeMemoryWrite } from './node-memory-write'
 import { nodeStartApi } from './node-start-api'
+import { nodeStartTalk } from './node-start-talk'
 
 /** 流程编排自定义节点注册表，key 与节点 type 一致 */
 export const flowGameCustomNodes: NonNullable<TinyflowOptions['customNodes']> = {
   node_start_api: nodeStartApi,
+  node_start_talk: nodeStartTalk,
   llmapiNode: nodeLlmApi,
   knowledgeNodePlus: nodeKnowledgePlus,
   memoryWriteNode: nodeMemoryWrite,
@@ -61,3 +63,4 @@ export {
   resolveNodeCategory
 } from './node-category-registry'
 export type { FlowGameNodeCategory } from './node-category-registry'
+export { nodeStartTalk, START_TALK_NODE_TYPE } from './node-start-talk'

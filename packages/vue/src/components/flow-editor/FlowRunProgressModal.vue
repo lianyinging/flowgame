@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import {
+  Button,
   Collapse,
   CollapseItem,
+  Message,
   Modal,
   Progress,
   Spin,
   Tag
 } from '@arco-design/web-vue'
+import { IconCopy } from '@arco-design/web-vue/es/icon'
 import { getNodeIconHtml, getNodeTypeLabel } from '@flowgame/core'
 import type { FlowNodeExecution, FlowRunPhase, FlowRunPlanNode, FlowRunSummary } from '@flowgame/core'
+import JsonTreeViewer from './JsonTreeViewer.vue'
 
 const props = defineProps<{
   visible: boolean
@@ -163,6 +167,67 @@ function formatOutput(output?: Record<string, unknown>) {
   }
 }
 
+const outputViewerVisible = ref(false)
+const outputViewerTitle = ref('')
+const outputViewerText = ref('')
+const outputViewerError = ref('')
+const outputViewerData = ref<unknown>(null)
+const jsonViewerRef = ref<InstanceType<typeof JsonTreeViewer> | null>(null)
+
+/** 展开弹窗：宽度随视口，高度由内容区 clamp 控制 */
+const outputViewerModalStyle = {
+  width: 'min(92vw, 1600px)',
+  maxWidth: '92vw'
+}
+
+const outputViewerBodyStyle = {
+  overflow: 'hidden'
+}
+
+function buildRowOutputText(row: DisplayRow) {
+  const parts: string[] = []
+  if (row.error)
+    parts.push(`错误：${row.error}`)
+  const outputText = formatOutput(row.output)
+  if (outputText !== '（无输出）')
+    parts.push(outputText)
+  return parts.join('\n\n') || '（无输出）'
+}
+
+async function copyText(text: string, successMessage = '已复制到剪贴板') {
+  try {
+    await navigator.clipboard.writeText(text)
+    Message.success(successMessage)
+  }
+  catch {
+    Message.error('复制失败，请检查浏览器权限')
+  }
+}
+
+function copyRowOutput(row: DisplayRow) {
+  return copyText(buildRowOutputText(row))
+}
+
+function openOutputViewer(row: DisplayRow) {
+  outputViewerTitle.value = `${row.label} · 节点输出`
+  outputViewerError.value = row.error || ''
+  outputViewerData.value = row.output && Object.keys(row.output).length ? row.output : null
+  outputViewerText.value = buildRowOutputText(row)
+  outputViewerVisible.value = true
+}
+
+function downloadViewerOutput() {
+  const text = outputViewerText.value
+  const blob = new Blob([text], { type: 'application/json;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const anchor = document.createElement('a')
+  anchor.href = url
+  const safeName = outputViewerTitle.value.replace(/[^\w\u4e00-\u9fa5-]+/g, '_') || 'flow-run-output'
+  anchor.download = `${safeName}.json`
+  anchor.click()
+  URL.revokeObjectURL(url)
+}
+
 </script>
 
 <template>
@@ -229,8 +294,32 @@ function formatOutput(output?: Record<string, unknown>) {
             :bordered="false"
             class="flow-run-node__detail"
           >
-            <CollapseItem header="节点输出详情" key="output">
-              <pre class="flow-run-node__pre">{{ formatOutput(row.output) }}</pre>
+            <CollapseItem key="output">
+              <template #header>
+                <div class="flow-run-node__detail-head">
+                  <span>节点输出详情</span>
+                  <div class="flow-run-node__detail-actions" @click.stop>
+                    <Button
+                      type="text"
+                      size="mini"
+                      @click="copyRowOutput(row)"
+                    >
+                      <template #icon>
+                        <IconCopy />
+                      </template>
+                      复制
+                    </Button>
+                    <Button
+                      type="text"
+                      size="mini"
+                      @click="openOutputViewer(row)"
+                    >
+                      展开查看
+                    </Button>
+                  </div>
+                </div>
+              </template>
+              <pre class="flow-run-node__pre">{{ buildRowOutputText(row) }}</pre>
             </CollapseItem>
           </Collapse>
         </div>
@@ -240,6 +329,50 @@ function formatOutput(output?: Record<string, unknown>) {
         </p>
       </div>
 
+    </div>
+  </Modal>
+
+  <Modal
+    v-model:visible="outputViewerVisible"
+    :title="outputViewerTitle"
+    :footer="false"
+    unmount-on-close
+    class="flow-run-output-viewer"
+    :modal-style="outputViewerModalStyle"
+    :body-style="outputViewerBodyStyle"
+  >
+    <div class="flow-run-output-viewer__wrap">
+      <div class="flow-run-output-viewer__toolbar">
+        <Button size="small" @click="copyText(outputViewerText)">
+          <template #icon>
+            <IconCopy />
+          </template>
+          复制全部
+        </Button>
+        <Button size="small" @click="downloadViewerOutput">
+          下载 JSON
+        </Button>
+        <template v-if="outputViewerData">
+          <Button size="small" @click="jsonViewerRef?.expandAll()">
+            全部展开
+          </Button>
+          <Button size="small" @click="jsonViewerRef?.collapseAll()">
+            全部折叠
+          </Button>
+        </template>
+      </div>
+      <p v-if="outputViewerError" class="flow-run-output-viewer__error">
+        {{ outputViewerError }}
+      </p>
+      <div class="flow-run-output-viewer__scroll">
+        <JsonTreeViewer
+          v-if="outputViewerData"
+          ref="jsonViewerRef"
+          :value="outputViewerData"
+          :default-expand-depth="2"
+        />
+        <pre v-else class="flow-run-output-viewer__pre">{{ outputViewerText }}</pre>
+      </div>
     </div>
   </Modal>
 </template>
@@ -385,17 +518,79 @@ function formatOutput(output?: Record<string, unknown>) {
   margin-top: 8px;
 }
 
+.flow-run-node__detail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding-right: 4px;
+}
+
+.flow-run-node__detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
 .flow-run-node__pre {
   margin: 0;
-  max-height: 200px;
+  max-height: 240px;
   overflow: auto;
   padding: 8px;
   font-size: 11px;
   line-height: 1.45;
   white-space: pre-wrap;
   word-break: break-all;
+  user-select: all;
   background: var(--color-fill-2);
   border-radius: 4px;
+}
+
+.flow-run-output-viewer__wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: clamp(360px, 78vh, calc(100vh - 140px));
+}
+
+.flow-run-output-viewer__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-shrink: 0;
+}
+
+.flow-run-output-viewer__error {
+  margin: 0 0 10px;
+  padding: 8px 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgb(var(--danger-6));
+  background: rgba(var(--danger-6), 0.06);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.flow-run-output-viewer__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border-radius: 6px;
+}
+
+.flow-run-output-viewer__pre {
+  margin: 0;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: all;
+  background: var(--color-fill-2);
+  border-radius: 6px;
 }
 
 .flow-run-modal__empty {

@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios'
+import { getFxToken, getToken } from './auth'
 import {
   configureFlowGameKeyPrefixes,
   FLOWGAME_QDRANT_KB_PREFIX_HEADER,
@@ -49,6 +50,22 @@ export function configureFlowGameClient(options: FlowGameClientOptions = {}) {
 
 export function getFlowGameApiBaseURL() {
   return apiBaseURL
+}
+
+/** fetch 流式等不走 axios 拦截器的请求，须手动带上前缀头（与试运行记忆节点 Redis 键一致） */
+export function buildFlowGameFetchHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    [FLOWGAME_REDIS_KEY_PREFIX_HEADER]: getRedisKeyPrefix(),
+    [FLOWGAME_QDRANT_KB_PREFIX_HEADER]: getQdrantKbPrefix()
+  }
+  const token = getToken()
+  if (token)
+    headers.Authorization = `Bearer ${token}`
+  const fxToken = getFxToken()
+  if (fxToken)
+    headers.FxAuthorization = fxToken
+  return headers
 }
 
 /** 响应拦截器返回 `response.data`（业务 envelope），而非 AxiosResponse */

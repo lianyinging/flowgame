@@ -26,6 +26,7 @@ const DEFAULT_OTHER_CATEGORY = 'other'
 const nodeTypeCategoryMap: Record<string, string> = {
   startNode: 'entry',
   node_start_api: 'entry',
+  node_start_talk: 'entry',
   endNode: 'entry',
   llmNode: 'ai',
   llmapiNode: 'ai',

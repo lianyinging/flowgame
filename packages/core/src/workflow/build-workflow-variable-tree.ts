@@ -1,5 +1,7 @@
 import type { TinyflowData } from '@tinyflow-ai/ui'
 import { START_API_NODE_TYPE } from './workflow-start-api-rules'
+import { START_TALK_NODE_TYPE } from './workflow-talk-rules'
+import { talkNodeOutputDefs } from '../nodes/talk-node-output-defs'
 
 export interface WorkflowVariableTreeNode {
   key: string
@@ -86,6 +88,20 @@ function buildNodeBranch(node: FlowNode): WorkflowVariableTreeNode | null {
     const outputDefs = data.outputDefs as FlowParameter[] | undefined
     if (outputDefs?.length)
       branch.children!.push(...mapOutputDefs(outputDefs, node.id, false))
+  }
+  else if (node.type === START_TALK_NODE_TYPE) {
+    const methodKey = data.methodKey
+    if (methodKey) {
+      branch.children!.push({
+        key: `${node.id}.__methodKey__`,
+        title: `methodKey: ${methodKey}`,
+        refPath: undefined
+      })
+    }
+    const outputDefs = (data.outputDefs as FlowParameter[] | undefined)?.length
+      ? (data.outputDefs as FlowParameter[])
+      : talkNodeOutputDefs
+    branch.children!.push(...mapOutputDefs(outputDefs, node.id, false))
   }
   else if (node.type === 'loopNode') {
     branch.children!.push(
@@ -226,5 +242,14 @@ export function buildUpstreamRefSelectTree(
       branches.push(branch)
   }
 
-  return toRefSelectTree(branches)
+  let result = toRefSelectTree(branches)
+
+  const talkNode = nodes.find(n => n.type === START_TALK_NODE_TYPE)
+  if (talkNode && !upstreamIds.has(talkNode.id)) {
+    const talkBranch = buildNodeBranch(talkNode)
+    if (talkBranch?.children?.length)
+      result = [...toRefSelectTree([talkBranch]), ...result]
+  }
+
+  return result
 }

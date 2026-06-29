@@ -27,6 +27,7 @@ import {
   initialData,
   isFlowRunFailed,
   isStartApiWorkflowChanged,
+  isTalkStartWorkflowChanged,
   listKbBasesCached,
   normalizeHtmlTemplateNodeParams,
   normalizeKnowledgeNodeParams,
@@ -34,6 +35,8 @@ import {
   normalizeMemoryNodeParams,
   normalizeOssNodeParams,
   normalizeStartApiWorkflow,
+  normalizeTalkStartNodeParams,
+  normalizeTalkStartWorkflow,
   parseFlowNameFromRedisKey,
   parseFlowRunSummary,
   parseNodeExecutions,
@@ -46,6 +49,7 @@ import {
   patchFlowToolbarVariables,
   patchNodeInspectorTrigger,
   patchStartApiNodeDom,
+  patchTalkStartNodeDom,
   saveFlowWorkflowApi,
   selectCanvasNode,
   setCanvasMinimapVisible,
@@ -53,7 +57,8 @@ import {
   syncMethodKeyInWorkflow,
   syncWorkflowNodesToCanvas,
   validateParallelForkJoinWorkflow,
-  validateStartApiWorkflow
+  validateStartApiWorkflow,
+  validateTalkStartWorkflow
 } from '@flowgame/core'
 import type {
   FlowListIndexItem,
@@ -128,6 +133,7 @@ const selectedNode = computed<InspectorFlowNode | null>(() => {
 })
 
 let lastStartApiRuleWarnAt = 0
+let lastTalkStartRuleWarnAt = 0
 let runAbortController: AbortController | null = null
 const { loading, setLoading } = useLoading()
 
@@ -137,14 +143,18 @@ function applyWorkflowRules(
 ) {
   const before = workflow
   const afterStartApi = normalizeStartApiWorkflow(workflow)
+  const afterTalk = normalizeTalkStartWorkflow(afterStartApi)
   /** 仅当「Api接口开始」规则实际改动了 nodes/edges 时再提示（避免加普通节点误报） */
   const startApiStructureChanged = isStartApiWorkflowChanged(workflow, afterStartApi)
+  const talkStartStructureChanged = isTalkStartWorkflowChanged(afterStartApi, afterTalk)
   let next = ensureNodeExpandDefault(
     normalizeOssNodeParams(
       normalizeHtmlTemplateNodeParams(
         normalizeMemoryNodeParams(
           normalizeLlmApiNodeParams(
-            normalizeKnowledgeNodeParams(afterStartApi)
+            normalizeKnowledgeNodeParams(
+              normalizeTalkStartNodeParams(afterTalk)
+            )
           )
         )
       )
@@ -161,9 +171,17 @@ function applyWorkflowRules(
     }
   }
 
+  if (talkStartStructureChanged && !options?.silent) {
+    const now = Date.now()
+    if (now - lastTalkStartRuleWarnAt > 2500) {
+      Message.warning('「对话开始」仅可作为流程起点，已自动修正连线')
+      lastTalkStartRuleWarnAt = now
+    }
+  }
+
   const dataChanged = JSON.stringify(workflow) !== JSON.stringify(next)
   if (tinyflowRef.value && dataChanged) {
-    if (startApiStructureChanged || !options?.skipSetData) {
+    if (startApiStructureChanged || talkStartStructureChanged || !options?.skipSetData) {
       syncingMethodKey.value = true
       tinyflowRef.value.setData(next)
       syncingMethodKey.value = false
@@ -175,6 +193,7 @@ function applyWorkflowRules(
 
   requestAnimationFrame(() => {
     patchStartApiNodeDom(canvasRef.value ?? undefined, next)
+    patchTalkStartNodeDom(canvasRef.value ?? undefined, next)
     refreshToolbarVariables()
   })
 
@@ -230,6 +249,7 @@ function patchNodeFromInspector(
       api.updateNodeData(nodeId, clonePlainWorkflow(target.data) as Record<string, unknown>)
     requestAnimationFrame(() => {
       patchStartApiNodeDom(canvasRef.value ?? undefined, workflowSnapshot.value)
+      patchTalkStartNodeDom(canvasRef.value ?? undefined, workflowSnapshot.value)
     })
   }
   finally {
@@ -249,8 +269,11 @@ function onInspectorPatchOutputDefs(payload: { nodeId: string, outputDefs: FlowP
   patchNodeFromInspector(payload.nodeId, { outputDefs: payload.outputDefs })
 }
 
-function assertStartApiWorkflowValid(workflow: typeof initialData) {
-  const issues = validateStartApiWorkflow(workflow)
+function assertWorkflowSaveValid(workflow: typeof initialData) {
+  const issues = [
+    ...validateStartApiWorkflow(workflow),
+    ...validateTalkStartWorkflow(workflow)
+  ]
   if (issues.length > 0) {
     Message.warning(issues[0].message)
     return false
@@ -261,6 +284,7 @@ function assertStartApiWorkflowValid(workflow: typeof initialData) {
 function assertWorkflowRunnable(workflow: typeof initialData) {
   const issues = [
     ...validateStartApiWorkflow(workflow),
+    ...validateTalkStartWorkflow(workflow),
     ...validateParallelForkJoinWorkflow(workflow)
   ]
   if (!issues.length)
@@ -733,7 +757,7 @@ async function confirmSave() {
       ),
       { silent: true }
     )
-    if (!assertStartApiWorkflowValid(workflow))
+    if (!assertWorkflowSaveValid(workflow))
       return false
     tinyflowRef.value.setData(workflow)
     await saveFlowWorkflowApi(flowName, workflow)

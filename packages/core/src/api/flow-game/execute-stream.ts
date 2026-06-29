@@ -1,5 +1,4 @@
-import { getFxToken, getToken } from '../auth'
-import { getFlowGameApiBaseURL } from '../client'
+import { buildFlowGameFetchHeaders, getFlowGameApiBaseURL } from '../client'
 import type { FlowGameExecutePayload } from './index'
 
 export type FlowStreamEventName =
@@ -18,16 +17,7 @@ export interface FlowStreamHandlers {
 }
 
 function buildAuthHeaders(): Record<string, string> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json'
-  }
-  const token = getToken()
-  if (token)
-    headers.Authorization = `Bearer ${token}`
-  const fxToken = getFxToken()
-  if (fxToken)
-    headers.FxAuthorization = fxToken
-  return headers
+  return buildFlowGameFetchHeaders()
 }
 
 function parseNdjsonLine(line: string): { event: FlowStreamEventName, data: Record<string, unknown> } | null {
