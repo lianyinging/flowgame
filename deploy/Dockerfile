@@ -1,6 +1,11 @@
 # FlowGame 前端：构建官方编辑器静态资源，由 Nginx 提供访问
-# 国内服务器构建可加：--build-arg NPM_REGISTRY=https://registry.npmmirror.com
-FROM node:20-bookworm-slim AS builder
+#
+# 国内服务器示例：
+#   docker compose build web \
+#     --build-arg NODE_IMAGE=docker.m.daocloud.io/library/node:20-alpine \
+#     --build-arg NPM_REGISTRY=https://registry.npmmirror.com
+ARG NODE_IMAGE=node:20-alpine
+FROM ${NODE_IMAGE} AS builder
 
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
