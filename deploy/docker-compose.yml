@@ -1,5 +1,8 @@
 # 在 flowgame/deploy 目录执行：docker compose up -d --build
 # 要求同级目录存在 flowgame_python 仓库（与 flowgame 并列克隆）
+#
+# 国内服务器：默认经 DaoCloud 拉 Docker Hub 镜像，避免 1Panel 镜像 docker.1panel.live 超时。
+# 海外服务器可在 .env 改回官方镜像名，例如 PYTHON_IMAGE=python:3.10-slim
 
 services:
   web:
@@ -8,7 +11,8 @@ services:
       dockerfile: deploy/Dockerfile
       args:
         NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmmirror.com}
-        NODE_IMAGE: ${NODE_IMAGE:-node:20-alpine}
+        NODE_IMAGE: ${NODE_IMAGE:-docker.m.daocloud.io/library/node:20-alpine}
+        NGINX_IMAGE: ${NGINX_IMAGE:-docker.m.daocloud.io/library/nginx:1.27-alpine}
     ports:
       - "${FLOWGAME_WEB_PORT:-8009}:8009"
     depends_on:
@@ -20,6 +24,9 @@ services:
     build:
       context: ../../flowgame_python
       dockerfile: Dockerfile
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:-docker.m.daocloud.io/library/python:3.10-slim}
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}
     env_file:
       - .env
     environment:
@@ -53,7 +60,7 @@ services:
     restart: unless-stopped
 
   redis:
-    image: redis:7-alpine
+    image: ${REDIS_IMAGE:-docker.m.daocloud.io/library/redis:7-alpine}
     command: ["redis-server", "--appendonly", "yes", "--requirepass", "${REDIS_PASSWORD}"]
     ports:
       - "${REDIS_HOST_PORT:-6379}:6379"
@@ -62,7 +69,7 @@ services:
     restart: unless-stopped
 
   qdrant:
-    image: qdrant/qdrant:v1.18.2
+    image: ${QDRANT_IMAGE:-docker.m.daocloud.io/qdrant/qdrant:v1.18.1}
     ports:
       - "${QDRANT_HOST_PORT:-6333}:6333"
     volumes:
