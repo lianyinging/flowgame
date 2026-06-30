@@ -38,6 +38,8 @@ const nodeTypeCategoryMap: Record<string, string> = {
   forkNode: 'parallel',
   joinAllNode: 'parallel',
   joinAnyNode: 'parallel',
+  ifNode: 'parallel',
+  switchNode: 'parallel',
   memoryWriteNode: 'memory',
   memoryReadNode: 'memory',
   httpNode: 'general',

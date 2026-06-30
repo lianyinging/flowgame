@@ -4,6 +4,8 @@ import { nodeDatabase } from './node-database'
 import { nodeFork } from './node-fork'
 import { nodeJoinAll } from './node-join-all'
 import { nodeJoinAny } from './node-join-any'
+import { nodeIf } from './node-if'
+import { nodeSwitch } from './node-switch'
 import { nodeHtmlTemplate } from './node-html-template'
 import { nodeKnowledgePlus } from './node-knowledge'
 import { nodeLlmApi } from './node-llmapi'
@@ -25,7 +27,9 @@ export const flowGameCustomNodes: NonNullable<TinyflowOptions['customNodes']> = 
   ossNode: nodeOss,
   forkNode: nodeFork,
   joinAllNode: nodeJoinAll,
-  joinAnyNode: nodeJoinAny
+  joinAnyNode: nodeJoinAny,
+  ifNode: nodeIf,
+  switchNode: nodeSwitch
 }
 
 export { nodeHtmlTemplate, HTML_TEMPLATE_NODE_TYPE, DEFAULT_HTML_TEMPLATE, HTML_TEMPLATE_PLACEHOLDER } from './node-html-template'
@@ -55,6 +59,35 @@ export {
   joinAllNodeOutputDefs,
   joinAnyNodeOutputDefs
 } from './join-node-output-defs'
+export { nodeIf, IF_NODE_TYPE, DEFAULT_IF_CONDITION } from './node-if'
+export { ifNodeOutputDefs } from './if-node-output-defs'
+export {
+  appendElseIfBranch,
+  createIfBranchId,
+  defaultIfBranches,
+  ifBranchSelectLabel,
+  ifBranchTypeLabel,
+  parseIfBranches,
+  removeElseIfBranch,
+  upgradeLegacyIfBranches,
+  IF_ELSE_BRANCH_ID,
+  type IfBranchDef,
+  type IfBranchType
+} from './if-branches'
+export { nodeSwitch, SWITCH_NODE_TYPE, DEFAULT_SWITCH_PARAM } from './node-switch'
+export { switchNodeOutputDefs } from './switch-node-output-defs'
+export {
+  appendSwitchCase,
+  createSwitchCaseId,
+  defaultSwitchCases,
+  parseSwitchCases,
+  parseSwitchParamRef,
+  readSwitchParamName,
+  removeSwitchCase,
+  switchCaseSelectLabel,
+  SWITCH_ELSE_CASE_ID,
+  type SwitchCaseDef
+} from './switch-cases'
 export {
   FLOWGAME_NODE_CATEGORIES,
   getSortedNodeCategories,

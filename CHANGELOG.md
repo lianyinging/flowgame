@@ -5,6 +5,23 @@ All notable changes to the publishable packages (`@flowgame/core`, `@flowgame/vu
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.11] - 2026-06-29
+
+### Added
+
+- `@flowgame/core` / `@flowgame/vue`: **条件选择器**（`ifNode`）多分支：单出口连多条下游，侧栏与画布为每条分支选择出边；条件参数支持 `{{参数名}}` 模板
+- `@flowgame/core` / `@flowgame/vue`: **分支选择器**（`switchNode`）画布匹配行支持下游下拉、删除 case、添加 case；`switchKey` / case 匹配值支持 `{{}}`
+- `@flowgame/core`: 节点 `branchEdgeMap` 与 `mergeIfNodeBranchEdgeMap`，画布读回时保留分支出边绑定
+
+### Fixed
+
+- `@flowgame/core` / `@flowgame/vue`: 下游下拉选「无」时侧栏/画布双向同步；选择后不再被 `onDataChange` 清空
+- `@flowgame/core`: 条件选择器画布「否则如果」行支持删除
+
+### Changed
+
+- `@flowgame/core`: 动态代码节点默认引擎 `js` 与示例脚本
+
 ## [0.1.10] - 2026-06-18
 
 ### Changed

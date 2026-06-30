@@ -1,4 +1,5 @@
 import type { Tinyflow, TinyflowData } from '@tinyflow-ai/ui'
+import { mergeIfNodeBranchEdgeMap } from '../workflow/workflow-if-rules'
 
 /** Tinyflow 内部 Svelte Flow 实例（未在类型中导出，编辑节点 data 时用，避免 setData 整页重建） */
 export type TinyflowFlowApi = {
@@ -27,9 +28,62 @@ export function selectCanvasNode(instance: Tinyflow | undefined, nodeId: string 
   }
 }
 
+/** 画布 getEdges 可能丢失自定义 edge.data，从快照合并保留 */
+const PRESERVED_EDGE_DATA_KEYS = ['branch', 'condition'] as const
+
+/** 将快照中的 edge.data 合并进画布工作流（画布同名字段优先） */
+export function mergeWorkflowEdgeData(
+  canvas: TinyflowData,
+  preserved?: TinyflowData
+): TinyflowData {
+  const canvasEdges = canvas.edges
+  const preservedEdges = preserved?.edges
+  if (!canvasEdges?.length || !preservedEdges?.length)
+    return canvas
+
+  const preservedById = new Map(
+    preservedEdges.filter(e => e.id).map(e => [e.id!, e])
+  )
+
+  let changed = false
+  const edges = canvasEdges.map((edge) => {
+    if (!edge.id)
+      return edge
+    const prev = preservedById.get(edge.id)
+    if (!prev?.data || typeof prev.data !== 'object')
+      return edge
+
+    const prevData = prev.data as Record<string, unknown>
+    const canvasData = (edge.data ?? {}) as Record<string, unknown>
+    const mergedData: Record<string, unknown> = { ...canvasData }
+
+    for (const key of PRESERVED_EDGE_DATA_KEYS) {
+      const prevValue = prevData[key]
+      const canvasValue = canvasData[key]
+      if (prevValue != null && prevValue !== '' && (canvasValue == null || canvasValue === '')) {
+        mergedData[key] = prevValue
+      }
+    }
+
+    if (JSON.stringify(mergedData) === JSON.stringify(canvasData))
+      return edge
+    changed = true
+    return { ...edge, data: mergedData }
+  })
+
+  if (!changed)
+    return canvas
+  return { ...canvas, edges }
+}
+
 /** 去掉 Vue/Svelte 响应式 Proxy，避免 structuredClone / JSON 保存失败 */
 export function clonePlainWorkflow<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
+}
+
+/** 合并画布读回数据与快照（出边 branch、节点 branchEdgeMap） */
+function mergeCanvasWorkflow(canvas: TinyflowData, fallback?: TinyflowData): TinyflowData {
+  return mergeIfNodeBranchEdgeMap(mergeWorkflowEdgeData(canvas, fallback), fallback)
 }
 
 /**
@@ -43,11 +97,14 @@ export function getWorkflowFromTinyflow(
   const api = getTinyflowFlowApi(instance)
   if (api?.getNodes && api.getEdges && api.getViewport) {
     try {
-      return clonePlainWorkflow({
-        nodes: api.getNodes(),
-        edges: api.getEdges(),
-        viewport: api.getViewport()
-      })
+      return mergeCanvasWorkflow(
+        clonePlainWorkflow({
+          nodes: api.getNodes(),
+          edges: api.getEdges(),
+          viewport: api.getViewport()
+        }),
+        fallback
+      )
     }
     catch {
       // continue
@@ -56,7 +113,7 @@ export function getWorkflowFromTinyflow(
 
   if (instance) {
     try {
-      return clonePlainWorkflow(instance.getData())
+      return mergeCanvasWorkflow(clonePlainWorkflow(instance.getData()), fallback)
     }
     catch {
       // continue

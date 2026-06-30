@@ -17,12 +17,15 @@ import {
   FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT,
   FLOWGAME_OPEN_FLOW_LIST_EVENT,
   FLOWGAME_OPEN_NODE_INSPECTOR_EVENT,
+  FLOWGAME_ASSIGN_BRANCH_EDGE_EVENT,
   flowRedisKeysForLoad,
   getFlowListRedisPrefix,
   getRedisApi,
   getTinyflowFlowApi,
   getTinyflowHostRoot,
   getWorkflowFromTinyflow,
+  mergeWorkflowEdgeData,
+  mergeIfNodeBranchEdgeMap,
   hasStartApiNode,
   initialData,
   isFlowRunFailed,
@@ -31,6 +34,7 @@ import {
   listKbBasesCached,
   normalizeHtmlTemplateNodeParams,
   normalizeKnowledgeNodeParams,
+  normalizeCodeNodeParams,
   normalizeLlmApiNodeParams,
   normalizeMemoryNodeParams,
   normalizeOssNodeParams,
@@ -38,6 +42,11 @@ import {
   normalizeTalkStartNodeParams,
   normalizeTalkStartWorkflow,
   parseFlowNameFromRedisKey,
+  parseIfBranches,
+  IF_NODE_TYPE,
+  parseSwitchCases,
+  SWITCH_ELSE_CASE_ID,
+  SWITCH_NODE_TYPE,
   parseFlowRunSummary,
   parseNodeExecutions,
   parseStreamNodeFinished,
@@ -49,14 +58,22 @@ import {
   patchFlowToolbarVariables,
   patchNodeInspectorTrigger,
   patchStartApiNodeDom,
+  patchBranchNodeCanvasDom,
   patchTalkStartNodeDom,
   saveFlowWorkflowApi,
   selectCanvasNode,
   setCanvasMinimapVisible,
   START_NODE_TYPE,
   syncMethodKeyInWorkflow,
+  syncIfNodeBranchEdgeMap,
   syncWorkflowNodesToCanvas,
   validateParallelForkJoinWorkflow,
+  validateIfWorkflow,
+  normalizeIfWorkflow,
+  validateSwitchWorkflow,
+  normalizeSwitchWorkflow,
+  readEdgeBranch,
+  readBranchEdgeMap,
   validateStartApiWorkflow,
   validateTalkStartWorkflow
 } from '@flowgame/core'
@@ -148,12 +165,18 @@ function applyWorkflowRules(
   const startApiStructureChanged = isStartApiWorkflowChanged(workflow, afterStartApi)
   const talkStartStructureChanged = isTalkStartWorkflowChanged(afterStartApi, afterTalk)
   let next = ensureNodeExpandDefault(
-    normalizeOssNodeParams(
-      normalizeHtmlTemplateNodeParams(
-        normalizeMemoryNodeParams(
-          normalizeLlmApiNodeParams(
-            normalizeKnowledgeNodeParams(
-              normalizeTalkStartNodeParams(afterTalk)
+    normalizeSwitchWorkflow(
+      normalizeIfWorkflow(
+        normalizeOssNodeParams(
+          normalizeHtmlTemplateNodeParams(
+            normalizeMemoryNodeParams(
+              normalizeLlmApiNodeParams(
+                normalizeCodeNodeParams(
+                  normalizeKnowledgeNodeParams(
+                    normalizeTalkStartNodeParams(afterTalk)
+                  )
+                )
+              )
             )
           )
         )
@@ -194,11 +217,97 @@ function applyWorkflowRules(
   requestAnimationFrame(() => {
     patchStartApiNodeDom(canvasRef.value ?? undefined, next)
     patchTalkStartNodeDom(canvasRef.value ?? undefined, next)
+    patchBranchNodeCanvasDom(canvasRef.value ?? undefined, next)
     refreshToolbarVariables()
   })
 
   workflowSnapshot.value = next
   return next
+}
+
+function assignBranchEdgeFromInspector(payload: { nodeId: string, branchId: string, edgeId: string }) {
+  if (!tinyflowRef.value || isViewMode.value)
+    return
+
+  const edgeId = payload.edgeId?.trim() ?? ''
+  syncingInspector.value = true
+  try {
+    const edges = (workflowSnapshot.value.edges ?? []).map((edge) => {
+      if (edge.source !== payload.nodeId)
+        return edge
+      const data = { ...(edge.data ?? {}) } as Record<string, unknown>
+      if (!edgeId) {
+        if (readEdgeBranch(edge) === payload.branchId) {
+          delete data.branch
+          return { ...edge, data }
+        }
+        return edge
+      }
+      if (edge.id === edgeId) {
+        return { ...edge, data: { ...data, branch: payload.branchId } }
+      }
+      if (readEdgeBranch(edge) === payload.branchId) {
+        delete data.branch
+        return { ...edge, data }
+      }
+      return edge
+    })
+    const nodes = (workflowSnapshot.value.nodes ?? []).map((node) => {
+      if (node.id !== payload.nodeId)
+        return node
+      if (node.type !== IF_NODE_TYPE && node.type !== SWITCH_NODE_TYPE)
+        return node
+      const data = { ...(node.data ?? {}) } as Record<string, unknown>
+      const branchIds = node.type === IF_NODE_TYPE
+        ? parseIfBranches(data).map(b => b.id)
+        : [...parseSwitchCases(data).map(c => c.id), SWITCH_ELSE_CASE_ID]
+      if (!edgeId) {
+        const map = readBranchEdgeMap(data)
+        delete map[payload.branchId]
+        data.branchEdgeMap = map
+      }
+      else {
+        syncIfNodeBranchEdgeMap(data, payload.nodeId, edges, branchIds)
+      }
+      return { ...node, data }
+    })
+    applyWorkflowRules({ ...workflowSnapshot.value, nodes, edges }, { silent: true, skipSetData: true })
+  }
+  finally {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        syncingInspector.value = false
+      })
+    })
+  }
+}
+
+function patchEdgeFromInspector(payload: { edgeId: string, data: Record<string, unknown> }) {
+  if (!tinyflowRef.value || isViewMode.value)
+    return
+
+  syncingInspector.value = true
+  try {
+    const edges = (workflowSnapshot.value.edges ?? []).map((edge) => {
+      if (edge.id !== payload.edgeId)
+        return edge
+      return {
+        ...edge,
+        data: {
+          ...(edge.data ?? {}),
+          ...payload.data
+        }
+      }
+    })
+    const merged: typeof initialData = {
+      ...workflowSnapshot.value,
+      edges
+    }
+    applyWorkflowRules(merged, { silent: true, skipSetData: true })
+  }
+  finally {
+    syncingInspector.value = false
+  }
 }
 
 function patchNodeFromInspector(
@@ -285,7 +394,9 @@ function assertWorkflowRunnable(workflow: typeof initialData) {
   const issues = [
     ...validateStartApiWorkflow(workflow),
     ...validateTalkStartWorkflow(workflow),
-    ...validateParallelForkJoinWorkflow(workflow)
+    ...validateParallelForkJoinWorkflow(workflow),
+    ...validateIfWorkflow(workflow),
+    ...validateSwitchWorkflow(workflow)
   ]
   if (!issues.length)
     return true
@@ -531,6 +642,19 @@ function onOpenNodeInspectorFromCanvas(event: Event) {
   selectCanvasNode(tinyflowRef.value, nodeId)
 }
 
+function onAssignBranchEdgeFromCanvas(event: Event) {
+  const detail = (event as CustomEvent<{ nodeId?: string, branchId?: string, edgeId?: string }>).detail
+  const nodeId = detail?.nodeId?.trim()
+  const branchId = detail?.branchId?.trim()
+  if (!nodeId || !branchId || isViewMode.value)
+    return
+  assignBranchEdgeFromInspector({
+    nodeId,
+    branchId,
+    edgeId: detail?.edgeId?.trim() ?? ''
+  })
+}
+
 const CANVAS_TOOLBAR_PANEL_LISTENER_ATTR = 'data-flowgame-toolbar-panel-listeners'
 
 function scheduleToolbarDomPatch() {
@@ -553,6 +677,7 @@ function setupToolbarVariablesWatch() {
     canvas.addEventListener(FLOWGAME_OPEN_FLOW_LIST_EVENT, onOpenFlowListPanel)
     canvas.addEventListener(FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT, onOpenFlowKnowledgePanel)
     canvas.addEventListener(FLOWGAME_OPEN_NODE_INSPECTOR_EVENT, onOpenNodeInspectorFromCanvas)
+    canvas.addEventListener(FLOWGAME_ASSIGN_BRANCH_EDGE_EVENT, onAssignBranchEdgeFromCanvas)
     canvas.setAttribute(CANVAS_TOOLBAR_PANEL_LISTENER_ATTR, '1')
   }
 
@@ -588,7 +713,13 @@ function initTinyflow(data: typeof initialData) {
     onDataChange: (workflow) => {
       if (syncingMethodKey.value || syncingInspector.value)
         return
-      const plain = clonePlainWorkflow(workflow)
+      const plain = mergeIfNodeBranchEdgeMap(
+        mergeWorkflowEdgeData(
+          clonePlainWorkflow(workflow),
+          workflowSnapshot.value
+        ),
+        workflowSnapshot.value
+      )
       // 侧栏仅由标题栏「编辑」图标打开；画布单击选中节点不展开侧栏
       if (!plain.nodes?.some(n => n.selected))
         inspectorNodeId.value = null
@@ -615,6 +746,7 @@ onUnmounted(() => {
   const canvas = canvasRef.value
   if (canvas?.getAttribute(CANVAS_TOOLBAR_PANEL_LISTENER_ATTR) === '1') {
     canvas.removeEventListener(FLOWGAME_OPEN_NODE_INSPECTOR_EVENT, onOpenNodeInspectorFromCanvas)
+    canvas.removeEventListener(FLOWGAME_ASSIGN_BRANCH_EDGE_EVENT, onAssignBranchEdgeFromCanvas)
     canvas.removeEventListener(FLOWGAME_OPEN_FLOW_LIST_EVENT, onOpenFlowListPanel)
     canvas.removeEventListener(FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT, onOpenFlowKnowledgePanel)
     canvas.removeAttribute(CANVAS_TOOLBAR_PANEL_LISTENER_ATTR)
@@ -810,6 +942,8 @@ defineExpose({
               @patch-data="onInspectorPatchData"
               @patch-parameters="onInspectorPatchParameters"
               @patch-output-defs="onInspectorPatchOutputDefs"
+              @patch-edge="patchEdgeFromInspector"
+              @assign-branch-edge="assignBranchEdgeFromInspector"
             />
           </aside>
         </div>

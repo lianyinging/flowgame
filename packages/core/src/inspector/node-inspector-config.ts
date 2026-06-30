@@ -27,6 +27,8 @@ export const NODE_TYPE_LABELS: Record<string, string> = {
   forkNode: '并行分叉',
   joinAllNode: '汇聚（全部）',
   joinAnyNode: '汇聚（任一）',
+  ifNode: '条件选择器',
+  switchNode: '分支选择器',
   codeNode: '动态代码',
   templateNode: '内容模板',
   loopNode: '循环',

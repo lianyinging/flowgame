@@ -26,7 +26,11 @@ import {
   getInspectorForms,
   getNodeIconHtml,
   getNodeTypeLabel,
+  IF_NODE_TYPE,
+  SWITCH_NODE_TYPE,
   isCodeNodeType,
+  parseIfBranches,
+  parseSwitchCases,
   isInspectorOutputDefsEnabled,
   isInspectorParametersEnabled,
   isKnowledgeNodeType,
@@ -49,6 +53,8 @@ import MemoryReadInputParametersBlock from './MemoryReadInputParametersBlock.vue
 import MemoryWriteGroupsBlock from './MemoryWriteGroupsBlock.vue'
 import HtmlTemplateInputParametersBlock from './HtmlTemplateInputParametersBlock.vue'
 import HtmlTemplateEditorWithPreview from './HtmlTemplateEditorWithPreview.vue'
+import IfNodeBranchesBlock from './IfNodeBranchesBlock.vue'
+import SwitchNodeCasesBlock from './SwitchNodeCasesBlock.vue'
 import OutputDefInspectorRow from './OutputDefInspectorRow.vue'
 import { IconDelete, IconPlus } from '@arco-design/web-vue/es/icon'
 
@@ -62,6 +68,8 @@ const emit = defineEmits<{
   patchData: [payload: { nodeId: string, data: Record<string, unknown> }]
   patchParameters: [payload: { nodeId: string, parameters: FlowParameter[] }]
   patchOutputDefs: [payload: { nodeId: string, outputDefs: FlowParameter[] }]
+  patchEdge: [payload: { edgeId: string, data: Record<string, unknown> }]
+  assignBranchEdge: [payload: { nodeId: string, branchId: string, edgeId: string }]
 }>()
 
 const nodeData = computed(() => (props.node?.data ?? {}) as Record<string, unknown>)
@@ -77,6 +85,10 @@ const showOutputSection = computed(() => isInspectorOutputDefsEnabled(nodeType.v
 const showOutputValueColumn = computed(() => nodeType.value === 'endNode')
 const isKnowledgeNode = computed(() => isKnowledgeNodeType(nodeType.value))
 const isCodeNode = computed(() => isCodeNodeType(nodeType.value))
+const isIfNode = computed(() => nodeType.value === IF_NODE_TYPE)
+const isSwitchNode = computed(() => nodeType.value === SWITCH_NODE_TYPE)
+const ifBranches = computed(() => parseIfBranches(nodeData.value))
+const switchCases = computed(() => parseSwitchCases(nodeData.value))
 const isMemoryWriteNode = computed(() => nodeType.value === MEMORY_WRITE_NODE_TYPE)
 const isMemoryReadNode = computed(() => nodeType.value === MEMORY_READ_NODE_TYPE)
 const isHtmlTemplateNode = computed(() => nodeType.value === HTML_TEMPLATE_NODE_TYPE)
@@ -91,6 +103,28 @@ const inspectorFormSections = computed(() =>
 )
 const codeEngine = computed(() => readCodeNodeEngine(nodeData.value))
 const codeText = computed(() => readCodeNodeCode(nodeData.value))
+
+function replaceIfBranches(branches: ReturnType<typeof parseIfBranches>) {
+  if (!props.node?.id)
+    return
+  emit('patchData', { nodeId: props.node.id, data: { branches } })
+}
+
+function replaceSwitchCases(cases: ReturnType<typeof parseSwitchCases>) {
+  if (!props.node?.id)
+    return
+  emit('patchData', { nodeId: props.node.id, data: { cases } })
+}
+
+function assignBranchEdge(payload: { branchId: string, edgeId: string }) {
+  if (!props.node?.id)
+    return
+  emit('assignBranchEdge', {
+    nodeId: props.node.id,
+    branchId: payload.branchId,
+    edgeId: payload.edgeId
+  })
+}
 
 const kbOptionsLoading = ref(false)
 const kbOptions = ref<Array<{ label: string, value: string }>>([])
@@ -563,6 +597,9 @@ function onTextInput(handler: (value: string) => void) {
         <p v-if="!parameters.length" class="tf-node-panel__none-text">
           无输入参数
         </p>
+        <p v-else-if="isIfNode" class="tf-node-panel__field-desc">
+          绑定上游变量供本节点使用；下方「条件参数」中可用 <code v-pre>{{ 参数名称 }}</code> 引用这些入参
+        </p>
         <p v-else class="tf-node-panel__field-desc">
           值类型为「引用」时，从上游节点输出中选择变量（与节点内下拉一致）
         </p>
@@ -717,6 +754,38 @@ function onTextInput(handler: (value: string) => void) {
             @update:model-value="(v: string) => patchField('code', v ?? '')"
           />
         </div>
+      </section>
+
+      <section v-if="isIfNode" class="tf-node-panel__block">
+        <div class="heading tf-node-panel__form-heading">
+          <h3 class="tf-node-panel__heading-text">
+            条件参数
+          </h3>
+        </div>
+        <IfNodeBranchesBlock
+          :branches="ifBranches"
+          :workflow="workflow"
+          :node-id="node?.id"
+          :readonly="readonly"
+          @replace-branches="replaceIfBranches"
+          @assign-branch-edge="assignBranchEdge"
+        />
+      </section>
+
+      <section v-if="isSwitchNode" class="tf-node-panel__block">
+        <div class="heading tf-node-panel__form-heading">
+          <h3 class="tf-node-panel__heading-text">
+            匹配分支
+          </h3>
+        </div>
+        <SwitchNodeCasesBlock
+          :cases="switchCases"
+          :workflow="workflow"
+          :node-id="node?.id"
+          :readonly="readonly"
+          @replace-cases="replaceSwitchCases"
+          @assign-branch-edge="assignBranchEdge"
+        />
       </section>
 
       <!-- 2. 节点配置（forms：heading + setting-title / setting-item） -->

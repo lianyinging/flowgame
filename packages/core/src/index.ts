@@ -46,6 +46,27 @@ export {
   forkNodeOutputDefs,
   joinAllNodeOutputDefs,
   joinAnyNodeOutputDefs,
+  nodeIf,
+  IF_NODE_TYPE,
+  DEFAULT_IF_CONDITION,
+  ifNodeOutputDefs,
+  nodeSwitch,
+  SWITCH_NODE_TYPE,
+  DEFAULT_SWITCH_PARAM,
+  switchNodeOutputDefs,
+  appendElseIfBranch,
+  ifBranchSelectLabel,
+  ifBranchTypeLabel,
+  parseIfBranches,
+  removeElseIfBranch,
+  defaultIfBranches,
+  SWITCH_ELSE_CASE_ID,
+  appendSwitchCase,
+  parseSwitchCases,
+  removeSwitchCase,
+  defaultSwitchCases,
+  readSwitchParamName,
+  switchCaseSelectLabel,
   nodeOss,
   OSS_NODE_TYPE,
   DEFAULT_OSS_OBJECT_KEY_TEMPLATE,
@@ -56,6 +77,8 @@ export {
   ossNodeOutputDefs
 } from './nodes'
 export type { OssFileType } from './nodes/oss-file-types'
+export type { IfBranchDef, IfBranchType } from './nodes/if-branches'
+export type { SwitchCaseDef } from './nodes/switch-cases'
 
 // Workflow
 export { initialData } from './workflow/initial-data'
@@ -65,6 +88,7 @@ export { normalizeMemoryNodeParams } from './workflow/normalize-memory-node-para
 export { normalizeOssNodeParams } from './workflow/normalize-oss-node-params'
 export { normalizeHtmlTemplateNodeParams } from './workflow/normalize-html-template-node-params'
 export { normalizeTalkStartNodeParams } from './workflow/normalize-talk-start-node-params'
+export { normalizeCodeNodeParams } from './workflow/normalize-code-node-params'
 export {
   defaultMemoryWriteParameters,
   parseMemoryWriteGroups,
@@ -75,6 +99,7 @@ export {
   type MemoryWriteGroupView
 } from './workflow/memory-write-groups'
 export { formatHtmlTemplate } from './workflow/format-html-template'
+export { formatIfConditionTemplate } from './workflow/format-if-condition'
 export { wrapHtmlPreviewDocument } from './workflow/html-preview-document'
 export {
   buildHtmlTemplatePreviewMap,
@@ -111,6 +136,20 @@ export {
   validateParallelForkJoinWorkflow
 } from './workflow/workflow-parallel-fork-join-rules'
 export type { ParallelForkJoinIssue } from './workflow/workflow-parallel-fork-join-rules'
+export {
+  findIfNodes,
+  mergeIfNodeBranchEdgeMap,
+  normalizeIfWorkflow,
+  readEdgeBranch,
+  validateIfWorkflow
+} from './workflow/workflow-if-rules'
+export type { IfWorkflowIssue } from './workflow/workflow-if-rules'
+export {
+  findSwitchNodes,
+  normalizeSwitchWorkflow,
+  validateSwitchWorkflow
+} from './workflow/workflow-switch-rules'
+export type { SwitchWorkflowIssue } from './workflow/workflow-switch-rules'
 export { buildWorkflowRunPlan } from './workflow/build-workflow-run-plan'
 export {
   buildWorkflowVariableTree,
@@ -130,12 +169,19 @@ export * from './tinyflow/canvas-toolbar-nodes'
 export { patchCanvasControlsPosition } from './patches/patch-canvas-controls-position'
 export { patchCanvasMinimapStyle, setCanvasMinimapVisible } from './patches/patch-canvas-minimap-style'
 export { patchCanvasNodePopover } from './patches/patch-canvas-node-popover'
+export { patchBranchNodeCanvasDom } from './patches/patch-branch-node-canvas'
 export { patchCanvasWatermark } from './patches/patch-canvas-watermark'
 export {
   cleanupNodeInspectorTrigger,
   FLOWGAME_OPEN_NODE_INSPECTOR_EVENT,
   patchNodeInspectorTrigger
 } from './patches/patch-node-inspector-trigger'
+export {
+  FLOWGAME_ASSIGN_BRANCH_EDGE_EVENT,
+  readBranchEdgeMap,
+  selectedEdgeIdForBranch,
+  syncIfNodeBranchEdgeMap
+} from './nodes/branch-edge-canvas'
 export {
   FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT,
   FLOWGAME_OPEN_FLOW_LIST_EVENT,

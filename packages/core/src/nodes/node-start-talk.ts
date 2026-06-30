@@ -36,7 +36,8 @@ export const nodeStartTalk: CustomNode = {
       type: 'input',
       name: 'talkTitle',
       label: '页面标题',
-      placeholder: '例如：智能客服'
+      placeholder: '例如：智能客服',
+      defaultValue: '智能客服'
     },
     {
       type: 'textarea',
