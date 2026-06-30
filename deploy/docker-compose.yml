@@ -6,6 +6,9 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
+      args:
+        NPM_REGISTRY: ${NPM_REGISTRY:-https://registry.npmmirror.com}
+        NODE_IMAGE: ${NODE_IMAGE:-node:20-alpine}
     ports:
       - "${FLOWGAME_WEB_PORT:-8009}:8009"
     depends_on:
