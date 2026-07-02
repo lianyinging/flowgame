@@ -2,6 +2,7 @@ import {
   MEMORY_READ_NODE_ICON,
   MEMORY_WRITE_NODE_ICON
 } from '../nodes/memory-node-icons'
+import { STATE_MACHINE_NODE_ICON } from '../nodes/state-node-icons'
 import {
   FORK_NODE_ICON,
   JOIN_ALL_NODE_ICON,
@@ -22,6 +23,7 @@ export const BUILTIN_NODE_ICONS: Record<string, string> = {
   htmlTemplateNode:
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3H21C21.5523 3 22 3.44772 22 4V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V4C2 3.44772 2.44772 3 3 3ZM4 5V19H20V5H4ZM7 8H17V11H15V10H13V14H14.5V16H9.5V14H11V10H9V11H7V8Z"></path></svg>',
   memoryReadNode: MEMORY_READ_NODE_ICON,
+  stateMachineNode: STATE_MACHINE_NODE_ICON,
   databaseNode:
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 5C4 3.89543 4.89543 3 6 3H18C19.1046 3 20 3.89543 20 5V7H4V5ZM4 9H20V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V9ZM8 13H16V15H8V13ZM8 16H13V18H8V16Z"/></svg>',
   ossNode:

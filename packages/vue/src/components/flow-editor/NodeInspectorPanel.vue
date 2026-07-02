@@ -14,10 +14,15 @@ import {
   DEFAULT_HTML_TEMPLATE,
   defaultMemoryWriteParameters,
   HTML_TEMPLATE_NODE_TYPE,
+  STATE_MACHINE_NODE_TYPE,
   MEMORY_READ_NODE_TYPE,
   MEMORY_WRITE_NODE_TYPE,
   memoryReadNodeOutputDefs,
   memoryWriteNodeOutputDefs,
+  stateMachineNodeOutputDefs,
+  defaultStateParametersForMode,
+  readStateMachineMode,
+  filterStateMachineInspectorForms,
   parseMemoryWriteGroups,
   CODE_NODE_CODE_PLACEHOLDER,
   CODE_NODE_ENGINE_OPTIONS,
@@ -51,6 +56,7 @@ import KnowledgeBasePickerBlock from './KnowledgeBasePickerBlock.vue'
 import KnowledgeInputParametersBlock from './KnowledgeInputParametersBlock.vue'
 import MemoryReadInputParametersBlock from './MemoryReadInputParametersBlock.vue'
 import MemoryWriteGroupsBlock from './MemoryWriteGroupsBlock.vue'
+import StateMachineInputParametersBlock from './StateMachineInputParametersBlock.vue'
 import HtmlTemplateInputParametersBlock from './HtmlTemplateInputParametersBlock.vue'
 import HtmlTemplateEditorWithPreview from './HtmlTemplateEditorWithPreview.vue'
 import IfNodeBranchesBlock from './IfNodeBranchesBlock.vue'
@@ -91,6 +97,7 @@ const ifBranches = computed(() => parseIfBranches(nodeData.value))
 const switchCases = computed(() => parseSwitchCases(nodeData.value))
 const isMemoryWriteNode = computed(() => nodeType.value === MEMORY_WRITE_NODE_TYPE)
 const isMemoryReadNode = computed(() => nodeType.value === MEMORY_READ_NODE_TYPE)
+const isStateMachineNode = computed(() => nodeType.value === STATE_MACHINE_NODE_TYPE)
 const isHtmlTemplateNode = computed(() => nodeType.value === HTML_TEMPLATE_NODE_TYPE)
 const htmlTemplateText = computed(() => {
   const tpl = nodeData.value.template
@@ -98,9 +105,13 @@ const htmlTemplateText = computed(() => {
     return tpl
   return DEFAULT_HTML_TEMPLATE
 })
-const inspectorFormSections = computed(() =>
-  isHtmlTemplateNode.value ? [] : formSections.value
-)
+const inspectorFormSections = computed(() => {
+  if (isHtmlTemplateNode.value)
+    return []
+  if (isStateMachineNode.value)
+    return filterStateMachineInspectorForms(formSections.value, nodeData.value)
+  return formSections.value
+})
 const codeEngine = computed(() => readCodeNodeEngine(nodeData.value))
 const codeText = computed(() => readCodeNodeCode(nodeData.value))
 
@@ -244,10 +255,18 @@ function ensureMemoryNodeInspectorDefaults() {
       }))
     )
   }
+  if (isStateMachineNode.value && !outputDefs.value.length) {
+    patchOutputDefs(
+      cloneParameters(stateMachineNodeOutputDefs).map(p => ({
+        ...p,
+        id: p.id ?? newParameterId('out')
+      }))
+    )
+  }
 }
 
 watch(
-  () => [props.node?.id, isMemoryWriteNode.value, isMemoryReadNode.value] as const,
+  () => [props.node?.id, isMemoryWriteNode.value, isMemoryReadNode.value, isStateMachineNode.value] as const,
   () => {
     ensureMemoryNodeInspectorDefaults()
   },
@@ -267,7 +286,7 @@ const upstreamRefTree = computed(() => {
 const allowAddInput = computed(() => {
   if (props.readonly)
     return false
-  if (isKnowledgeNode.value || isMemoryWriteNode.value)
+  if (isKnowledgeNode.value || isMemoryWriteNode.value || isStateMachineNode.value)
     return false
   if (!customDef.value)
     return true
@@ -519,6 +538,21 @@ function onTextInput(handler: (value: string) => void) {
           :upstream-ref-tree="upstreamRefTree"
           :readonly="readonly"
           @replace="patchParameters"
+        />
+      </section>
+
+      <section
+        v-else-if="showInputSection && isStateMachineNode"
+        class="tf-node-panel__block"
+      >
+        <StateMachineInputParametersBlock
+          :node-data="nodeData"
+          :parameters="parameters"
+          :upstream-ref-tree="upstreamRefTree"
+          :readonly="readonly"
+          @patch-data="patchData"
+          @patch-parameters="patchParameters"
+          @update-param="updateParameter"
         />
       </section>
 
@@ -925,7 +959,7 @@ function onTextInput(handler: (value: string) => void) {
       </section>
 
       <p
-        v-if="!showInputSection && !inspectorFormSections.length && !showOutputSection && !isKnowledgeNode && !isMemoryWriteNode && !isMemoryReadNode && !isHtmlTemplateNode && !isCodeNode"
+        v-if="!showInputSection && !inspectorFormSections.length && !showOutputSection && !isKnowledgeNode && !isMemoryWriteNode && !isMemoryReadNode && !isStateMachineNode && !isHtmlTemplateNode && !isCodeNode"
         class="tf-node-panel__none-text"
       >
         {{ getNodeTypeLabel(nodeType) }}：请在画布节点内展开配置（内置节点表单项与画布一致）。

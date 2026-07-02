@@ -3,6 +3,7 @@ import FlowEditor from './FlowEditor.vue'
 
 export { FlowEditor }
 export type { FlowEditorFormMode } from './types'
+export { FLOW_EDITOR_MODE_LABEL, displayFlowEditorName, resolveInitialEditorFormMode } from './flow-editor-mode'
 
 export type {
   FlowListIndexItem,

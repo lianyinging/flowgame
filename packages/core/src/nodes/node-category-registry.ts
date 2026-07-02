@@ -42,6 +42,7 @@ const nodeTypeCategoryMap: Record<string, string> = {
   switchNode: 'parallel',
   memoryWriteNode: 'memory',
   memoryReadNode: 'memory',
+  stateMachineNode: 'memory',
   httpNode: 'general',
   codeNode: 'general',
   templateNode: 'general',

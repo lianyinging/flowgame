@@ -32,6 +32,20 @@ export {
   memoryReadNodeOutputDefs,
   memoryWriteNodeOutputDefs,
   memoryReadNodeDefaultParameters,
+  nodeStateMachine,
+  STATE_MACHINE_NODE_TYPE,
+  STATE_MACHINE_MODES,
+  DEFAULT_STATE_MACHINE_MODE,
+  stateMachineNodeOutputDefs,
+  stateMachineWriteParameters,
+  readStateMachineMode,
+  filterStateMachineInspectorForms,
+  partitionStateMachineParameters,
+  mergeStateParametersForModeChange,
+  isStateMachineBuiltinParam,
+  STATE_MACHINE_MODE_SECTION_TITLE,
+  STATE_MACHINE_INPUT_SECTION_TITLE,
+  STATE_MACHINE_DEFAULT_PARAMS_TITLE,
   htmlTemplateNodeDefaultParameters,
   nodeDatabase,
   DATABASE_NODE_TYPE,
@@ -77,6 +91,7 @@ export {
   ossNodeOutputDefs
 } from './nodes'
 export type { OssFileType } from './nodes/oss-file-types'
+export type { StateMachineMode } from './nodes/state-machine-modes'
 export type { IfBranchDef, IfBranchType } from './nodes/if-branches'
 export type { SwitchCaseDef } from './nodes/switch-cases'
 
@@ -85,6 +100,8 @@ export { initialData } from './workflow/initial-data'
 export { normalizeKnowledgeNodeParams } from './workflow/normalize-knowledge-node-params'
 export { normalizeLlmApiNodeParams } from './workflow/normalize-llmapi-node-params'
 export { normalizeMemoryNodeParams } from './workflow/normalize-memory-node-params'
+export { normalizeStateNodeParams, defaultStateParametersForMode } from './workflow/normalize-state-node-params'
+export { deepMergePayload } from './workflow/state-payload-merge'
 export { normalizeOssNodeParams } from './workflow/normalize-oss-node-params'
 export { normalizeHtmlTemplateNodeParams } from './workflow/normalize-html-template-node-params'
 export { normalizeTalkStartNodeParams } from './workflow/normalize-talk-start-node-params'

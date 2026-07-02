@@ -21,6 +21,7 @@ export const NODE_TYPE_LABELS: Record<string, string> = {
   knowledgeNodePlus: '知识库 Plus',
   memoryWriteNode: '记忆写入',
   memoryReadNode: '记忆提取',
+  stateMachineNode: '状态机',
   htmlTemplateNode: 'HTML模板',
   databaseNode: '数据库',
   ossNode: '对象存储',
@@ -54,11 +55,19 @@ const RESERVED_DATA_KEYS = new Set([
   'dbType',
   'fileType',
   'objectKeyTemplate',
-  'bucket'
+  'bucket',
+  'mode',
+  'namespace',
+  'keyTemplate',
+  'expireSeconds',
+  'refreshTtl',
+  'defaultStatus',
+  'failIfMissing',
+  'returnLastState'
 ])
 
 /** 画布用自定义参数 UI、侧栏仍展示「输入参数」的节点 */
-const INSPECTOR_INPUT_ALWAYS_TYPES = new Set(['memoryWriteNode'])
+const INSPECTOR_INPUT_ALWAYS_TYPES = new Set(['memoryWriteNode', 'stateMachineNode'])
 
 export function getNodeTypeLabel(type?: string) {
   if (!type)

@@ -9,6 +9,7 @@ import { nodeSwitch } from './node-switch'
 import { nodeHtmlTemplate } from './node-html-template'
 import { nodeKnowledgePlus } from './node-knowledge'
 import { nodeLlmApi } from './node-llmapi'
+import { nodeStateMachine } from './node-state-machine'
 import { nodeMemoryRead } from './node-memory-read'
 import { nodeMemoryWrite } from './node-memory-write'
 import { nodeStartApi } from './node-start-api'
@@ -22,6 +23,7 @@ export const flowGameCustomNodes: NonNullable<TinyflowOptions['customNodes']> = 
   knowledgeNodePlus: nodeKnowledgePlus,
   memoryWriteNode: nodeMemoryWrite,
   memoryReadNode: nodeMemoryRead,
+  stateMachineNode: nodeStateMachine,
   htmlTemplateNode: nodeHtmlTemplate,
   databaseNode: nodeDatabase,
   ossNode: nodeOss,
@@ -33,6 +35,38 @@ export const flowGameCustomNodes: NonNullable<TinyflowOptions['customNodes']> = 
 }
 
 export { nodeHtmlTemplate, HTML_TEMPLATE_NODE_TYPE, DEFAULT_HTML_TEMPLATE, HTML_TEMPLATE_PLACEHOLDER } from './node-html-template'
+export { nodeStateMachine, STATE_MACHINE_NODE_TYPE } from './node-state-machine'
+export {
+  STATE_MACHINE_MODES,
+  DEFAULT_STATE_MACHINE_MODE,
+  readStateMachineMode,
+  type StateMachineMode
+} from './state-machine-modes'
+export {
+  stateMachineWriteParameters,
+  stateMachineReadParameters,
+  stateMachineUpdateParameters,
+  DEFAULT_STATE_KEY_TEMPLATE,
+  DEFAULT_STATE_NAMESPACE,
+  DEFAULT_STATE_EXPIRE_SECONDS
+} from './state-node-parameters'
+export { stateMachineNodeOutputDefs } from './state-node-output-defs'
+export {
+  filterStateMachineInspectorForms,
+  visibleStateMachineFormFieldNames,
+  isStateMachineFormFieldVisible
+} from './state-node-form-fields'
+export {
+  partitionStateMachineParameters,
+  mergeStateParametersForModeChange,
+  stateMachineBuiltinParamNames,
+  isStateMachineBuiltinParam
+} from './state-node-builtin-params'
+export {
+  STATE_MACHINE_MODE_SECTION_TITLE,
+  STATE_MACHINE_INPUT_SECTION_TITLE,
+  STATE_MACHINE_DEFAULT_PARAMS_TITLE
+} from './state-node-section-headings'
 export { nodeMemoryWrite, MEMORY_WRITE_NODE_TYPE } from './node-memory-write'
 export { nodeMemoryRead, MEMORY_READ_NODE_TYPE } from './node-memory-read'
 export {

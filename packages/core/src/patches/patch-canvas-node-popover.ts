@@ -108,6 +108,65 @@ const NODE_POPOVER_STYLES = `
   color: var(--tf-muted-foreground, #86909c);
 }
 
+.flowgame-state-machine-canvas .flowgame-state-mode-section-heading {
+  margin-top: 4px;
+  margin-bottom: 6px;
+}
+
+.flowgame-state-machine-canvas .flowgame-state-default-params-heading {
+  margin-top: 12px;
+  margin-bottom: 6px;
+}
+
+.flowgame-state-machine-canvas .flowgame-state-default-params-heading .flowgame-canvas-section-heading,
+.flowgame-state-machine-canvas .flowgame-state-mode-section-heading .flowgame-canvas-section-heading {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.flowgame-state-machine-canvas .flowgame-state-default-params-heading .flowgame-canvas-section-heading {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.flowgame-state-machine-canvas .flowgame-state-custom-params {
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.flowgame-state-machine-canvas .flowgame-state-default-params {
+  margin-top: 4px;
+}
+
+.flowgame-state-machine-canvas .flowgame-state-source-params-hidden {
+  display: none !important;
+}
+
+.flowgame-state-machine-canvas .flowgame-state-mode-mount {
+  display: block;
+  width: 100%;
+  margin: 0 0 10px;
+}
+
+.flowgame-state-mode-mount__select {
+  box-sizing: border-box;
+  width: 100%;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 13px;
+  line-height: 32px;
+  color: var(--tf-foreground, #1d2129);
+  background: var(--tf-background, #fff);
+  border: 1px solid var(--tf-border, #e5e6eb);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.flowgame-state-mode-mount__select:focus {
+  outline: none;
+  border-color: rgb(var(--primary-6, 22, 93, 255));
+}
+
 .flowgame-memory-write-canvas .flowgame-mw-group-divider {
   grid-column: 1 / -1;
   margin: 6px 0 2px;

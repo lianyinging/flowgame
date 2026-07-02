@@ -5,6 +5,25 @@ All notable changes to the publishable packages (`@flowgame/core`, `@flowgame/vu
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.13] - 2026-05-27
+
+### Fixed
+
+- `@flowgame/core`: 状态机节点画布/侧栏输入框聚焦后只能输入一个字符的问题（避免输入时 DOM 重排失焦；侧栏参数行使用稳定 key）
+
+## [0.1.12] - 2026-05-27
+
+### Added
+
+- `@flowgame/core` / `@flowgame/vue`: **状态机**节点（`stateMachineNode`）：Redis 实体状态 write/read/update/delete；Key 模板、命名空间、TTL、画布模式切换
+- `@flowgame/core`: 状态机画布/侧栏按模式显示配置项；自定义入参与内置默认入参分区展示
+- `@flowgame/vue`: 工具栏展示流程模式（新增/编辑/查看）、流程名称；保存/添加节点查看模式下置灰不隐藏
+
+### Fixed
+
+- `@flowgame/core`: 状态机 Key 模板渲染结果保留冒号；Redis Key 不再包含 methodKey
+- `@flowgame/vue`: 流程列表在查看模式下仍显示「编辑」入口
+
 ## [0.1.11] - 2026-06-29
 
 ### Added

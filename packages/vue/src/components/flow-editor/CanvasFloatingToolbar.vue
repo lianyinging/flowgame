@@ -15,10 +15,14 @@ import {
   canvasZoomOut,
   getCanvasZoomPercent
 } from '@flowgame/core'
+import type { FlowEditorFormMode } from '../../types'
+import { FLOW_EDITOR_MODE_LABEL } from '../../flow-editor-mode'
 
 const props = defineProps<{
   tinyflow?: Tinyflow
   canvas?: HTMLElement
+  editorMode?: FlowEditorFormMode
+  flowName?: string
   readonly?: boolean
   runLoading?: boolean
   /** 右下角缩略图是否显示，默认 true */
@@ -26,6 +30,10 @@ const props = defineProps<{
 }>()
 
 const showMinimap = computed(() => props.minimapVisible !== false)
+const mode = computed(() => props.editorMode ?? (props.readonly ? 'view' : 'edit'))
+const modeLabel = computed(() => FLOW_EDITOR_MODE_LABEL[mode.value])
+const flowTitle = computed(() => props.flowName?.trim() || '未命名流程')
+const canEdit = computed(() => mode.value !== 'view' && !props.readonly)
 
 const emit = defineEmits<{
   run: []
@@ -88,6 +96,8 @@ function onToggleMinimap() {
 }
 
 function onToggleLeftMenu() {
+  if (!canEdit.value)
+    return
   leftMenuVisible.value = toggleCanvasLeftToolbar(props.canvas)
 }
 
@@ -212,39 +222,50 @@ onUnmounted(() => {
         </svg>
       </button>
 
-      <template v-if="!readonly">
-        <span class="flow-canvas-toolbar__divider" aria-hidden="true" />
+      <span class="flow-canvas-toolbar__divider" aria-hidden="true" />
 
-        <button
-          type="button"
-          class="flow-canvas-toolbar__add-node"
-          :class="{ 'flow-canvas-toolbar__add-node--active': leftMenuVisible }"
-          :title="leftMenuVisible ? '隐藏节点菜单' : '显示节点菜单'"
-          :aria-label="leftMenuVisible ? '隐藏节点菜单' : '显示节点菜单'"
-          @click="onToggleLeftMenu"
-        >
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-            <path fill="currentColor" d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6z" />
-          </svg>
-          <span>添加节点</span>
-        </button>
-      </template>
-    </div>
-
-    <div v-if="!readonly" class="flow-canvas-toolbar__group flow-canvas-toolbar__group--actions">
       <button
         type="button"
-        class="flow-canvas-toolbar__icon-btn"
-        title="保存"
-        aria-label="保存"
-        @click="emit('save')"
+        class="flow-canvas-toolbar__add-node"
+        :class="{ 'flow-canvas-toolbar__add-node--active': leftMenuVisible && canEdit }"
+        :disabled="!canEdit"
+        :title="canEdit ? (leftMenuVisible ? '隐藏节点菜单' : '显示节点菜单') : '查看模式下不可添加节点'"
+        :aria-label="canEdit ? (leftMenuVisible ? '隐藏节点菜单' : '显示节点菜单') : '查看模式下不可添加节点'"
+        @click="onToggleLeftMenu"
       >
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path fill="currentColor" d="M11 11V5h2v6h6v2h-6v6h-2v-6H5v-2h6z" />
+        </svg>
+        <span>添加节点</span>
+      </button>
+    </div>
+
+    <div class="flow-canvas-toolbar__group flow-canvas-toolbar__group--actions">
+      <span
+        class="flow-canvas-toolbar__mode"
+        :class="`flow-canvas-toolbar__mode--${mode}`"
+      >
+        {{ modeLabel }}
+      </span>
+      <span class="flow-canvas-toolbar__flow-name" :title="flowTitle">
+        {{ flowTitle }}
+      </span>
+      <span class="flow-canvas-toolbar__divider" aria-hidden="true" />
+      <button
+        type="button"
+        class="flow-canvas-toolbar__save"
+        :disabled="!canEdit"
+        :title="canEdit ? '保存' : '查看模式下不可保存'"
+        :aria-label="canEdit ? '保存' : '查看模式下不可保存'"
+        @click="emit('save')"
+      >
+        <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
           <path
             fill="currentColor"
             d="M14.06 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.83a2 2 0 0 0-.59-1.42L15.65 2.59A2 2 0 0 0 14.06 2zm0 2.83L18.17 7H15a1 1 0 0 1-1-1V4.83zM7 20V10h10v10H7zm2-8h6v2H9v-2z"
           />
         </svg>
+        <span>保存</span>
       </button>
       <button
         type="button"

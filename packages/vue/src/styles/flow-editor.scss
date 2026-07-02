@@ -85,8 +85,77 @@
   }
 
   &__group--actions {
-    padding: 4px 6px 4px 8px;
+    padding: 4px 8px 4px 10px;
+    gap: 8px;
+    max-width: min(520px, 48vw);
+  }
+
+  &__mode {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+
+    &--add {
+      color: #4f46e5;
+      background: #eef2ff;
+    }
+
+    &--edit {
+      color: rgb(var(--primary-6));
+      background: rgb(var(--primary-1));
+    }
+
+    &--view {
+      color: #86909c;
+      background: #f2f3f5;
+    }
+  }
+
+  &__flow-name {
+    flex: 1;
+    min-width: 0;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1d2129;
+  }
+
+  &__save {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
     gap: 6px;
+    height: 32px;
+    padding: 0 14px 0 10px;
+    border: 1px solid rgb(var(--primary-6));
+    border-radius: 8px;
+    background: rgb(var(--primary-1));
+    color: rgb(var(--primary-6));
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+
+    &:hover:not(:disabled) {
+      background: rgb(var(--primary-2));
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: #c9cdd4;
+      background: #f2f3f5;
+      color: #86909c;
+    }
   }
 
   &__zoom {
@@ -169,17 +238,25 @@
     cursor: pointer;
     transition: background 0.15s;
 
-    &:hover {
+    &:hover:not(:disabled) {
       background: #e0e7ff;
     }
 
-    &--active {
+    &--active:not(:disabled) {
       background: #e0e7ff;
       box-shadow: inset 0 0 0 1px rgba(79, 70, 229, 0.35);
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      background: #f2f3f5;
+      color: #86909c;
     }
   }
 
   &__run {
+    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     gap: 6px;

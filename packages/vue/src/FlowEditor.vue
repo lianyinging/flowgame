@@ -37,6 +37,7 @@ import {
   normalizeCodeNodeParams,
   normalizeLlmApiNodeParams,
   normalizeMemoryNodeParams,
+  normalizeStateNodeParams,
   normalizeOssNodeParams,
   normalizeStartApiWorkflow,
   normalizeTalkStartNodeParams,
@@ -87,6 +88,7 @@ import type {
 } from '@flowgame/core'
 import useLoading from './hooks/useLoading'
 import type { FlowEditorFormMode } from './types'
+import { displayFlowEditorName, resolveInitialEditorFormMode } from './flow-editor-mode'
 import VariableTreeContent from './components/flow-editor/VariableTreeContent.vue'
 import NodeInspectorPanel from './components/flow-editor/NodeInspectorPanel.vue'
 import CanvasFloatingToolbar from './components/flow-editor/CanvasFloatingToolbar.vue'
@@ -117,7 +119,21 @@ const emit = defineEmits<{
   executed: [payload: { phase: 'success' | 'error' }]
 }>()
 
-const isViewMode = computed(() => props.readonly)
+const saveVisible = ref(false)
+const saveLoading = ref(false)
+const saveForm = reactive({ flowName: '' })
+
+const editorFormMode = ref<FlowEditorFormMode>(
+  resolveInitialEditorFormMode({
+    readonly: props.readonly,
+    redisKey: props.redisKey,
+    flowName: props.flowName
+  })
+)
+const isViewMode = computed(() => editorFormMode.value === 'view')
+const toolbarFlowName = computed(() =>
+  displayFlowEditorName(saveForm.flowName, editorFormMode.value)
+)
 const pageLoading = ref(false)
 const canvasRef = ref<HTMLElement>()
 const tinyflowRef = shallowRef<Tinyflow>()
@@ -130,9 +146,6 @@ const runState = reactive<FlowRunViewState>({
   executions: [],
   summary: null
 })
-const saveVisible = ref(false)
-const saveLoading = ref(false)
-const saveForm = reactive({ flowName: '' })
 const saveFlowRedisKeyPlaceholder = computed(
   () => `Redis Key：${getFlowListRedisPrefix()}流程名称`
 )
@@ -170,10 +183,12 @@ function applyWorkflowRules(
         normalizeOssNodeParams(
           normalizeHtmlTemplateNodeParams(
             normalizeMemoryNodeParams(
-              normalizeLlmApiNodeParams(
-                normalizeCodeNodeParams(
-                  normalizeKnowledgeNodeParams(
-                    normalizeTalkStartNodeParams(afterTalk)
+              normalizeStateNodeParams(
+                normalizeLlmApiNodeParams(
+                  normalizeCodeNodeParams(
+                    normalizeKnowledgeNodeParams(
+                      normalizeTalkStartNodeParams(afterTalk)
+                    )
                   )
                 )
               )
@@ -492,6 +507,7 @@ function applyWorkflowToCanvas(data: typeof initialData) {
 }
 
 async function openFlowFromListPanel(payload: { mode: FlowEditorFormMode, record?: FlowListIndexItem }) {
+  editorFormMode.value = payload.mode
   if (payload.mode === 'add') {
     saveForm.flowName = ''
     applyWorkflowToCanvas(collapseAllNodePanels(applyWorkflowRules(initialData, { silent: true })))
@@ -500,10 +516,16 @@ async function openFlowFromListPanel(payload: { mode: FlowEditorFormMode, record
   const redisKey = payload.record?.redisKey
   if (!redisKey)
     return
+  if (payload.record?.name?.trim())
+    saveForm.flowName = payload.record.name.trim()
+  else
+    saveForm.flowName = parseFlowNameFromRedisKey(redisKey)
   const data = await loadWorkflowByRedisKey(redisKey)
   if (!data)
     return
   applyWorkflowToCanvas(data)
+  if (payload.mode === 'view')
+    inspectorNodeId.value = null
 }
 
 function onOpenFlowListPanel() {
@@ -563,8 +585,14 @@ watch(() => saveForm.flowName, () => {
 })
 
 watch(
-  () => [props.redisKey, props.flowName] as const,
-  () => {
+  () => [props.redisKey, props.flowName, props.readonly] as const,
+  ([redisKey, flowName, readonly]) => {
+    if (readonly) {
+      editorFormMode.value = 'view'
+    }
+    else if (editorFormMode.value === 'view') {
+      editorFormMode.value = redisKey.trim() || flowName.trim() ? 'edit' : 'add'
+    }
     void reloadFromProps()
   }
 )
@@ -863,6 +891,10 @@ async function handleExecute() {
 }
 
 function handleSave() {
+  if (isViewMode.value) {
+    Message.warning('查看模式下不可保存')
+    return
+  }
   if (!tinyflowRef.value) {
     Message.warning('编辑器未就绪')
     return
@@ -920,6 +952,8 @@ defineExpose({
         <CanvasFloatingToolbar
           :tinyflow="tinyflowRef"
           :canvas="canvasRef"
+          :editor-mode="editorFormMode"
+          :flow-name="toolbarFlowName"
           :readonly="isViewMode"
           :run-loading="loading"
           :minimap-visible="minimapVisible"
@@ -964,7 +998,7 @@ defineExpose({
     <FlowListPanelModal
       v-if="builtinBusinessModals"
       v-model:visible="flowListPanelVisible"
-      :editor-readonly="isViewMode"
+      :editor-readonly="props.readonly"
       @open="onOpenFlowFromListPanel"
     />
 

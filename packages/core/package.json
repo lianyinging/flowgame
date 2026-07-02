@@ -1,6 +1,6 @@
 {
   "name": "@flowgame/core",
-  "version": "0.1.11",
+  "version": "0.1.13",
   "description": "FlowGame workflow editor core (framework-agnostic)",
   "type": "module",
   "license": "Apache-2.0",
