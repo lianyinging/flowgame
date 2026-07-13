@@ -30,5 +30,13 @@ export const databaseNodeOutputDefs: Parameter[] = [
     dataType: 'String',
     dataTypeDisabled: true,
     deleteDisabled: true
+  },
+  {
+    name: 'executedSql',
+    nameDisabled: true,
+    dataType: 'String',
+    dataTypeDisabled: true,
+    deleteDisabled: true,
+    description: '运行完成后最后一条实际执行的 SQL（参数已代入，便于调试）'
   }
 ]

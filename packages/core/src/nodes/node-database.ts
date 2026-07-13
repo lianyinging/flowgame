@@ -47,10 +47,10 @@ export const nodeDatabase: CustomNode = {
       type: 'textarea',
       name: 'sqlTemplate',
       label: 'SQL 模板',
-      placeholder: '支持 #{param}、${tableName}、<if test="param != null">...</if>',
+      placeholder: '支持 #{param}、#{keyword,like}、${tableName}、<if test="status == \'1\'">...</if>',
       defaultValue: DEFAULT_DATABASE_SQL,
       description:
-        '#{} 使用预编译参数（安全）；${} 为字符串替换（表名/列名等）；动态标签：<if>、<where>、<foreach>、<choose>/<when>/<otherwise>、<trim>；可用英文分号 ; 顺序执行多条 SQL（返回最后一条的结果）'
+        '#{} 预编译参数（安全）；支持修饰符 like / likeLeft / likeRight（自动拼 % 通配符）；${} 字符串替换（表名/列名）；<if test> 支持 != null、== \'值\'、== 数字；动态标签：<if>、<where>、<foreach>、<choose>/<when>/<otherwise>、<trim>；LIKE 可用 #{keyword,like} 或 CONCAT(\'%\', #{keyword}, \'%\')；可用 ; 执行多条 SQL'
     }
   ]
 }

@@ -1,6 +1,5 @@
 <script setup lang="tsx">
-import { onMounted, reactive, ref, watch } from 'vue'
-import type { FileItem } from '@arco-design/web-vue'
+import { inject, onMounted, reactive, ref, watch } from 'vue'
 import {
   Button,
   Form,
@@ -14,10 +13,8 @@ import {
   Select,
   Space,
   TabPane,
-  Tabs,
-  Upload
+  Tabs
 } from '@arco-design/web-vue'
-import { saveAs } from 'file-saver'
 import { ProTable, type TableProColumn } from '../ProComponent'
 import useSelection from '../../hooks/useSelection'
 import {
@@ -31,9 +28,8 @@ import {
   updateQdrantQaPointApi,
   deleteQdrantKbDocumentApi,
   listQdrantKbDocumentsApi,
-  uploadQdrantDocumentApi,
-  uploadQdrantQaFileApi,
-  type QdrantKbDocumentItem
+  type QdrantKbDocumentItem,
+  type QdrantPointItem
 } from '@flowgame/core'
 import {
   KB_DOC_SUFFIX,
@@ -47,7 +43,12 @@ import {
   resolveDocCollectionForApi,
   resolveQaCollectionForApi
 } from '@flowgame/core'
-import { FLOW_KNOWLEDGE_UPLOAD_TEMPLATE_TXT } from './flow-knowledge/upload-template'
+
+type FlowKnowledgeUploadApi = {
+  openTxt: () => void
+  openDoc: () => void
+  closeAll: () => void
+}
 
 type KbBaseRow = {
   collectionName: string
@@ -63,6 +64,16 @@ const props = defineProps<{
   /** 为 true 时刷新 Collection 列表（弹窗打开时传入） */
   active?: boolean
 }>()
+
+const flowKnowledgeUpload = inject<FlowKnowledgeUploadApi>('flowKnowledgeUpload')
+
+const QA_SCROLL_BATCH_SIZE = 200
+
+type QaPointRow = {
+  id: string | number
+  question: string
+  answer: string
+}
 
 const activeTab = ref('collections')
 const collectionOptions = ref<KbBaseRow[]>([])
@@ -94,15 +105,7 @@ const pointForm = reactive({
   answer: ''
 })
 
-const uploadVisible = ref(false)
-const uploadLoading = ref(false)
-const pendingTxtFile = ref<File | null>(null)
-const txtUploadFileList = ref<FileItem[]>([])
-
-const docUploadVisible = ref(false)
-const docUploadLoading = ref(false)
-const pendingDocFile = ref<File | null>(null)
-const docUploadFileList = ref<FileItem[]>([])
+const qaPointsCache = ref<{ collection: string, rows: QaPointRow[] } | null>(null)
 
 const distanceOptions = [
   { label: 'Cosine', value: 'Cosine' },
@@ -183,6 +186,39 @@ function extractAnswer(pageContent?: string) {
   return (match?.[1] ?? text).trim()
 }
 
+function mapQaPointRow(point: QdrantPointItem): QaPointRow {
+  return {
+    id: point.id,
+    question: point.payload?.metadata?.question ?? '--',
+    answer: extractAnswer(point.payload?.page_content) || point.payload?.metadata?.answer || '--'
+  }
+}
+
+function invalidateQaPointsCache() {
+  qaPointsCache.value = null
+}
+
+async function loadAllQaPointRows(collectionName: string): Promise<QaPointRow[]> {
+  const rows: QaPointRow[] = []
+  let offset: string | number | undefined
+
+  while (true) {
+    const res = await scrollQdrantPointsApi({
+      collectionName,
+      limit: QA_SCROLL_BATCH_SIZE,
+      offset
+    })
+    const points = res.data?.points ?? []
+    rows.push(...points.map(mapQaPointRow))
+    const nextOffset = res.data?.nextOffset
+    if (nextOffset === null || nextOffset === undefined || points.length === 0)
+      break
+    offset = nextOffset
+  }
+
+  return rows
+}
+
 async function fetchCollections(args: Record<string, unknown>) {
   const all = mapKbBasesToRows(await listKbBasesCached())
   let list = all
@@ -204,26 +240,30 @@ async function fetchPoints(args: Record<string, unknown>) {
   if (!collectionName)
     return { list: [], total: 0 }
 
-  const current = Number(args.current ?? args.pageNum ?? 1)
+  const qaCollection = getSelectedQaCollection()
+  if (!qaPointsCache.value || qaPointsCache.value.collection !== qaCollection) {
+    const rows = await loadAllQaPointRows(qaCollection)
+    qaPointsCache.value = { collection: qaCollection, rows }
+  }
+
+  const current = Number(args.pageNum ?? args.current ?? 1)
   const pageSize = Number(args.pageSize ?? 10)
-  const limit = Math.min(200, pageSize * current + pageSize)
-  const res = await scrollQdrantPointsApi({ collectionName: getSelectedQaCollection(), limit })
-  let points = res.data?.points ?? []
-  const keyword = String(args.keyword ?? '').trim().toLowerCase()
+  const keyword = String(args.keyword ?? pointParams.keyword ?? '').trim().toLowerCase()
+
+  let rows = qaPointsCache.value.rows
   if (keyword) {
-    points = points.filter((p) => {
-      const q = String(p.payload?.metadata?.question ?? '').toLowerCase()
-      const a = extractAnswer(p.payload?.page_content).toLowerCase()
+    rows = rows.filter((row) => {
+      const q = String(row.question ?? '').toLowerCase()
+      const a = String(row.answer ?? '').toLowerCase()
       return q.includes(keyword) || a.includes(keyword)
     })
   }
+
   const start = (current - 1) * pageSize
-  const list = points.slice(start, start + pageSize).map(p => ({
-    id: p.id,
-    question: p.payload?.metadata?.question ?? '--',
-    answer: extractAnswer(p.payload?.page_content) || p.payload?.metadata?.answer || '--'
-  }))
-  return { list, total: points.length }
+  return {
+    list: rows.slice(start, start + pageSize),
+    total: rows.length
+  }
 }
 
 async function handleCreateCollection() {
@@ -248,6 +288,7 @@ async function handleCreateCollection() {
     createCollectionVisible.value = false
     createCollectionForm.collectionName = ''
     invalidateKbBasesCache()
+    invalidateQaPointsCache()
     await refreshCollectionOptions(true)
     selectedCollection.value = base
     collectionTableRef.value?.reload()
@@ -268,6 +309,7 @@ async function handleDeleteCollection(record: KbBaseRow) {
   await refreshCollectionOptions(true)
   if (selectedCollection.value === record.baseName)
     selectedCollection.value = collectionOptions.value[0]?.baseName ?? ''
+  invalidateQaPointsCache()
   collectionTableRef.value?.reload()
   pointTableRef.value?.reload()
 }
@@ -309,6 +351,7 @@ async function submitPointForm() {
     }
     Message.success('保存成功')
     pointFormVisible.value = false
+    invalidateQaPointsCache()
     pointTableRef.value?.reload()
     return true
   }
@@ -328,6 +371,7 @@ async function handleDeletePoint(record: { id: string | number }) {
     pointIds: [record.id]
   })
   Message.success('删除成功')
+  invalidateQaPointsCache()
   pointTableRef.value?.reload()
 }
 
@@ -344,27 +388,11 @@ function handleBatchDeletePoints() {
       })
       Message.success('删除成功')
       setSelectedKeys([])
+      invalidateQaPointsCache()
       pointTableRef.value?.reload()
       return true
     }
   })
-}
-
-function isTxtFile(file: File) {
-  return (file.name || '').toLowerCase().endsWith('.txt')
-}
-
-function handleSelectTxt(option: any) {
-  const file = option?.fileItem?.file as File | undefined
-  if (!file || !isTxtFile(file)) {
-    Message.warning('仅支持 .txt 文件')
-    option?.onError?.()
-    return { abort: () => {} }
-  }
-  pendingTxtFile.value = file
-  txtUploadFileList.value = [{ uid: String(Date.now()), name: file.name, status: 'done' } as FileItem]
-  option?.onSuccess?.()
-  return { abort: () => {} }
 }
 
 async function fetchDocuments(args: Record<string, unknown>) {
@@ -387,51 +415,6 @@ async function fetchDocuments(args: Record<string, unknown>) {
   }
 }
 
-function isDocumentFile(file: File) {
-  const name = (file.name || '').toLowerCase()
-  return name.endsWith('.pdf') || name.endsWith('.docx')
-}
-
-function handleSelectDoc(option: any) {
-  const file = option?.fileItem?.file as File | undefined
-  if (!file || !isDocumentFile(file)) {
-    Message.warning('仅支持 .pdf、.docx 文件')
-    option?.onError?.()
-    return { abort: () => {} }
-  }
-  pendingDocFile.value = file
-  docUploadFileList.value = [{ uid: String(Date.now()), name: file.name, status: 'done' } as FileItem]
-  option?.onSuccess?.()
-  return { abort: () => {} }
-}
-
-async function confirmDocUpload() {
-  if (!selectedCollection.value) {
-    Message.warning('请先选择 Collection')
-    return false
-  }
-  if (!pendingDocFile.value) {
-    Message.warning('请选择文件')
-    return false
-  }
-  docUploadLoading.value = true
-  try {
-    const res = await uploadQdrantDocumentApi(selectedCollection.value, pendingDocFile.value)
-    Message.success(`成功导入 ${res.data?.importedChunks ?? 0} 个文本块`)
-    docUploadVisible.value = false
-    pendingDocFile.value = null
-    docUploadFileList.value = []
-    docTableRef.value?.reload()
-    return true
-  }
-  catch {
-    return false
-  }
-  finally {
-    docUploadLoading.value = false
-  }
-}
-
 async function handleDeleteDocument(record: QdrantKbDocumentItem) {
   if (!selectedCollection.value)
     return
@@ -444,37 +427,6 @@ function onSelectCollectionForDocs(name: string) {
   selectedCollection.value = name
   activeTab.value = 'documents'
   docTableRef.value?.reload()
-}
-
-async function confirmUpload() {
-  if (!selectedCollection.value) {
-    Message.warning('请先选择 Collection')
-    return false
-  }
-  if (!pendingTxtFile.value) {
-    Message.warning('请选择文件')
-    return false
-  }
-  uploadLoading.value = true
-  try {
-    const res = await uploadQdrantQaFileApi(selectedCollection.value, pendingTxtFile.value)
-    Message.success(`成功导入 ${res.data?.imported ?? 0} 条 Q&A`)
-    uploadVisible.value = false
-    pendingTxtFile.value = null
-    txtUploadFileList.value = []
-    pointTableRef.value?.reload()
-    return true
-  }
-  catch {
-    return false
-  }
-  finally {
-    uploadLoading.value = false
-  }
-}
-
-function downloadTemplate() {
-  saveAs(new Blob([`\uFEFF${FLOW_KNOWLEDGE_UPLOAD_TEMPLATE_TXT}`], { type: 'text/plain;charset=utf-8' }), '知识库上传模板.txt')
 }
 
 function onSelectCollection(name: string) {
@@ -566,7 +518,7 @@ const renderCollectionTools = () => (
 )
 
 const renderDocTools = () => (
-  <Button type="primary" disabled={!selectedCollection.value} onClick={() => { docUploadVisible.value = true }}>
+  <Button type="primary" disabled={!selectedCollection.value} onClick={() => flowKnowledgeUpload?.openDoc()}>
     上传文档
   </Button>
 )
@@ -576,7 +528,7 @@ const renderPointTools = () => (
     <Button type="primary" disabled={!selectedCollection.value} onClick={() => openPointForm('add')}>
       新增 Q&A
     </Button>
-    <Button disabled={!selectedCollection.value} onClick={() => { uploadVisible.value = true }}>
+    <Button disabled={!selectedCollection.value} onClick={() => flowKnowledgeUpload?.openTxt()}>
       上传 Q&A 文档
     </Button>
     <Button disabled={!selectedKeys.value.length} status="danger" onClick={handleBatchDeletePoints}>
@@ -636,9 +588,25 @@ function reloadTables() {
   docTableRef.value?.reload()
 }
 
+function reloadPoints() {
+  invalidateQaPointsCache()
+  pointTableRef.value?.reload()
+}
+
+function reloadDocuments() {
+  docTableRef.value?.reload()
+}
+
+function getSelectedCollectionName() {
+  return selectedCollection.value
+}
+
 defineExpose({
   refresh: refreshCollectionOptions,
-  reloadTables
+  reloadTables,
+  reloadPoints,
+  reloadDocuments,
+  getSelectedCollectionName
 })
 
 onMounted(() => {
@@ -648,6 +616,14 @@ onMounted(() => {
 watch(() => props.active, (open) => {
   if (open)
     void refreshCollectionOptions().then(() => reloadTables())
+  else
+    flowKnowledgeUpload?.closeAll()
+})
+
+watch(selectedCollection, () => {
+  invalidateQaPointsCache()
+  setSelectedKeys([])
+  flowKnowledgeUpload?.closeAll()
 })
 </script>
 
@@ -817,45 +793,6 @@ watch(() => props.active, (open) => {
           <Input v-model="pointForm.answer" type="textarea" :auto-size="{ minRows: 3 }" placeholder="回答内容" />
         </FormItem>
       </Form>
-    </Modal>
-
-    <Modal
-      v-model:visible="docUploadVisible"
-      title="上传 PDF / Word 文档"
-      :ok-loading="docUploadLoading"
-      @before-ok="confirmDocUpload"
-    >
-      <p class="flow-knowledge__hint">
-        支持 .pdf、.docx（单文件 ≤ 20MB）。上传后自动解析、分块并 Embedding 写入当前 Collection；扫描版 PDF 需含可选中文字。
-      </p>
-      <Upload
-        :file-list="docUploadFileList"
-        accept=".pdf,.docx"
-        :limit="1"
-        :custom-request="handleSelectDoc"
-        @remove="pendingDocFile = null; docUploadFileList = []"
-      />
-    </Modal>
-
-    <Modal
-      v-model:visible="uploadVisible"
-      title="上传 Q&A 文档"
-      :ok-loading="uploadLoading"
-      @before-ok="confirmUpload"
-    >
-      <p class="flow-knowledge__hint">
-        仅支持 .txt，格式示例：每段以 <code>Q:</code> 开头、<code>A:</code> 回答，上传后自动 Embedding 写入当前 Collection。
-      </p>
-      <Button type="text" @click="downloadTemplate">
-        下载模板
-      </Button>
-      <Upload
-        :file-list="txtUploadFileList"
-        accept=".txt"
-        :limit="1"
-        :custom-request="handleSelectTxt"
-        @remove="pendingTxtFile = null; txtUploadFileList = []"
-      />
     </Modal>
   </div>
 </template>

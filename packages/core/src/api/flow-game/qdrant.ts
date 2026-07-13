@@ -38,6 +38,8 @@ export interface QdrantKbDocumentItem {
   chunkCount: number
   mimeType?: string
   createdAt?: string
+  chunkingVersion?: string
+  parentCount?: number
 }
 
 const QDRANT_BASE = '/v1/flowGame/qdrant'
@@ -197,15 +199,28 @@ export function uploadQdrantQaTextApi(collectionName: string, text: string) {
   )
 }
 
-export function uploadQdrantDocumentApi(collectionName: string, file: File) {
+export interface UploadQdrantDocumentOptions {
+  /** 启用 HACR 智能分片（仅 .md；会调用 LLM 消耗 Token，默认关闭） */
+  useHacr?: boolean
+}
+
+export function uploadQdrantDocumentApi(
+  collectionName: string,
+  file: File,
+  options: UploadQdrantDocumentOptions = {},
+) {
   const formData = new FormData()
   formData.append('collectionName', collectionName)
   formData.append('file', file)
+  formData.append('useHacr', options.useHacr ? 'true' : 'false')
   return flowgameRequest.post<FlowgameQdrantResponse<{
     collectionName: string
     docId: string
     fileName: string
     importedChunks: number
+    parentCount?: number
+    chunkingVersion?: string
+    usedLlm?: boolean
     document?: QdrantKbDocumentItem
   }>>(
     `${QDRANT_BASE}/points/upload-document`,
