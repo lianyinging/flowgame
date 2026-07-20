@@ -105,11 +105,17 @@ const props = withDefaults(defineProps<{
   redisKey?: string
   /** 内置流程列表、知识库弹窗（默认开启，接入方无需再写 Modal） */
   builtinBusinessModals?: boolean
+  /**
+   * 画布背景 / 节点角标品牌水印。
+   * 不传则用 configureFlowGameClient({ canvasWatermark }) 或默认 FlowGame.ai
+   */
+  canvasWatermark?: string
 }>(), {
   readonly: false,
   flowName: '',
   redisKey: '',
-  builtinBusinessModals: true
+  builtinBusinessModals: true,
+  canvasWatermark: undefined
 })
 
 const emit = defineEmits<{
@@ -645,13 +651,17 @@ watch(inspectorNodeId, (id) => {
     syncInspectorPanelHeight()
 })
 
+watch(() => props.canvasWatermark, () => {
+  patchCanvasWatermark(canvasRef.value ?? undefined, props.canvasWatermark)
+})
+
 function onMinimapVisibleChange(visible: boolean) {
   minimapVisible.value = visible
   setCanvasMinimapVisible(canvasRef.value ?? undefined, visible)
 }
 
 function refreshToolbarVariables() {
-  patchCanvasWatermark(canvasRef.value ?? undefined)
+  patchCanvasWatermark(canvasRef.value ?? undefined, props.canvasWatermark)
   patchCanvasControlsPosition(canvasRef.value ?? undefined)
   patchCanvasMinimapStyle(canvasRef.value ?? undefined)
   patchCanvasNodePopover(canvasRef.value ?? undefined)
@@ -733,7 +743,7 @@ function initTinyflow(data: typeof initialData) {
       const current = tinyflowRef.value
         ? getWorkflowFromTinyflow(tinyflowRef.value, workflowSnapshot.value)
         : workflowSnapshot.value
-      const hidden: string[] = ['llmNode', 'knowledgeNode']
+      const hidden: string[] = ['llmNode', 'knowledgeNode', 'searchEngineNode']
       if (hasStartApiNode(current))
         hidden.push(START_NODE_TYPE)
       return hidden

@@ -65,6 +65,7 @@ import App from './App.vue'
 
 configureFlowGameClient({
   baseURL: '/api',
+  // canvasWatermark: 'YourBrand.ai', // 可选：画布品牌水印
   onError: (msg) => alert(msg)
 })
 
@@ -112,6 +113,7 @@ export default defineConfig({
 | Prop | `readonly` | 只读查看 |
 | Prop | `flow-name` / `redis-key` | 从 Redis 加载流程 |
 | Prop | `builtin-business-modals` | 内置流程列表/知识库弹窗（默认 `true`） |
+| Prop | `canvas-watermark` | 画布品牌水印；不传则用全局 `canvasWatermark` 或默认 `FlowGame.ai` |
 | Event | `saved` | 保存成功 |
 | Event | `executed` | 试运行结束 |
 | Expose | `getWorkflow()` | 当前工作流 JSON |

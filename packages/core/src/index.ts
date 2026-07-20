@@ -187,7 +187,12 @@ export { patchCanvasControlsPosition } from './patches/patch-canvas-controls-pos
 export { patchCanvasMinimapStyle, setCanvasMinimapVisible } from './patches/patch-canvas-minimap-style'
 export { patchCanvasNodePopover } from './patches/patch-canvas-node-popover'
 export { patchBranchNodeCanvasDom } from './patches/patch-branch-node-canvas'
-export { patchCanvasWatermark } from './patches/patch-canvas-watermark'
+export {
+  configureCanvasWatermark,
+  DEFAULT_CANVAS_WATERMARK,
+  getCanvasWatermark,
+  patchCanvasWatermark
+} from './patches/patch-canvas-watermark'
 export {
   cleanupNodeInspectorTrigger,
   FLOWGAME_OPEN_NODE_INSPECTOR_EVENT,

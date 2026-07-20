@@ -8,6 +8,7 @@ import {
   getRedisKeyPrefix
 } from './flow-game/key-prefix'
 import { invalidateKbBasesCache } from './flow-game/qdrant'
+import { configureCanvasWatermark } from '../patches/patch-canvas-watermark'
 
 export interface FlowgameApiResponse<T = unknown> {
   code: number
@@ -24,6 +25,8 @@ export interface FlowGameClientOptions {
   redisKeyPrefix?: string
   /** 可选：Qdrant 知识库 Collection 前缀，如 `myapp_`；未配置则默认 `flowgame_` */
   qdrantKbPrefix?: string
+  /** 可选：画布背景 / 节点角标品牌水印文案；默认 `FlowGame.ai` */
+  canvasWatermark?: string
 }
 
 let onErrorHandler: (message: string) => void = (msg) => {
@@ -43,6 +46,8 @@ export function configureFlowGameClient(options: FlowGameClientOptions = {}) {
   })
   if (options.redisKeyPrefix !== undefined || options.qdrantKbPrefix !== undefined)
     invalidateKbBasesCache()
+  if (options.canvasWatermark !== undefined)
+    configureCanvasWatermark(options.canvasWatermark)
   flowgameRequest.defaults.baseURL = apiBaseURL
   if (options.timeout !== undefined)
     flowgameRequest.defaults.timeout = options.timeout

@@ -84,6 +84,8 @@ configureFlowGameClient({
   // 多项目共用 Redis / Qdrant 时可配置（须与 flowgame_python .env 一致）
   // redisKeyPrefix: 'myapp:',
   // qdrantKbPrefix: 'myapp_',
+  // 画布背景 / 节点角标品牌水印（默认 FlowGame.ai）
+  // canvasWatermark: 'YourBrand.ai',
   onError: (msg) => alert(msg)
 })
 
@@ -157,6 +159,7 @@ pnpm dev
 | Prop | `readonly` | 只读查看模式 |
 | Prop | `flow-name` / `redis-key` | 从 Redis 加载指定流程 |
 | Prop | `builtin-business-modals` | 是否内置流程列表/知识库弹窗（默认 `true`） |
+| Prop | `canvas-watermark` | 画布背景 / 节点角标品牌文字；不传则用 `configureFlowGameClient({ canvasWatermark })` 或默认 `FlowGame.ai` |
 | Event | `saved` | 保存成功，`{ flowName }` |
 | Event | `executed` | 试运行结束，`{ phase: 'success' \| 'error' }` |
 | Event | `open-flow-list` / `open-flow-knowledge` | `builtin-business-modals=false` 时触发自定义弹窗 |

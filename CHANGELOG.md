@@ -5,6 +5,23 @@ All notable changes to the publishable packages (`@flowgame/core`, `@flowgame/vu
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.15] - 2026-07-17
+
+### Added
+
+- `@flowgame/core` / `@flowgame/vue`: 画布品牌水印可配置：`configureFlowGameClient({ canvasWatermark })`、`<FlowEditor canvas-watermark="..." />`；默认仍为 `FlowGame.ai`
+
+## [0.1.14] - 2026-07-13
+
+### Added
+
+- `@flowgame/core`: 文档上传 API 支持 `useHacr` 可选参数；`QdrantKbDocumentItem` 增加 `chunkingVersion` / `parentCount`
+- `@flowgame/vue`: 知识库文档上传支持勾选「HACR 智能分片」；Firefox 拖入上传与上传成功提示优化
+
+### Changed
+
+- `@flowgame/core`: `configureFlowGameClient` 支持 `qdrantKbPrefix`（与后端 `FLOWGAME_QDRANT_KB_PREFIX` 对齐）
+
 ## [0.1.13] - 2026-05-27
 
 ### Fixed
