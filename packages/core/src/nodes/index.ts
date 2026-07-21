@@ -14,13 +14,21 @@ import { nodeMemoryRead } from './node-memory-read'
 import { nodeMemoryWrite } from './node-memory-write'
 import { nodeStartApi } from './node-start-api'
 import { nodeStartTalk } from './node-start-talk'
+import { nodeWebSearch } from './node-web-search'
+import { nodeFetchUrl } from './node-fetch-url'
+import { nodeImageGen } from './node-image-gen'
+import { nodeEndApi } from './node-end-api'
 
 /** 流程编排自定义节点注册表，key 与节点 type 一致 */
 export const flowGameCustomNodes: NonNullable<TinyflowOptions['customNodes']> = {
   node_start_api: nodeStartApi,
   node_start_talk: nodeStartTalk,
+  node_end_api: nodeEndApi,
   llmapiNode: nodeLlmApi,
   knowledgeNodePlus: nodeKnowledgePlus,
+  webSearchNode: nodeWebSearch,
+  fetchUrlNode: nodeFetchUrl,
+  imageGenNode: nodeImageGen,
   memoryWriteNode: nodeMemoryWrite,
   memoryReadNode: nodeMemoryRead,
   stateMachineNode: nodeStateMachine,
@@ -83,6 +91,44 @@ export { OSS_FILE_TYPES, DEFAULT_OSS_FILE_TYPE, getOssFileTypeMeta } from './oss
 export type { OssFileType } from './oss-file-types'
 export { ossNodeDefaultParameters, ossContentParameter, ossObjectKeyParameter } from './oss-node-parameters'
 export { ossNodeOutputDefs } from './oss-node-output-defs'
+export { nodeWebSearch, WEB_SEARCH_NODE_TYPE } from './node-web-search'
+export {
+  WEB_SEARCH_ENGINE_OPTIONS,
+  DEFAULT_WEB_SEARCH_ENGINES,
+  normalizeWebSearchEngines
+} from './web-search-engines'
+export type { WebSearchEngineOption } from './web-search-engines'
+export {
+  webSearchNodeDefaultParameters,
+  webSearchKeywordParameter,
+  webSearchLimitParameter
+} from './web-search-node-parameters'
+export { webSearchNodeOutputDefs } from './web-search-node-output-defs'
+export { nodeFetchUrl, FETCH_URL_NODE_TYPE, DEFAULT_FETCH_URL_MAX_CHARS } from './node-fetch-url'
+export { fetchUrlNodeDefaultParameters, fetchUrlParameter } from './fetch-url-node-parameters'
+export { fetchUrlNodeOutputDefs } from './fetch-url-node-output-defs'
+export {
+  nodeImageGen,
+  IMAGE_GEN_NODE_TYPE,
+  DEFAULT_IMAGE_GEN_BASE_URL,
+  DEFAULT_IMAGE_GEN_MODEL,
+  DEFAULT_IMAGE_GEN_SIZE,
+  DEFAULT_IMAGE_GEN_PROVIDER,
+  DEFAULT_IMAGE_GEN_PROMPT_TEMPLATE,
+  DEFAULT_IMAGE_GEN_TIMEOUT_MS,
+  DEFAULT_IMAGE_GEN_EXTRA_BODY,
+  DASHSCOPE_IMAGE_GEN_BASE_URL,
+  DASHSCOPE_IMAGE_GEN_MODEL,
+  DASHSCOPE_IMAGE_GEN_SIZE,
+  DASHSCOPE_IMAGE_GEN_EXTRA_BODY
+} from './node-image-gen'
+export { imageGenNodeDefaultParameters, imageGenPromptParameter } from './image-gen-node-parameters'
+export {
+  imageGenImageUrlParameter,
+  imageGenImageUrl2Parameter,
+  imageGenImageUrl3Parameter
+} from './image-gen-node-parameters'
+export { imageGenNodeOutputDefs } from './image-gen-node-output-defs'
 export { nodeDatabase, DATABASE_NODE_TYPE, DEFAULT_DATABASE_SQL } from './node-database'
 export { databaseNodeOutputDefs } from './database-node-output-defs'
 export { nodeFork, FORK_NODE_TYPE } from './node-fork'
@@ -131,3 +177,8 @@ export {
 } from './node-category-registry'
 export type { FlowGameNodeCategory } from './node-category-registry'
 export { nodeStartTalk, START_TALK_NODE_TYPE } from './node-start-talk'
+export {
+  nodeEndApi,
+  END_API_NODE_TYPE,
+  DEFAULT_END_API_INCLUDE_EXECUTION_DETAILS
+} from './node-end-api'

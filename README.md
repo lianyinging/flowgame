@@ -25,15 +25,21 @@
 | 节点 | 说明 |
 |------|------|
 | **Start API** | 工作流 HTTP 入口，定义对外 API 路径与入参 |
+| **Api接口结束** | API 流程终点：自定义对外输出；可关闭 `/execute` 过程详情（试运行不受影响） |
+| **对话开始** | 打开 `/talk` 对话页；模板含 default / minimal / **image_chat**（最多 3 张图转 base64 → `imgBase64List`） |
 | **模型调用（LLM API）** | 配置 API Key、接口地址与模型名，调用大模型 |
 | **知识库检索+** | 关联 Qdrant 知识库，支持检索增强（RAG） |
+| **网页搜索** | 免费多选 Google News/RSS + DuckDuckGo（可选 Wikipedia），无需 API Key，并行去重 |
+| **网页抓取** | 抓取 URL 并抽取可读正文（title / content） |
+| **图像生成** | OpenAI SDK 文生图（Seedream 等）；或 DashScope 原生文生图 / 图生图编辑（`imageUrl` 单张或数组最多 3 张 base64/URL） |
 | **记忆写入 / 读取** | 跨节点、跨轮次读写会话上下文 |
 | **HTML 模板** | 用模板渲染结构化 HTML 输出 |
+| **结束节点** | Tinyflow 内置流程终点（参数名称 / 参数值） |
 
 ## 核心能力
 
-- **基于 Tinyflow 扩展**：复用成熟画布与连线能力，并注册 Start API、模型调用、知识库+、记忆读写、HTML 模板等自定义节点。
-- **Python 后端驱动执行**：flowgame_python 负责解析工作流、调用 LLM/HTTP、读写 Redis 与 Qdrant，支持同步与流式试运行。
+- **基于 Tinyflow 扩展**：复用成熟画布与连线能力，并注册 Start API、模型调用、知识库+、网页搜索/抓取、记忆读写、HTML 模板等自定义节点。
+- **Python 后端驱动执行**：flowgame_python 负责解析工作流、调用 LLM/HTTP/网页搜索与抓取、读写 Redis 与 Qdrant，支持同步与流式试运行。
 - **开箱即用组件**：`FlowEditor` 一行接入，内置流程列表、知识库配置、节点详情面板与试运行入口。
 - **框架分层清晰**：`@flowgame/core` 负责节点与 API 客户端；`@flowgame/vue` 负责 Vue 3 UI，便于二次定制。
 - **多种部署方式**：npm 接入、Monorepo 本地开发、Docker 一键部署（前端 + API + Redis + Qdrant）。

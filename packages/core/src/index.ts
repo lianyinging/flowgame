@@ -88,8 +88,33 @@ export {
   DEFAULT_OSS_FILE_TYPE,
   getOssFileTypeMeta,
   ossNodeDefaultParameters,
-  ossNodeOutputDefs
+  ossNodeOutputDefs,
+  nodeWebSearch,
+  WEB_SEARCH_NODE_TYPE,
+  WEB_SEARCH_ENGINE_OPTIONS,
+  DEFAULT_WEB_SEARCH_ENGINES,
+  normalizeWebSearchEngines,
+  webSearchNodeDefaultParameters,
+  webSearchNodeOutputDefs,
+  nodeFetchUrl,
+  FETCH_URL_NODE_TYPE,
+  DEFAULT_FETCH_URL_MAX_CHARS,
+  fetchUrlNodeDefaultParameters,
+  fetchUrlNodeOutputDefs,
+  nodeImageGen,
+  IMAGE_GEN_NODE_TYPE,
+  DEFAULT_IMAGE_GEN_BASE_URL,
+  DEFAULT_IMAGE_GEN_MODEL,
+  DEFAULT_IMAGE_GEN_SIZE,
+  imageGenNodeDefaultParameters,
+  imageGenNodeOutputDefs
 } from './nodes'
+export {
+  nodeEndApi,
+  END_API_NODE_TYPE,
+  DEFAULT_END_API_INCLUDE_EXECUTION_DETAILS
+} from './nodes/node-end-api'
+export type { WebSearchEngineOption } from './nodes'
 export type { OssFileType } from './nodes/oss-file-types'
 export type { StateMachineMode } from './nodes/state-machine-modes'
 export type { IfBranchDef, IfBranchType } from './nodes/if-branches'
@@ -103,6 +128,19 @@ export { normalizeMemoryNodeParams } from './workflow/normalize-memory-node-para
 export { normalizeStateNodeParams, defaultStateParametersForMode } from './workflow/normalize-state-node-params'
 export { deepMergePayload } from './workflow/state-payload-merge'
 export { normalizeOssNodeParams } from './workflow/normalize-oss-node-params'
+export { normalizeWebSearchNodeParams } from './workflow/normalize-web-search-node-params'
+export { normalizeFetchUrlNodeParams } from './workflow/normalize-fetch-url-node-params'
+export { normalizeImageGenNodeParams } from './workflow/normalize-image-gen-node-params'
+export {
+  normalizeEndApiNodeParams,
+  syncEndApiParamsAndOutputDefs,
+  syncEndApiFromParameters,
+  syncEndApiFromOutputDefs,
+  findEndApiNodes,
+  hasEndApiNode,
+  patchEndApiNodeDom
+} from './workflow/normalize-end-api-node-params'
+export { syncEndApiCanvasParams } from './nodes/end-api-canvas'
 export { normalizeHtmlTemplateNodeParams } from './workflow/normalize-html-template-node-params'
 export { normalizeTalkStartNodeParams } from './workflow/normalize-talk-start-node-params'
 export { normalizeCodeNodeParams } from './workflow/normalize-code-node-params'

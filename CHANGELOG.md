@@ -5,6 +5,18 @@ All notable changes to the publishable packages (`@flowgame/core`, `@flowgame/vu
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] - 2026-07-21
+
+### Added
+
+- `@flowgame/core` / `@flowgame/vue`: **Api接口结束**（`node_end_api`）：自定义对外输出；可关闭 `/execute` 过程详情；画布输出参数可引用上游
+- `@flowgame/core` / `@flowgame/vue`: **网页搜索**（`webSearchNode`）、**网页抓取**（`fetchUrlNode`）、**图像生成**（`imageGenNode`，含 DashScope 图生图）
+- `@flowgame/core` / `@flowgame/vue`: 对话开始支持 `image_chat` 模板；校验识别 Api接口结束上的 `assistantMessage`
+
+### Fixed
+
+- `@flowgame/core`: 对话流程校验不再只认内置结束节点，Api接口结束配置 `assistantMessage` 后可正常保存
+
 ## [0.1.15] - 2026-07-17
 
 ### Added

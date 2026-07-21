@@ -33,6 +33,7 @@ import {
   getNodeTypeLabel,
   IF_NODE_TYPE,
   SWITCH_NODE_TYPE,
+  WEB_SEARCH_NODE_TYPE,
   isCodeNodeType,
   parseIfBranches,
   parseSwitchCases,
@@ -61,6 +62,7 @@ import HtmlTemplateInputParametersBlock from './HtmlTemplateInputParametersBlock
 import HtmlTemplateEditorWithPreview from './HtmlTemplateEditorWithPreview.vue'
 import IfNodeBranchesBlock from './IfNodeBranchesBlock.vue'
 import SwitchNodeCasesBlock from './SwitchNodeCasesBlock.vue'
+import WebSearchEnginesBlock from './WebSearchEnginesBlock.vue'
 import OutputDefInspectorRow from './OutputDefInspectorRow.vue'
 import { IconDelete, IconPlus } from '@arco-design/web-vue/es/icon'
 
@@ -87,8 +89,10 @@ const outputDefs = computed(() => cloneParameters(nodeData.value.outputDefs as F
 
 const showInputSection = computed(() => isInspectorParametersEnabled(nodeType.value))
 const showOutputSection = computed(() => isInspectorOutputDefsEnabled(nodeType.value))
-/** 结束节点输出需映射上游变量，与画布「参数名称 | 参数值」一致 */
-const showOutputValueColumn = computed(() => nodeType.value === 'endNode')
+/** 结束 / Api接口结束：输出需映射上游变量 */
+const showOutputValueColumn = computed(
+  () => nodeType.value === 'endNode' || nodeType.value === 'node_end_api'
+)
 const isKnowledgeNode = computed(() => isKnowledgeNodeType(nodeType.value))
 const isCodeNode = computed(() => isCodeNodeType(nodeType.value))
 const isIfNode = computed(() => nodeType.value === IF_NODE_TYPE)
@@ -99,6 +103,8 @@ const isMemoryWriteNode = computed(() => nodeType.value === MEMORY_WRITE_NODE_TY
 const isMemoryReadNode = computed(() => nodeType.value === MEMORY_READ_NODE_TYPE)
 const isStateMachineNode = computed(() => nodeType.value === STATE_MACHINE_NODE_TYPE)
 const isHtmlTemplateNode = computed(() => nodeType.value === HTML_TEMPLATE_NODE_TYPE)
+const isWebSearchNode = computed(() => nodeType.value === WEB_SEARCH_NODE_TYPE)
+const webSearchEngines = computed(() => nodeData.value.engines)
 const htmlTemplateText = computed(() => {
   const tpl = nodeData.value.template
   if (typeof tpl === 'string' && tpl.trim())
@@ -821,6 +827,13 @@ function onTextInput(handler: (value: string) => void) {
           @assign-branch-edge="assignBranchEdge"
         />
       </section>
+
+      <WebSearchEnginesBlock
+        v-if="isWebSearchNode"
+        :engines="webSearchEngines"
+        :readonly="readonly"
+        @update:engines="(v) => patchField('engines', v)"
+      />
 
       <!-- 2. 节点配置（forms：heading + setting-title / setting-item） -->
       <section v-if="inspectorFormSections.length" class="tf-node-panel__block">

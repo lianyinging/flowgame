@@ -1,5 +1,6 @@
 import type { TinyflowData } from '@tinyflow-ai/ui'
 import { getTinyflowHostRoot } from '../tinyflow/tinyflow-host'
+import { END_API_NODE_TYPE } from '../nodes/node-end-api'
 
 export const START_TALK_NODE_TYPE = 'node_start_talk'
 export const END_NODE_TYPE = 'endNode'
@@ -18,13 +19,27 @@ export function hasStartTalkNode(workflow: TinyflowData) {
   return findStartTalkNodes(workflow).length > 0
 }
 
+/** 对话终点：优先 Api接口结束，其次内置结束节点 */
+function findTalkEndNode(workflow: TinyflowData) {
+  const nodes = workflow.nodes ?? []
+  return nodes.find(n => n.type === END_API_NODE_TYPE)
+    ?? nodes.find(n => n.type === END_NODE_TYPE)
+}
+
 function getEndNodeOutputDefs(workflow: TinyflowData) {
-  const endNode = (workflow.nodes ?? []).find(n => n.type === END_NODE_TYPE)
+  const endNode = findTalkEndNode(workflow)
   const data = endNode?.data
   if (!data || typeof data !== 'object')
     return []
-  const outputDefs = (data as Record<string, unknown>).outputDefs
-  return Array.isArray(outputDefs) ? outputDefs : []
+  const record = data as Record<string, unknown>
+  const outputDefs = record.outputDefs
+  if (Array.isArray(outputDefs) && outputDefs.length)
+    return outputDefs
+  // Api接口结束画布用 parameters 承载引用，可能尚未同步到 outputDefs
+  const parameters = record.parameters
+  if (Array.isArray(parameters) && parameters.length)
+    return parameters
+  return []
 }
 
 function hasAssistantMessageOutput(workflow: TinyflowData) {
@@ -34,8 +49,9 @@ function hasAssistantMessageOutput(workflow: TinyflowData) {
     const name = String((item as Record<string, unknown>).name ?? '').trim()
     if (name !== ASSISTANT_MESSAGE_OUTPUT_NAME)
       return false
+    // Tinyflow 参数表默认 dataType 常为 String；assistantMessage 语义上必须是 Object
     const dataType = String((item as Record<string, unknown>).dataType ?? 'Object').trim()
-    return dataType === 'Object' || dataType === ''
+    return dataType === 'Object' || dataType === '' || dataType === 'String'
   })
 }
 
@@ -66,7 +82,7 @@ export function validateTalkStartWorkflow(workflow: TinyflowData): TalkStartWork
   if (!hasAssistantMessageOutput(workflow)) {
     issues.push({
       code: 'MISSING_ASSISTANT_MESSAGE',
-      message: '配置了「对话开始」时，结束节点必须包含 Object 类型的 assistantMessage 输出'
+      message: '配置了「对话开始」时，结束节点或 Api接口结束必须包含名为 assistantMessage 的输出（引用上游 Object）'
     })
   }
 

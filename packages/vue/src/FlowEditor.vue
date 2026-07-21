@@ -39,6 +39,11 @@ import {
   normalizeMemoryNodeParams,
   normalizeStateNodeParams,
   normalizeOssNodeParams,
+  normalizeWebSearchNodeParams,
+  normalizeFetchUrlNodeParams,
+  normalizeImageGenNodeParams,
+  normalizeEndApiNodeParams,
+  syncEndApiFromOutputDefs,
   normalizeStartApiWorkflow,
   normalizeTalkStartNodeParams,
   normalizeTalkStartWorkflow,
@@ -60,6 +65,7 @@ import {
   patchNodeInspectorTrigger,
   patchStartApiNodeDom,
   patchBranchNodeCanvasDom,
+  patchEndApiNodeDom,
   patchTalkStartNodeDom,
   saveFlowWorkflowApi,
   selectCanvasNode,
@@ -187,13 +193,21 @@ function applyWorkflowRules(
     normalizeSwitchWorkflow(
       normalizeIfWorkflow(
         normalizeOssNodeParams(
-          normalizeHtmlTemplateNodeParams(
-            normalizeMemoryNodeParams(
-              normalizeStateNodeParams(
-                normalizeLlmApiNodeParams(
-                  normalizeCodeNodeParams(
-                    normalizeKnowledgeNodeParams(
-                      normalizeTalkStartNodeParams(afterTalk)
+          normalizeEndApiNodeParams(
+            normalizeImageGenNodeParams(
+              normalizeFetchUrlNodeParams(
+                normalizeWebSearchNodeParams(
+                  normalizeHtmlTemplateNodeParams(
+                    normalizeMemoryNodeParams(
+                      normalizeStateNodeParams(
+                        normalizeLlmApiNodeParams(
+                          normalizeCodeNodeParams(
+                            normalizeKnowledgeNodeParams(
+                              normalizeTalkStartNodeParams(afterTalk)
+                            )
+                          )
+                        )
+                      )
                     )
                   )
                 )
@@ -239,6 +253,7 @@ function applyWorkflowRules(
     patchStartApiNodeDom(canvasRef.value ?? undefined, next)
     patchTalkStartNodeDom(canvasRef.value ?? undefined, next)
     patchBranchNodeCanvasDom(canvasRef.value ?? undefined, next)
+    patchEndApiNodeDom(canvasRef.value ?? undefined, next)
     refreshToolbarVariables()
   })
 
@@ -360,6 +375,14 @@ function patchNodeFromInspector(
         data.parameters = patch.parameters
       if (patch.outputDefs)
         data.outputDefs = patch.outputDefs
+      // Api接口结束：侧栏改 outputDefs 时回填画布 parameters（带上游引用）
+      if (node.type === 'node_end_api' && patch.outputDefs) {
+        const synced = syncEndApiFromOutputDefs(data as Record<string, unknown>)
+        Object.assign(data, {
+          parameters: synced.parameters,
+          outputDefs: synced.outputDefs
+        })
+      }
       return {
         ...node,
         data,
@@ -380,6 +403,7 @@ function patchNodeFromInspector(
     requestAnimationFrame(() => {
       patchStartApiNodeDom(canvasRef.value ?? undefined, workflowSnapshot.value)
       patchTalkStartNodeDom(canvasRef.value ?? undefined, workflowSnapshot.value)
+      patchEndApiNodeDom(canvasRef.value ?? undefined, workflowSnapshot.value)
     })
   }
   finally {
@@ -509,6 +533,8 @@ function applyWorkflowToCanvas(data: typeof initialData) {
   inspectorNodeId.value = null
   requestAnimationFrame(() => {
     patchStartApiNodeDom(canvasRef.value ?? undefined, data)
+    patchTalkStartNodeDom(canvasRef.value ?? undefined, data)
+    patchEndApiNodeDom(canvasRef.value ?? undefined, data)
   })
 }
 
@@ -765,10 +791,10 @@ function initTinyflow(data: typeof initialData) {
     }
   })
   requestAnimationFrame(() => {
-    patchStartApiNodeDom(
-      canvasRef.value ?? undefined,
-      getWorkflowFromTinyflow(tinyflowRef.value!, workflowSnapshot.value)
-    )
+    const wf = getWorkflowFromTinyflow(tinyflowRef.value!, workflowSnapshot.value)
+    patchStartApiNodeDom(canvasRef.value ?? undefined, wf)
+    patchTalkStartNodeDom(canvasRef.value ?? undefined, wf)
+    patchEndApiNodeDom(canvasRef.value ?? undefined, wf)
     setupToolbarVariablesWatch()
   })
 }
