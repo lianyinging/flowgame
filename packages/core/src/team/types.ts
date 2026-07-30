@@ -71,7 +71,9 @@ export const DEFAULT_STATUS_CARD_KEYS = [
   'outline',
   'content',
   'review',
-  'article'
+  'article',
+  'runtimeSpace',
+  'runId'
 ] as const
 
 export const AGENT_TEAM_STRATEGY_OPTIONS: Array<{ label: string, value: AgentTeamStrategy }> = [
