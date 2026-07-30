@@ -101,6 +101,7 @@ export {
   DEFAULT_FETCH_URL_MAX_CHARS,
   fetchUrlNodeDefaultParameters,
   fetchUrlNodeOutputDefs,
+  fetchUrlsParameter,
   nodeImageGen,
   IMAGE_GEN_NODE_TYPE,
   DEFAULT_IMAGE_GEN_BASE_URL,
@@ -245,8 +246,62 @@ export {
 export {
   FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT,
   FLOWGAME_OPEN_FLOW_LIST_EVENT,
+  FLOWGAME_OPEN_AGENT_TEAM_EVENT,
   patchFlowToolbarVariables
 } from './patches/patch-flow-toolbar-variables'
+
+// Multi-agent team (frontend scaffold; backend APIs later)
+export type {
+  AgentTeamDef,
+  AgentTeamHarness,
+  AgentTeamMember,
+  AgentTeamStrategy,
+  FlowAgentConfig,
+  FlowAgentSchemaField
+} from './team/types'
+export {
+  AGENT_TEAM_STRATEGY_OPTIONS,
+  DEFAULT_BLACKBOARD_DEFAULT_KEYS,
+  DEFAULT_STATUS_CARD_KEYS,
+  createEmptyAgentConfig,
+  createEmptyAgentTeam,
+  defaultAgentTeamHarness,
+  formatBlackboardDefaults,
+  normalizeStatusCardKeys,
+  parseBlackboardDefaults,
+  parseStatusCardKeys
+} from './team/types'
+export {
+  createAgentTeam,
+  deleteAgentTeam,
+  getAgentTeam,
+  getFlowAgentConfig,
+  listAgentTeams,
+  listFlowAgentConfigs,
+  saveAgentTeam,
+  saveFlowAgentConfig,
+  seedContentSupervisorTeam,
+  upsertFlowAgentConfigFromFlow
+} from './team/local-store'
+export type { SeedTeamTemplateResult } from './team/local-store'
+export {
+  CONTENT_SUPERVISOR_AGENT_KEY,
+  CONTENT_SUPERVISOR_BLUEPRINTS,
+  CONTENT_SUPERVISOR_TEAM_KEY,
+  MASTER_SYSTEM_PROMPT,
+  SUPERVISOR_DECISION_SCHEMA,
+  buildContentSupervisorAgentConfigs,
+  buildContentSupervisorTeamDef
+} from './team/templates/content-supervisor'
+export type { AgentFlowBlueprint } from './team/templates/content-supervisor'
+export {
+  INTEL_DECISION_SCHEMA,
+  INTEL_MASTER_SYSTEM_PROMPT,
+  INTEL_MASTER_SYSTEM_PROMPT_FILLED,
+  INTEL_MASTER_USER_TEMPLATE,
+  INTEL_SUPERVISOR_AGENT_KEY,
+  INTEL_SUPERVISOR_TEAM_KEY
+} from './team/templates/intel-supervisor'
 export { patchFlowToolbarNodeCategories } from './patches/patch-flow-toolbar-node-categories'
 export {
   FLOWGAME_NODE_CATEGORIES,

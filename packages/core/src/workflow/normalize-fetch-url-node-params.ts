@@ -10,6 +10,43 @@ function cloneParam(param: Parameter): Parameter {
   return JSON.parse(JSON.stringify(param)) as Parameter
 }
 
+function ensureUrlsParameter(rawParams: Parameter[]): { params: Parameter[], changed: boolean } {
+  const hasUrls = rawParams.some(p => p.name === 'urls')
+  if (hasUrls) {
+    // 去掉旧的单 url 参数，避免重复
+    const next = rawParams.filter(p => p.name !== 'url')
+    return { params: next, changed: next.length !== rawParams.length }
+  }
+
+  const urlIdx = rawParams.findIndex(p => p.name === 'url')
+  if (urlIdx >= 0) {
+    const old = rawParams[urlIdx]!
+    const migrated = cloneParam(fetchUrlNodeDefaultParameters[0]!)
+    migrated.ref = old.ref
+    migrated.refType = old.refType
+    migrated.value = old.value
+    migrated.defaultValue = old.defaultValue
+    const next = [...rawParams]
+    next[urlIdx] = migrated
+    return { params: next, changed: true }
+  }
+
+  return {
+    params: [cloneParam(fetchUrlNodeDefaultParameters[0]!), ...rawParams],
+    changed: true
+  }
+}
+
+function ensureDocumentsOutput(rawOut: Parameter[]): { outputs: Parameter[], changed: boolean } {
+  if (!rawOut.length)
+    return { outputs: fetchUrlNodeOutputDefs.map(cloneParam), changed: true }
+  if (rawOut.some(p => p.name === 'documents'))
+    return { outputs: rawOut, changed: false }
+  // 旧节点只有单条字段：在前方插入 documents
+  const docs = cloneParam(fetchUrlNodeOutputDefs[0]!)
+  return { outputs: [docs, ...rawOut], changed: true }
+}
+
 export function normalizeFetchUrlNodeParams(workflow: TinyflowData): TinyflowData {
   const nodes = workflow.nodes
   if (!nodes?.length)
@@ -24,18 +61,16 @@ export function normalizeFetchUrlNodeParams(workflow: TinyflowData): TinyflowDat
     let nodeChanged = false
 
     const rawParams = Array.isArray(data.parameters) ? [...(data.parameters as Parameter[])] : []
-    if (!rawParams.length) {
-      data.parameters = fetchUrlNodeDefaultParameters.map(cloneParam)
-      nodeChanged = true
-    }
-    else if (!rawParams.some(p => p.name === 'url')) {
-      data.parameters = [cloneParam(fetchUrlNodeDefaultParameters[0]!), ...rawParams]
+    const ensured = ensureUrlsParameter(rawParams)
+    if (ensured.changed) {
+      data.parameters = ensured.params
       nodeChanged = true
     }
 
-    const rawOut = data.outputDefs
-    if (!Array.isArray(rawOut) || rawOut.length === 0) {
-      data.outputDefs = fetchUrlNodeOutputDefs.map(cloneParam)
+    const rawOut = Array.isArray(data.outputDefs) ? [...(data.outputDefs as Parameter[])] : []
+    const outEnsured = ensureDocumentsOutput(rawOut)
+    if (outEnsured.changed) {
+      data.outputDefs = outEnsured.outputs
       nodeChanged = true
     }
 

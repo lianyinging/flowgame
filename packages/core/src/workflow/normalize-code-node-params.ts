@@ -1,26 +1,26 @@
 import type { TinyflowData } from '@tinyflow-ai/ui'
 import {
   CODE_NODE_TYPE,
-  DEFAULT_CODE_NODE_CODE,
-  DEFAULT_CODE_NODE_ENGINE
+  defaultCodeForEngine,
+  normalizeCodeNodeEngine
 } from '../inspector/code-node-inspector'
 
 function ensureCodeNodeDefaults(data: Record<string, unknown>): boolean {
   let changed = false
-  const code = data.code
-  if (typeof code !== 'string' || !code.trim()) {
-    data.code = DEFAULT_CODE_NODE_CODE
+  const engine = normalizeCodeNodeEngine(data.engine)
+  if (data.engine !== engine) {
+    data.engine = engine
     changed = true
   }
-  const engine = data.engine
-  if (typeof engine !== 'string' || !engine.trim()) {
-    data.engine = DEFAULT_CODE_NODE_ENGINE
+  const code = data.code
+  if (typeof code !== 'string' || !code.trim()) {
+    data.code = defaultCodeForEngine(engine)
     changed = true
   }
   return changed
 }
 
-/** 为动态代码节点补齐默认 JavaScript 示例与执行引擎 */
+/** 为动态代码节点补齐默认示例与执行引擎（仅 js / python） */
 export function normalizeCodeNodeParams(workflow: TinyflowData): TinyflowData {
   const nodes = workflow.nodes
   if (!nodes?.length)

@@ -267,6 +267,9 @@ sudo ufw allow 8008/tcp
 | `FLOWGAME_EXECUTION_LOG_HOST_DIR` | 仅 compose：宿主机日志目录 | `deploy/logs/api` |
 | `FLOWGAME_EXECUTION_LOG_CONSOLE` | 是否同时输出到控制台 | `true` |
 | `FLOWGAME_EXECUTION_LOG_LEVEL` | `INFO` / `DEBUG` 等 | `INFO` |
+| `FLOWGAME_EXECUTION_LOG_BACKUP_COUNT` | 按天滚动时保留的历史日文件数（不含当天） | `5` |
+| `FLOWGAME_EXECUTION_LOG_FILE_FIELD_MAX_LEN` | 写文件时单字段最大字符；`0`=不截断 | `50000` |
+| `FLOWGAME_EXECUTION_LOG_CONSOLE_FIELD_MAX_LEN` | 控制台打印时单字段最大字符；`0`=不截断 | `800` |
 
 在 `deploy/.env` 中开启示例：
 

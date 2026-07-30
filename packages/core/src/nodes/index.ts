@@ -18,6 +18,7 @@ import { nodeWebSearch } from './node-web-search'
 import { nodeFetchUrl } from './node-fetch-url'
 import { nodeImageGen } from './node-image-gen'
 import { nodeEndApi } from './node-end-api'
+import { nodeCode } from './node-code'
 
 /** 流程编排自定义节点注册表，key 与节点 type 一致 */
 export const flowGameCustomNodes: NonNullable<TinyflowOptions['customNodes']> = {
@@ -39,7 +40,9 @@ export const flowGameCustomNodes: NonNullable<TinyflowOptions['customNodes']> = 
   joinAllNode: nodeJoinAll,
   joinAnyNode: nodeJoinAny,
   ifNode: nodeIf,
-  switchNode: nodeSwitch
+  switchNode: nodeSwitch,
+  // 覆盖 Tinyflow 内置动态代码（去掉 Groovy/QLExpress，默认 js）
+  codeNode: nodeCode
 }
 
 export { nodeHtmlTemplate, HTML_TEMPLATE_NODE_TYPE, DEFAULT_HTML_TEMPLATE, HTML_TEMPLATE_PLACEHOLDER } from './node-html-template'
@@ -105,7 +108,7 @@ export {
 } from './web-search-node-parameters'
 export { webSearchNodeOutputDefs } from './web-search-node-output-defs'
 export { nodeFetchUrl, FETCH_URL_NODE_TYPE, DEFAULT_FETCH_URL_MAX_CHARS } from './node-fetch-url'
-export { fetchUrlNodeDefaultParameters, fetchUrlParameter } from './fetch-url-node-parameters'
+export { fetchUrlNodeDefaultParameters, fetchUrlParameter, fetchUrlsParameter } from './fetch-url-node-parameters'
 export { fetchUrlNodeOutputDefs } from './fetch-url-node-output-defs'
 export {
   nodeImageGen,
@@ -182,3 +185,4 @@ export {
   END_API_NODE_TYPE,
   DEFAULT_END_API_INCLUDE_EXECUTION_DETAILS
 } from './node-end-api'
+export { nodeCode } from './node-code'

@@ -57,3 +57,13 @@ export function executeFlowGameApi(data: FlowGameExecutePayload) {
 
 export { executeFlowGameStreamApi } from './execute-stream'
 export type { FlowStreamEventName, FlowStreamHandlers } from './execute-stream'
+
+export {
+  deleteTeamApi,
+  listTeamAgentsApi,
+  listTeamsApi,
+  runTeamApi,
+  saveTeamAgentApi,
+  saveTeamApi
+} from './team'
+export type { TeamRunBody, TeamRunResult, TeamRunTraceItem } from './team'

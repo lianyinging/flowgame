@@ -129,8 +129,23 @@ export async function saveFlowWorkflowApi(flowName: string, workflow: FlowGameWo
   return { redisKey }
 }
 
-/** 删除流程 */
-export async function deleteFlowApi(redisKey: string) {
-  await deleteRedisApi(redisKey)
-  await removeFlowListIndexItem(redisKey)
+/** 删除流程（走后端密码校验；同步移除列表索引） */
+export async function deleteFlowApi(redisKey: string, deletePassword?: string) {
+  const res = await flowgameRequest.post<FlowgameApiResponse<{
+    redisKey: string
+    deleted: number
+    indexRemoved: number
+  }>>('/v1/flowGame/flows/delete', {
+    redisKey,
+    deletePassword: deletePassword ?? ''
+  })
+  return res
+}
+
+/** 查询服务端是否要求流程删除密码 */
+export async function getFlowDeleteGuardApi() {
+  const res = await flowgameRequest.get<FlowgameApiResponse<{ passwordRequired: boolean }>>(
+    '/v1/flowGame/flows/delete-guard'
+  )
+  return Boolean(res.data?.passwordRequired)
 }

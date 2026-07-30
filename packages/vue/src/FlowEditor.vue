@@ -16,6 +16,7 @@ import {
   flowGameCustomNodes,
   FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT,
   FLOWGAME_OPEN_FLOW_LIST_EVENT,
+  FLOWGAME_OPEN_AGENT_TEAM_EVENT,
   FLOWGAME_OPEN_NODE_INSPECTOR_EVENT,
   FLOWGAME_ASSIGN_BRANCH_EDGE_EVENT,
   flowRedisKeysForLoad,
@@ -101,6 +102,8 @@ import CanvasFloatingToolbar from './components/flow-editor/CanvasFloatingToolba
 import FlowRunProgressModal from './components/flow-editor/FlowRunProgressModal.vue'
 import FlowListPanelModal from './components/flow-editor/FlowListPanelModal.vue'
 import FlowKnowledgePanelModal from './components/flow-editor/FlowKnowledgePanelModal.vue'
+import FlowAgentConfigModal from './components/flow-editor/FlowAgentConfigModal.vue'
+import FlowAgentTeamPanelModal from './components/flow-editor/FlowAgentTeamPanelModal.vue'
 
 const props = withDefaults(defineProps<{
   /** 只读查看模式 */
@@ -109,7 +112,7 @@ const props = withDefaults(defineProps<{
   flowName?: string
   /** Redis 中的流程键 */
   redisKey?: string
-  /** 内置流程列表、知识库弹窗（默认开启，接入方无需再写 Modal） */
+  /** 内置流程列表、知识库、AgentTeam 等业务弹窗（默认开启，接入方无需再写 Modal） */
   builtinBusinessModals?: boolean
   /**
    * 画布背景 / 节点角标品牌水印。
@@ -127,6 +130,7 @@ const props = withDefaults(defineProps<{
 const emit = defineEmits<{
   'open-flow-list': []
   'open-flow-knowledge': []
+  'open-agent-team': []
   saved: [payload: { flowName: string }]
   executed: [payload: { phase: 'success' | 'error' }]
 }>()
@@ -167,6 +171,9 @@ const inspectorNodeId = ref<string | null>(null)
 const minimapVisible = ref(true)
 const flowListPanelVisible = ref(false)
 const flowKnowledgePanelVisible = ref(false)
+const agentTeamPanelVisible = ref(false)
+const agentConfigVisible = ref(false)
+const agentConfigRecord = ref<FlowListIndexItem | null>(null)
 const selectedNode = computed<InspectorFlowNode | null>(() => {
   if (!inspectorNodeId.value)
     return null
@@ -574,8 +581,20 @@ function onOpenFlowKnowledgePanel() {
     emit('open-flow-knowledge')
 }
 
+function onOpenAgentTeamPanel() {
+  if (props.builtinBusinessModals)
+    agentTeamPanelVisible.value = true
+  else
+    emit('open-agent-team')
+}
+
 function onOpenFlowFromListPanel(payload: { mode: FlowEditorFormMode, record?: FlowListIndexItem }) {
   void openFlowFromListPanel(payload)
+}
+
+function onConfigFlowFromListPanel(record: FlowListIndexItem) {
+  agentConfigRecord.value = record
+  agentConfigVisible.value = true
 }
 
 async function loadWorkflowData() {
@@ -740,6 +759,7 @@ function setupToolbarVariablesWatch() {
   if (canvas.getAttribute(CANVAS_TOOLBAR_PANEL_LISTENER_ATTR) !== '1') {
     canvas.addEventListener(FLOWGAME_OPEN_FLOW_LIST_EVENT, onOpenFlowListPanel)
     canvas.addEventListener(FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT, onOpenFlowKnowledgePanel)
+    canvas.addEventListener(FLOWGAME_OPEN_AGENT_TEAM_EVENT, onOpenAgentTeamPanel)
     canvas.addEventListener(FLOWGAME_OPEN_NODE_INSPECTOR_EVENT, onOpenNodeInspectorFromCanvas)
     canvas.addEventListener(FLOWGAME_ASSIGN_BRANCH_EDGE_EVENT, onAssignBranchEdgeFromCanvas)
     canvas.setAttribute(CANVAS_TOOLBAR_PANEL_LISTENER_ATTR, '1')
@@ -769,7 +789,7 @@ function initTinyflow(data: typeof initialData) {
       const current = tinyflowRef.value
         ? getWorkflowFromTinyflow(tinyflowRef.value, workflowSnapshot.value)
         : workflowSnapshot.value
-      const hidden: string[] = ['llmNode', 'knowledgeNode', 'searchEngineNode']
+      const hidden: string[] = ['llmNode', 'knowledgeNode', 'searchEngineNode', 'codeNode']
       if (hasStartApiNode(current))
         hidden.push(START_NODE_TYPE)
       return hidden
@@ -813,6 +833,7 @@ onUnmounted(() => {
     canvas.removeEventListener(FLOWGAME_ASSIGN_BRANCH_EDGE_EVENT, onAssignBranchEdgeFromCanvas)
     canvas.removeEventListener(FLOWGAME_OPEN_FLOW_LIST_EVENT, onOpenFlowListPanel)
     canvas.removeEventListener(FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT, onOpenFlowKnowledgePanel)
+    canvas.removeEventListener(FLOWGAME_OPEN_AGENT_TEAM_EVENT, onOpenAgentTeamPanel)
     canvas.removeAttribute(CANVAS_TOOLBAR_PANEL_LISTENER_ATTR)
   }
   cleanupNodeInspectorTrigger(canvasRef.value ?? undefined)
@@ -1036,11 +1057,24 @@ defineExpose({
       v-model:visible="flowListPanelVisible"
       :editor-readonly="props.readonly"
       @open="onOpenFlowFromListPanel"
+      @config="onConfigFlowFromListPanel"
     />
 
     <FlowKnowledgePanelModal
       v-if="builtinBusinessModals"
       v-model:visible="flowKnowledgePanelVisible"
+    />
+
+    <FlowAgentTeamPanelModal
+      v-if="builtinBusinessModals"
+      v-model:visible="agentTeamPanelVisible"
+      :editor-readonly="props.readonly"
+    />
+
+    <FlowAgentConfigModal
+      v-if="builtinBusinessModals"
+      v-model:visible="agentConfigVisible"
+      :record="agentConfigRecord"
     />
 
     <Modal

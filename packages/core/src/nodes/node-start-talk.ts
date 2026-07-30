@@ -29,9 +29,11 @@ export const nodeStartTalk: CustomNode = {
       options: [
         { label: '默认（default）', value: 'default' },
         { label: '极简（minimal）', value: 'minimal' },
-        { label: '图生图对话（image_chat）', value: 'image_chat' }
+        { label: '图生图对话（image_chat）', value: 'image_chat' },
+        { label: '图生图（蓝色-展示）', value: 'image_chat_blue' },
+        { label: '图生图（紫色-展示）', value: 'image_chat_purple' }
       ],
-      description: 'image_chat 支持上传最多 3 张参考图并转 base64；留空或未识别时按 default 渲染'
+      description: '图生图模板支持上传最多 3 张参考图并转 base64；留空或未识别时按 default 渲染'
     },
     {
       type: 'input',

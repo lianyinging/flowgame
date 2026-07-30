@@ -26,10 +26,10 @@
 |------|------|
 | **Start API** | 工作流 HTTP 入口，定义对外 API 路径与入参 |
 | **Api接口结束** | API 流程终点：自定义对外输出；可关闭 `/execute` 过程详情（试运行不受影响） |
-| **对话开始** | 打开 `/talk` 对话页；模板含 default / minimal / **image_chat**（最多 3 张图转 base64 → `imgBase64List`） |
+| **对话开始** | 打开 `/talk` 对话页；模板含 default / minimal / **image_chat** / **image_chat_blue** / **image_chat_purple**（图生图类最多 3 张图转 base64 → `imgBase64List`） |
 | **模型调用（LLM API）** | 配置 API Key、接口地址与模型名，调用大模型 |
 | **知识库检索+** | 关联 Qdrant 知识库，支持检索增强（RAG） |
-| **网页搜索** | 免费多选 Google News/RSS + DuckDuckGo（可选 Wikipedia），无需 API Key，并行去重 |
+| **网页搜索** | 默认腾讯新闻（Playwright）；亦可勾选 Google News/RSS、DuckDuckGo、Wikipedia、新浪新闻 |
 | **网页抓取** | 抓取 URL 并抽取可读正文（title / content） |
 | **图像生成** | OpenAI SDK 文生图（Seedream 等）；或 DashScope 原生文生图 / 图生图编辑（`imageUrl` 单张或数组最多 3 张 base64/URL） |
 | **记忆写入 / 读取** | 跨节点、跨轮次读写会话上下文 |
@@ -70,7 +70,7 @@ pnpm install
 pnpm add @flowgame/vue @flowgame/core @tinyflow-ai/ui @arco-design/web-vue vue
 ```
 
-当前 npm 版本：**0.1.13**（可用 `npm view @flowgame/vue version` 确认）。
+当前 npm 版本：**0.1.17**（可用 `npm view @flowgame/vue version` 确认）。
 
 ### 3. 配置入口与样式
 
@@ -87,7 +87,9 @@ import App from './App.vue'
 
 configureFlowGameClient({
   baseURL: '/api',
-  // 多项目共用 Redis / Qdrant 时可配置（须与 flowgame_python .env 一致）
+  // 多项目共用 Redis / Qdrant 时可配置：
+  // - 后端未配 FLOWGAME_REDIS_KEY_PREFIX / FLOWGAME_QDRANT_KB_PREFIX 时，以此处为准
+  // - 后端已配置时，前端须写成相同值（后端会锁定 env）
   // redisKeyPrefix: 'myapp:',
   // qdrantKbPrefix: 'myapp_',
   // 画布背景 / 节点角标品牌水印（默认 FlowGame.ai）
@@ -97,6 +99,8 @@ configureFlowGameClient({
 
 createApp(App).use(ArcoVue).mount('#app')
 ```
+
+流程列表「删除」：若后端配置了 `FLOWGAME_FLOW_DELETE_PASSWORD` 则弹窗输入密码；未配置则直接删除（见 flowgame_python `.env.example`）。
 
 **`src/App.vue`**
 

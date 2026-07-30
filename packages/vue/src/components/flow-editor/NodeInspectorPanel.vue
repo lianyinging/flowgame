@@ -26,6 +26,8 @@ import {
   parseMemoryWriteGroups,
   CODE_NODE_CODE_PLACEHOLDER,
   CODE_NODE_ENGINE_OPTIONS,
+  defaultCodeForEngine,
+  normalizeCodeNodeEngine,
   createKnowledgeNodeDefaultOutputDefs,
   getCustomNodeDef,
   getInspectorForms,
@@ -112,7 +114,8 @@ const htmlTemplateText = computed(() => {
   return DEFAULT_HTML_TEMPLATE
 })
 const inspectorFormSections = computed(() => {
-  if (isHtmlTemplateNode.value)
+  // 画布 forms 与侧栏专用块二选一，避免「执行引擎/代码」重复
+  if (isHtmlTemplateNode.value || isCodeNode.value)
     return []
   if (isStateMachineNode.value)
     return filterStateMachineInspectorForms(formSections.value, nodeData.value)
@@ -120,6 +123,18 @@ const inspectorFormSections = computed(() => {
 })
 const codeEngine = computed(() => readCodeNodeEngine(nodeData.value))
 const codeText = computed(() => readCodeNodeCode(nodeData.value))
+
+function onCodeEngineChange(value: string) {
+  const next = normalizeCodeNodeEngine(value)
+  const prev = codeEngine.value
+  const cur = (codeText.value || '').trim()
+  const patch: Record<string, unknown> = { engine: next }
+  if (!cur || cur === defaultCodeForEngine(prev).trim())
+    patch.code = defaultCodeForEngine(next)
+  if (!props.node?.id)
+    return
+  emit('patchData', { nodeId: props.node.id, data: patch })
+}
 
 function replaceIfBranches(branches: ReturnType<typeof parseIfBranches>) {
   if (!props.node?.id)
@@ -771,7 +786,7 @@ function onTextInput(handler: (value: string) => void) {
             :model-value="codeEngine"
             placeholder="请选择执行引擎"
             :disabled="readonly"
-            @change="(v: string) => patchField('engine', v)"
+            @change="(v: string) => onCodeEngineChange(v)"
           >
             <Select.Option
               v-for="opt in CODE_NODE_ENGINE_OPTIONS"

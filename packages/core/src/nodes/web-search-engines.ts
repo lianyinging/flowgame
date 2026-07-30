@@ -1,4 +1,4 @@
-/** 可多选的搜索引擎（仅免费、无需 API Key；value 与后端 engine id 一致） */
+/** 可多选的搜索引擎（value 与后端 engine id 一致） */
 export interface WebSearchEngineOption {
   value: string
   label: string
@@ -7,7 +7,8 @@ export interface WebSearchEngineOption {
 
 /**
  * 与 demo_ai_news Scout 对齐：
- * Google News/HN RSS + DuckDuckGo；Wikipedia 可选。
+ * Google News/HN RSS + DuckDuckGo；Wikipedia 可选；
+ * 腾讯/新浪新闻为 Playwright 可选渠道（后端需安装 playwright）。
  */
 export const WEB_SEARCH_ENGINE_OPTIONS: WebSearchEngineOption[] = [
   {
@@ -24,11 +25,21 @@ export const WEB_SEARCH_ENGINE_OPTIONS: WebSearchEngineOption[] = [
     value: 'wikipedia',
     label: 'Wikipedia',
     description: '免费百科检索（MediaWiki，无需 API Key）'
+  },
+  {
+    value: 'qq_news',
+    label: '腾讯新闻',
+    description: 'Playwright 渠道；本地需 playwright install chromium（Docker 已内置）'
+  },
+  {
+    value: 'sina_news',
+    label: '新浪新闻',
+    description: 'Playwright 渠道；本地需 playwright install chromium（Docker 已内置）'
   }
 ]
 
-/** 默认勾选：RSS + DuckDuckGo（对齐 demo Scout） */
-export const DEFAULT_WEB_SEARCH_ENGINES = ['google_news', 'duckduckgo'] as const
+/** 默认勾选：腾讯新闻（Playwright） */
+export const DEFAULT_WEB_SEARCH_ENGINES = ['qq_news'] as const
 
 /** 历史付费引擎 id，加载旧流程时忽略并回退到默认免费引擎 */
 const LEGACY_PAID_ENGINES = new Set(['tavily', 'bing'])

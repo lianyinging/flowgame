@@ -5,6 +5,25 @@ All notable changes to the publishable packages (`@flowgame/core`, `@flowgame/vu
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.18] - 2026-07-23
+
+### Changed
+
+- `@flowgame/core` / `@flowgame/vue`: AgentTeam / Agent 配置改为 Redis（`/teams`、`/agents`），不再使用 localStorage
+- `@flowgame/vue`: `@flowgame/core` peerDependency 提升为 `^0.1.18`
+
+## [0.1.17] - 2026-07-23
+
+### Added
+
+- `@flowgame/core` / `@flowgame/vue`: 对话模板 **图生图（蓝色-展示）** / **图生图（紫色-展示）**（`image_chat_blue` / `image_chat_purple`）
+- `@flowgame/core` / `@flowgame/vue`: 流程列表删除支持后端密码校验（`deleteFlowApi` + `/flows/delete`；按需弹密码框）
+- `@flowgame/core` / `@flowgame/vue`: AgentTeam 主控看板字段 `statusCardKeys`；行业情报等 Team 模板增强
+
+### Changed
+
+- `@flowgame/vue`: `@flowgame/core` peerDependency 提升为 `^0.1.17`
+
 ## [0.1.16] - 2026-07-21
 
 ### Added

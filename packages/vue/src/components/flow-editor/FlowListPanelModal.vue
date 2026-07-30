@@ -6,16 +6,16 @@ import {
   Form,
   FormItem,
   Input,
+  InputPassword,
   Link,
   Message,
   Modal,
   Pagination,
-  Popconfirm,
   Space,
   Table,
   TableColumn
 } from '@arco-design/web-vue'
-import { deleteFlowApi, listFlowListApi, type FlowListIndexItem } from '@flowgame/core'
+import { deleteFlowApi, getFlowDeleteGuardApi, listFlowListApi, type FlowListIndexItem } from '@flowgame/core'
 import type { FlowEditorFormMode } from '../../types'
 
 const props = defineProps<{
@@ -26,6 +26,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:visible': [value: boolean]
   open: [payload: { mode: FlowEditorFormMode, record?: FlowListIndexItem }]
+  config: [record: FlowListIndexItem]
 }>()
 
 const loading = ref(false)
@@ -33,6 +34,22 @@ const tableData = ref<FlowListIndexItem[]>([])
 const total = ref(0)
 const pagination = reactive({ current: 1, pageSize: 10 })
 const params = reactive<{ name?: string }>({})
+
+const deletePasswordRequired = ref(false)
+const deleteModalVisible = ref(false)
+const deleteSubmitting = ref(false)
+const deletePassword = ref('')
+const pendingDelete = ref<FlowListIndexItem | null>(null)
+
+async function refreshDeleteGuard() {
+  try {
+    deletePasswordRequired.value = await getFlowDeleteGuardApi()
+  }
+  catch {
+    // 查询失败时保守起见走密码弹窗
+    deletePasswordRequired.value = true
+  }
+}
 
 async function loadTable() {
   loading.value = true
@@ -52,14 +69,61 @@ function handleOpen(type: FlowEditorFormMode, record?: FlowListIndexItem) {
   emit('update:visible', false)
 }
 
-async function handleRemove(redisKey: string) {
+function handleConfig(record: FlowListIndexItem) {
+  emit('config', record)
+}
+
+async function executeDelete(redisKey: string, password?: string) {
+  await deleteFlowApi(redisKey, password)
+  Message.success('删除成功')
+  await loadTable()
+}
+
+function openDeleteModal(record: FlowListIndexItem) {
+  pendingDelete.value = record
+  deletePassword.value = ''
+  deleteModalVisible.value = true
+}
+
+function closeDeleteModal() {
+  deleteModalVisible.value = false
+  pendingDelete.value = null
+  deletePassword.value = ''
+}
+
+async function handleRemove(record: FlowListIndexItem) {
+  if (deletePasswordRequired.value) {
+    openDeleteModal(record)
+    return
+  }
   try {
-    await deleteFlowApi(redisKey)
-    Message.success('删除成功')
-    await loadTable()
+    await executeDelete(record.redisKey)
   }
   catch {
     // 错误由 flowgame 请求拦截器提示
+  }
+}
+
+async function confirmDelete(): Promise<boolean> {
+  const record = pendingDelete.value
+  if (!record)
+    return false
+  const pwd = deletePassword.value.trim()
+  if (!pwd) {
+    Message.warning('请输入删除密码')
+    return false
+  }
+  deleteSubmitting.value = true
+  try {
+    await executeDelete(record.redisKey, pwd)
+    closeDeleteModal()
+    return true
+  }
+  catch {
+    return false
+  }
+  finally {
+    deleteSubmitting.value = false
   }
 }
 
@@ -88,6 +152,7 @@ function onPageSizeChange(pageSize: number) {
 watch(() => props.visible, (open) => {
   if (open) {
     pagination.current = 1
+    void refreshDeleteGuard()
     void loadTable()
   }
 })
@@ -146,7 +211,7 @@ watch(() => props.visible, (open) => {
               {{ record.updatedAt ? dayjs(record.updatedAt).format('YYYY-MM-DD HH:mm:ss') : '--' }}
             </template>
           </TableColumn>
-          <TableColumn title="操作" :width="editorReadonly ? 80 : 170" fixed="right">
+          <TableColumn title="操作" :width="editorReadonly ? 80 : 210" fixed="right">
             <template #cell="{ record }">
               <Space>
                 <Link @click="handleOpen('view', record)">
@@ -156,11 +221,12 @@ watch(() => props.visible, (open) => {
                   <Link @click="handleOpen('edit', record)">
                     编辑
                   </Link>
-                  <Popconfirm content="确认删除该流程吗？" @ok="handleRemove(record.redisKey)">
-                    <Link status="danger">
-                      删除
-                    </Link>
-                  </Popconfirm>
+                  <Link @click="handleConfig(record)">
+                    配置
+                  </Link>
+                  <Link status="danger" @click="handleRemove(record)">
+                    删除
+                  </Link>
                 </template>
               </Space>
             </template>
@@ -180,6 +246,30 @@ watch(() => props.visible, (open) => {
         />
       </div>
     </div>
+  </Modal>
+
+  <Modal
+    :visible="deleteModalVisible"
+    title="删除流程"
+    :ok-loading="deleteSubmitting"
+    ok-text="确认删除"
+    :ok-button-props="{ status: 'danger' }"
+    unmount-on-close
+    :on-before-ok="confirmDelete"
+    @cancel="closeDeleteModal"
+    @update:visible="(v) => { if (!v) closeDeleteModal() }"
+  >
+    <p class="flow-list-panel__delete-tip">
+      即将删除流程
+      <strong>{{ pendingDelete?.name || '--' }}</strong>
+      ，请输入服务端配置的删除密码。
+    </p>
+    <InputPassword
+      v-model="deletePassword"
+      placeholder="请输入删除密码"
+      allow-clear
+      @press-enter="confirmDelete"
+    />
   </Modal>
 </template>
 
@@ -203,6 +293,13 @@ watch(() => props.visible, (open) => {
     display: flex;
     justify-content: flex-end;
     margin-top: 12px;
+  }
+
+  &__delete-tip {
+    margin: 0 0 12px;
+    color: var(--color-text-2);
+    line-height: 1.6;
+    word-break: break-all;
   }
 }
 
