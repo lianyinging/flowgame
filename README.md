@@ -40,7 +40,7 @@
 
 - **基于 Tinyflow 扩展**：复用成熟画布与连线能力，并注册 Start API、模型调用、知识库+、网页搜索/抓取、记忆读写、HTML 模板等自定义节点。
 - **Python 后端驱动执行**：flowgame_python 负责解析工作流、调用 LLM/HTTP/网页搜索与抓取、读写 Redis 与 Qdrant，支持同步与流式试运行。
-- **开箱即用组件**：`FlowEditor` 一行接入，内置流程列表、知识库配置、节点详情面板与试运行入口。
+- **开箱即用组件**：`FlowEditor` 一行接入，内置流程列表、知识库配置、AgentTeam、会话机器人、节点详情面板与试运行入口。
 - **框架分层清晰**：`@flowgame/core` 负责节点与 API 客户端；`@flowgame/vue` 负责 Vue 3 UI，便于二次定制。
 - **多种部署方式**：npm 接入、Monorepo 本地开发、Docker 一键部署（前端 + API + Redis + Qdrant）。
 
@@ -168,7 +168,7 @@ pnpm dev
 |------|------|------|
 | Prop | `readonly` | 只读查看模式 |
 | Prop | `flow-name` / `redis-key` | 从 Redis 加载指定流程 |
-| Prop | `builtin-business-modals` | 是否内置流程列表/知识库弹窗（默认 `true`） |
+| Prop | `builtin-business-modals` | 是否内置流程列表/知识库/AgentTeam/会话机器人弹窗（默认 `true`） |
 | Prop | `canvas-watermark` | 画布背景 / 节点角标品牌文字；不传则用 `configureFlowGameClient({ canvasWatermark })` 或默认 `FlowGame.ai` |
 | Event | `saved` | 保存成功，`{ flowName }` |
 | Event | `executed` | 试运行结束，`{ phase: 'success' \| 'error' }` |

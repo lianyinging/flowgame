@@ -67,3 +67,21 @@ export {
   saveTeamApi
 } from './team'
 export type { TeamRunBody, TeamRunResult, TeamRunTraceItem } from './team'
+
+export {
+  deleteSessionRobotApi,
+  getSessionRobotDefaultsApi,
+  getSessionRobotWorkerStatusApi,
+  listSessionRobotsApi,
+  saveSessionRobotApi,
+  startSessionRobotApi,
+  stopSessionRobotApi
+} from './robots'
+export type {
+  RobotFieldMapping,
+  SessionRobot,
+  SessionRobotDefaults,
+  SessionRobotStatus,
+  SessionRobotType,
+  SessionRobotWorkerStatus
+} from './robots'

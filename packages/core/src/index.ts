@@ -247,6 +247,7 @@ export {
   FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT,
   FLOWGAME_OPEN_FLOW_LIST_EVENT,
   FLOWGAME_OPEN_AGENT_TEAM_EVENT,
+  FLOWGAME_OPEN_SESSION_ROBOT_EVENT,
   patchFlowToolbarVariables
 } from './patches/patch-flow-toolbar-variables'
 
