@@ -29,7 +29,7 @@
 | **对话开始** | 打开 `/talk` 对话页；模板含 default / minimal / **image_chat** / **image_chat_blue** / **image_chat_purple**（图生图类最多 3 张图转 base64 → `imgBase64List`） |
 | **模型调用（LLM API）** | 配置 API Key、接口地址与模型名，调用大模型 |
 | **知识库检索+** | 关联 Qdrant 知识库，支持检索增强（RAG） |
-| **网页搜索** | 默认腾讯新闻（Playwright）；亦可勾选 Google News/RSS、DuckDuckGo、Wikipedia、新浪新闻 |
+| **网页搜索** | 腾讯新闻（Playwright） |
 | **网页抓取** | 抓取 URL 并抽取可读正文（title / content） |
 | **图像生成** | OpenAI SDK 文生图（Seedream 等）；或 DashScope 原生文生图 / 图生图编辑（`imageUrl` 单张或数组最多 3 张 base64/URL） |
 | **记忆写入 / 读取** | 跨节点、跨轮次读写会话上下文 |

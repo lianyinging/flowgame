@@ -30,7 +30,7 @@ function onChange(value: (string | number | boolean)[]) {
       </h3>
     </div>
     <div class="setting-title">
-      搜索引擎（可多选）
+      搜索引擎
     </div>
     <div class="setting-item">
       <CheckboxGroup
@@ -53,7 +53,7 @@ function onChange(value: (string | number | boolean)[]) {
       </CheckboxGroup>
     </div>
     <p class="tf-node-panel__field-desc">
-      默认 Google News/RSS + DuckDuckGo（与资讯 demo 相同策略），均为免费、无需 API Key；多选并行检索并按 URL 去重
+      当前仅支持腾讯新闻（Playwright）；本地需 playwright install chromium（Docker 已内置）
     </p>
   </section>
 </template>

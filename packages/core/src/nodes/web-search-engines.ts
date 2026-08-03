@@ -1,48 +1,31 @@
-/** 可多选的搜索引擎（value 与后端 engine id 一致） */
+/** 可勾选的搜索引擎（value 与后端 engine id 一致） */
 export interface WebSearchEngineOption {
   value: string
   label: string
   description?: string
 }
 
-/**
- * 与 demo_ai_news Scout 对齐：
- * Google News/HN RSS + DuckDuckGo；Wikipedia 可选；
- * 腾讯/新浪新闻为 Playwright 可选渠道（后端需安装 playwright）。
- */
+/** 网页搜索节点可选引擎：仅腾讯新闻（Playwright） */
 export const WEB_SEARCH_ENGINE_OPTIONS: WebSearchEngineOption[] = [
-  {
-    value: 'google_news',
-    label: 'Google News / RSS',
-    description: 'Google News（中/英）+ Hacker News，免费无 Key（与 demo 一致）'
-  },
-  {
-    value: 'duckduckgo',
-    label: 'DuckDuckGo',
-    description: '免费网页检索，无需 API Key（与 demo 一致）'
-  },
-  {
-    value: 'wikipedia',
-    label: 'Wikipedia',
-    description: '免费百科检索（MediaWiki，无需 API Key）'
-  },
   {
     value: 'qq_news',
     label: '腾讯新闻',
     description: 'Playwright 渠道；本地需 playwright install chromium（Docker 已内置）'
-  },
-  {
-    value: 'sina_news',
-    label: '新浪新闻',
-    description: 'Playwright 渠道；本地需 playwright install chromium（Docker 已内置）'
   }
 ]
 
-/** 默认勾选：腾讯新闻（Playwright） */
+/** 默认勾选：腾讯新闻 */
 export const DEFAULT_WEB_SEARCH_ENGINES = ['qq_news'] as const
 
-/** 历史付费引擎 id，加载旧流程时忽略并回退到默认免费引擎 */
-const LEGACY_PAID_ENGINES = new Set(['tavily', 'bing'])
+/** 历史引擎 id（付费或已下架），加载旧流程时忽略并回退到默认 */
+const LEGACY_ENGINES = new Set([
+  'tavily',
+  'bing',
+  'google_news',
+  'duckduckgo',
+  'wikipedia',
+  'sina_news'
+])
 
 export function normalizeWebSearchEngines(raw: unknown): string[] {
   const allowed = new Set(WEB_SEARCH_ENGINE_OPTIONS.map(o => o.value))
@@ -65,7 +48,7 @@ export function normalizeWebSearchEngines(raw: unknown): string[] {
   const unique = [
     ...new Set(
       list
-        .filter(id => !LEGACY_PAID_ENGINES.has(id))
+        .filter(id => !LEGACY_ENGINES.has(id))
         .filter(id => allowed.has(id))
     )
   ]

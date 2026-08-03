@@ -62,8 +62,8 @@ function renderCheckboxes(
 }
 
 /**
- * 在画布节点「搜索引擎设置」标题下挂载多选引擎列表。
- * Tinyflow 无原生 multi-select，故用自定义 checkbox。
+ * 在画布节点「搜索引擎设置」标题下挂载引擎列表。
+ * Tinyflow 无原生 multi-select，故用自定义 checkbox（当前仅腾讯新闻）。
  */
 export function mountWebSearchEnginesPicker(
   parent: HTMLElement,
