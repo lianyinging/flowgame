@@ -20,11 +20,12 @@ import {
 import {
   deleteSessionRobotApi,
   getSessionRobotDefaultsApi,
-  listFlowListApi,
+  listDigitalEmployeesApi,
   listSessionRobotsApi,
   saveSessionRobotApi,
   startSessionRobotApi,
   stopSessionRobotApi,
+  type DigitalEmployee,
   type RobotFieldMapping,
   type SessionRobot,
   type SessionRobotType,
@@ -47,7 +48,8 @@ const total = ref(0)
 const pagination = reactive({ current: 1, pageSize: 10 })
 const params = reactive<{ keyword?: string }>({})
 const workerInfo = ref<SessionRobotWorkerStatus | null>(null)
-const flowOptions = ref<{ label: string, value: string }[]>([])
+const employeeOptions = ref<{ label: string, value: string }[]>([])
+const employeesById = ref<Record<string, DigitalEmployee>>({})
 const typeOptions = ref<{ label: string, value: SessionRobotType }[]>([
   { label: '企业微信智能机器人', value: 'wecom_aibot' }
 ])
@@ -63,8 +65,12 @@ const editForm = reactive({
   type: 'wecom_aibot' as SessionRobotType,
   botId: '',
   secret: '',
-  methodKey: '',
-  /** 空 / undefined 表示未配置，走全局默认 */
+  employeeIds: [] as string[],
+  defaultEmployeeId: '',
+  routerApiKey: '',
+  routerBaseUrl: '',
+  routerModel: 'deepseek-v4-flash',
+  /** 空 / undefined 表示未配置，走员工或全局默认 */
   executeTimeoutSec: undefined as number | undefined,
   inputMapping: [] as RobotFieldMapping[],
   outputMapping: [] as RobotFieldMapping[]
@@ -72,13 +78,54 @@ const editForm = reactive({
 
 const defaultInput = ref<RobotFieldMapping[]>([])
 const defaultOutput = ref<RobotFieldMapping[]>([])
+const defaultTeamOutput = ref<RobotFieldMapping[]>([
+  { source: 'output', target: 'reply_markdown' }
+])
 const defaultExecuteTimeoutSec = ref(120)
+const defaultTeamExecuteTimeoutSec = ref(600)
+const defaultRouterModel = ref('deepseek-v4-flash')
+const defaultRouterBaseUrl = ref('https://api.deepseek.com')
+const routerModelOptions = ref<{ label: string, value: string }[]>([
+  { label: 'deepseekFlash（deepseek-v4-flash）', value: 'deepseek-v4-flash' },
+  { label: 'deepseek-chat', value: 'deepseek-chat' },
+  { label: 'deepseek-reasoner', value: 'deepseek-reasoner' }
+])
 
 const outputTargetOptions = [
   { label: 'reply_markdown（回发）', value: 'reply_markdown' },
   { label: 'reply_text（回发）', value: 'reply_text' },
   { label: 'reply_file（回发文件）', value: 'reply_file' }
 ]
+
+const selectedEmployees = computed(() =>
+  editForm.employeeIds
+    .map(id => employeesById.value[id])
+    .filter((e): e is DigitalEmployee => !!e)
+)
+
+const needsRouting = computed(() => editForm.employeeIds.length >= 2)
+
+const defaultEmployeeOptions = computed(() =>
+  editForm.employeeIds.map((id) => {
+    const emp = employeesById.value[id]
+    return {
+      label: emp ? emp.name : id,
+      value: id
+    }
+  })
+)
+
+const selectedEmployeeBindType = computed(() => {
+  const pick = editForm.defaultEmployeeId || editForm.employeeIds[0]
+  const emp = pick ? employeesById.value[pick] : undefined
+  return emp?.bindType === 'team' ? 'team' : 'flow'
+})
+
+const timeoutPlaceholder = computed(() => {
+  if (selectedEmployeeBindType.value === 'team')
+    return `留空则用员工/Team 默认 ${defaultTeamExecuteTimeoutSec.value}s`
+  return `留空则用员工/全局默认 ${defaultExecuteTimeoutSec.value}s`
+})
 
 const statusLabel = (status: string) => {
   if (status === 'running')
@@ -95,7 +142,45 @@ const statusLabel = (status: string) => {
 const typeLabel = (type: string) =>
   typeOptions.value.find(t => t.value === type)?.label || type
 
+function resolveEmployeeIds(row: SessionRobot): string[] {
+  if (row.employeeIds?.length)
+    return [...row.employeeIds]
+  if (row.employeeId)
+    return [row.employeeId]
+  return []
+}
+
+const employeeLabel = (row: SessionRobot) => {
+  if (row.employeeName)
+    return row.employeeName
+  const ids = resolveEmployeeIds(row)
+  if (ids.length)
+    return ids.length >= 2 ? `${ids.length} 名数字员工` : ids[0]
+  if (row.bindType === 'team' && row.teamKey)
+    return `（旧）Team: ${row.teamKey}`
+  if (row.methodKey)
+    return `（旧）流程: ${row.methodKey}`
+  return '（未绑定）'
+}
+
+const taskTargetLabel = (row: SessionRobot) => {
+  if (row.employeeBindLabel)
+    return row.employeeBindLabel
+  const bindType = row.bindType === 'team' ? 'team' : 'flow'
+  if (bindType === 'team')
+    return row.teamKey ? `Team: ${row.teamKey}` : '（未绑 Team）'
+  return row.methodKey ? `流程: ${row.methodKey}` : '（未绑流程）'
+}
+
 const readonlyHint = computed(() => props.editorReadonly)
+
+function applyDefaultOutputForEmployees(employeeIds: string[]) {
+  const pick = editForm.defaultEmployeeId || employeeIds[0]
+  const emp = pick ? employeesById.value[pick] : undefined
+  const bindType = emp?.bindType === 'team' ? 'team' : 'flow'
+  const src = bindType === 'team' ? defaultTeamOutput.value : defaultOutput.value
+  editForm.outputMapping = src.map(x => ({ ...x }))
+}
 
 async function loadDefaults() {
   try {
@@ -104,8 +189,18 @@ async function loadDefaults() {
       typeOptions.value = d.types
     defaultInput.value = d.inputMapping || []
     defaultOutput.value = d.outputMapping || []
+    if (d.teamOutputMapping?.length)
+      defaultTeamOutput.value = d.teamOutputMapping
     if (d.defaultExecuteTimeoutSec && d.defaultExecuteTimeoutSec > 0)
       defaultExecuteTimeoutSec.value = d.defaultExecuteTimeoutSec
+    if (d.defaultTeamExecuteTimeoutSec && d.defaultTeamExecuteTimeoutSec > 0)
+      defaultTeamExecuteTimeoutSec.value = d.defaultTeamExecuteTimeoutSec
+    if (d.routerModels?.length)
+      routerModelOptions.value = d.routerModels
+    if (d.defaultRouterModel)
+      defaultRouterModel.value = d.defaultRouterModel
+    if (d.defaultRouterBaseUrl)
+      defaultRouterBaseUrl.value = d.defaultRouterBaseUrl
   }
   catch {
     defaultInput.value = [
@@ -115,19 +210,46 @@ async function loadDefaults() {
       { source: 'chattype', target: 'chatType' }
     ]
     defaultOutput.value = [{ source: 'assistantMessage', target: 'reply_markdown' }]
+    defaultTeamOutput.value = [{ source: 'output', target: 'reply_markdown' }]
   }
 }
 
-async function loadFlows() {
+function ensureEmployeeOption(employeeId: string, name?: string) {
+  const key = (employeeId || '').trim()
+  if (!key)
+    return
+  if (employeeOptions.value.some(o => o.value === key))
+    return
+  employeeOptions.value = [
+    { label: `${name || key}（已绑定，未在列表中）`, value: key },
+    ...employeeOptions.value
+  ]
+}
+
+async function loadEmployees() {
   try {
-    const res = await listFlowListApi()
-    flowOptions.value = (res.items || []).map(item => ({
-      label: item.name || item.redisKey,
-      value: item.name
-    })).filter(o => o.value)
+    const res = await listDigitalEmployeesApi()
+    const items = res.items || []
+    const map: Record<string, DigitalEmployee> = {}
+    employeeOptions.value = items.map((e) => {
+      map[e.employeeId] = e
+      const task = e.bindType === 'team'
+        ? (e.teamKey ? `Team:${e.teamKey}` : '未绑任务')
+        : (e.methodKey ? `流程:${e.methodKey}` : '未绑任务')
+      const decision = e.decisionMethodKey ? `决策:${e.decisionMethodKey}` : '无决策'
+      const desc = (e.description || '').trim()
+      return {
+        label: desc
+          ? `${e.name}（${desc.slice(0, 24)}${desc.length > 24 ? '…' : ''}）`
+          : `${e.name}（${decision} / ${task}）`,
+        value: e.employeeId
+      }
+    })
+    employeesById.value = map
   }
   catch {
-    flowOptions.value = []
+    employeeOptions.value = []
+    employeesById.value = {}
   }
 }
 
@@ -139,7 +261,12 @@ function applyFilterAndPage() {
       const hay = [
         r.name,
         r.robotId,
+        ...(r.employeeIds || []),
+        r.employeeId || '',
+        r.employeeName || '',
         r.methodKey,
+        r.teamKey || '',
+        r.decisionMethodKey || '',
         r.botId,
         typeLabel(r.type),
         statusLabel(r.status),
@@ -204,10 +331,25 @@ function resetEditForm() {
   editForm.type = 'wecom_aibot'
   editForm.botId = ''
   editForm.secret = ''
-  editForm.methodKey = ''
+  editForm.employeeIds = []
+  editForm.defaultEmployeeId = ''
+  editForm.routerApiKey = ''
+  editForm.routerBaseUrl = defaultRouterBaseUrl.value
+  editForm.routerModel = defaultRouterModel.value
   editForm.executeTimeoutSec = undefined
   editForm.inputMapping = defaultInput.value.map(x => ({ ...x }))
   editForm.outputMapping = defaultOutput.value.map(x => ({ ...x }))
+}
+
+function onEmployeesChange(value: string | number | boolean | Record<string, unknown> | (string | number | boolean | Record<string, unknown>)[]) {
+  const list = (Array.isArray(value) ? value : value != null ? [value] : [])
+    .map(v => String(v || '').trim())
+    .filter(Boolean)
+  editForm.employeeIds = list
+  if (!list.includes(editForm.defaultEmployeeId))
+    editForm.defaultEmployeeId = list[0] || ''
+  if (list.length)
+    applyDefaultOutputForEmployees(list)
 }
 
 function openAdd() {
@@ -223,13 +365,27 @@ function openEdit(row: SessionRobot) {
   editForm.type = row.type
   editForm.botId = row.botId
   editForm.secret = row.secret || ''
-  editForm.methodKey = row.methodKey || ''
+  const ids = resolveEmployeeIds(row)
+  editForm.employeeIds = ids
+  editForm.defaultEmployeeId = row.defaultEmployeeId && ids.includes(row.defaultEmployeeId)
+    ? row.defaultEmployeeId
+    : (ids[0] || '')
+  editForm.routerApiKey = row.hasRouterApiKey ? '***' : (row.routerApiKey || '')
+  editForm.routerBaseUrl = row.routerBaseUrl || defaultRouterBaseUrl.value
+  editForm.routerModel = row.routerModel || defaultRouterModel.value
   editForm.executeTimeoutSec
     = row.executeTimeoutSec != null && row.executeTimeoutSec > 0
       ? row.executeTimeoutSec
       : undefined
   editForm.inputMapping = (row.inputMapping?.length ? row.inputMapping : defaultInput.value).map(x => ({ ...x }))
-  editForm.outputMapping = (row.outputMapping?.length ? row.outputMapping : defaultOutput.value).map(x => ({ ...x }))
+  ids.forEach((id, idx) => {
+    ensureEmployeeOption(id, row.employeeNames?.[idx] || row.employeeName)
+  })
+  const pick = editForm.defaultEmployeeId || ids[0]
+  const emp = pick ? employeesById.value[pick] : undefined
+  const bindType = emp?.bindType === 'team' ? 'team' : 'flow'
+  const def = bindType === 'team' ? defaultTeamOutput.value : defaultOutput.value
+  editForm.outputMapping = (row.outputMapping?.length ? row.outputMapping : def).map(x => ({ ...x }))
   editVisible.value = true
 }
 
@@ -261,6 +417,25 @@ async function saveEdit() {
     Message.warning('请填写 Secret')
     return false
   }
+  if (!editForm.employeeIds.length) {
+    Message.warning('请至少选择一名数字员工')
+    return false
+  }
+  const unbound = editForm.employeeIds.filter((id) => {
+    const emp = employeesById.value[id]
+    return emp && emp.bound === false
+  })
+  if (unbound.length) {
+    Message.warning('所选数字员工中有未配置任务目标的，请先在「数字员工」中配置')
+    return false
+  }
+  if (needsRouting.value) {
+    const missingDesc = selectedEmployees.value.filter(e => !(e.description || '').trim())
+    if (missingDesc.length) {
+      Message.warning(`自动路由依赖员工描述，请先为「${missingDesc.map(e => e.name).join('、')}」填写说明`)
+      return false
+    }
+  }
   saving.value = true
   try {
     const rawTimeout = editForm.executeTimeoutSec
@@ -268,7 +443,7 @@ async function saveEdit() {
     if (rawTimeout != null) {
       const n = Number(rawTimeout)
       if (!Number.isFinite(n) || n <= 0) {
-        Message.warning('执行超时须为正整数秒，或留空使用全局默认')
+        Message.warning('执行超时须为正整数秒，或留空使用默认')
         return false
       }
       executeTimeoutSec = Math.floor(n)
@@ -279,7 +454,11 @@ async function saveEdit() {
       type: editForm.type,
       botId: editForm.botId.trim(),
       secret: editForm.secret,
-      methodKey: editForm.methodKey,
+      employeeIds: editForm.employeeIds,
+      defaultEmployeeId: editForm.defaultEmployeeId || editForm.employeeIds[0],
+      routerApiKey: editForm.routerApiKey,
+      routerBaseUrl: editForm.routerBaseUrl.trim(),
+      routerModel: editForm.routerModel.trim() || defaultRouterModel.value,
       executeTimeoutSec,
       inputMapping: editForm.inputMapping.filter(m => m.source && m.target),
       outputMapping: editForm.outputMapping.filter(m => m.source && m.target)
@@ -299,9 +478,14 @@ async function saveEdit() {
 }
 
 async function onStart(row: SessionRobot) {
-  if (!row.methodKey) {
-    Message.warning('请先编辑并绑定流程')
+  const ids = resolveEmployeeIds(row)
+  if (!ids.length && !row.methodKey && !row.teamKey) {
+    Message.warning('请先编辑并绑定数字员工')
     openEdit(row)
+    return
+  }
+  if (ids.length && row.employeeBound === false) {
+    Message.warning('绑定的数字员工尚未配置任务目标')
     return
   }
   actionLoadingId.value = row.robotId
@@ -312,7 +496,6 @@ async function onStart(row: SessionRobot) {
     else
       Message.success('已下发启动')
     await loadTable()
-    // Worker 拉起需片刻，再刷一次
     window.setTimeout(() => { void loadTable() }, 2500)
   }
   catch (e) {
@@ -362,7 +545,7 @@ watch(
     pagination.current = 1
     params.keyword = ''
     await loadDefaults()
-    await loadFlows()
+    await loadEmployees()
     await loadTable()
   }
 )
@@ -381,7 +564,9 @@ watch(
   >
     <div class="flow-session-robot-panel">
       <Typography.Paragraph type="secondary" class="flow-session-robot-panel__hint">
-        收到企微消息后按映射调用已绑定流程，再按输出映射回发。监听由独立 Robot Worker 进程负责；
+        会话机器人是通道入口（企微 Bot 等），可绑定一名或多名「数字员工」。
+        绑多名时，每条消息会按员工「说明」用 LLM 自动路由（默认 deepseekFlash）；绑一名则直接执行。
+        决策目标与任务目标在数字员工上配置。监听由 Robot Worker 负责；
         <code>python run.py</code> 会自动拉起。
       </Typography.Paragraph>
       <div
@@ -402,7 +587,7 @@ watch(
           <Input
             v-model="params.keyword"
             :style="{ width: '220px' }"
-            placeholder="名称 / 流程 / 状态 / BotID"
+            placeholder="名称 / 数字员工 / 状态 / BotID"
             allow-clear
             @press-enter="handleSearch"
           />
@@ -444,7 +629,16 @@ watch(
               </div>
             </template>
           </TableColumn>
-          <TableColumn title="绑定流程" data-index="methodKey" :width="160" ellipsis tooltip />
+          <TableColumn title="数字员工" :width="160" ellipsis tooltip>
+            <template #cell="{ record }">
+              {{ employeeLabel(record) }}
+            </template>
+          </TableColumn>
+          <TableColumn title="任务目标" :width="180" ellipsis tooltip>
+            <template #cell="{ record }">
+              {{ taskTargetLabel(record) }}
+            </template>
+          </TableColumn>
           <TableColumn title="操作" :width="280" fixed="right">
             <template #cell="{ record }">
               <Space>
@@ -522,15 +716,68 @@ watch(
             placeholder="企业微信智能机器人 Secret"
           />
         </FormItem>
-        <FormItem label="绑定流程（methodKey）">
+        <FormItem label="绑定数字员工" required>
           <Select
-            v-model="editForm.methodKey"
+            :model-value="editForm.employeeIds"
+            multiple
             allow-search
             allow-clear
-            placeholder="选择已保存流程（建议 Api接口开始）"
-            :options="flowOptions"
+            placeholder="可多选；≥2 名时按员工说明自动路由"
+            :options="employeeOptions"
+            @change="onEmployeesChange"
+          />
+          <div v-if="selectedEmployees.length" class="robot-mapping-hint" style="margin-top: 6px;">
+            <div v-for="emp in selectedEmployees" :key="emp.employeeId">
+              <code>{{ emp.name }}</code>：
+              {{ emp.description || '（无描述，多绑时请补充）' }}
+              · 任务
+              <code>
+                {{
+                  emp.bindType === 'team'
+                    ? (emp.teamKey ? `Team ${emp.teamKey}` : '未绑')
+                    : (emp.methodKey ? `流程 ${emp.methodKey}` : '未绑')
+                }}
+              </code>
+            </div>
+          </div>
+          <div v-else class="robot-mapping-hint" style="margin-top: 6px;">
+            请先在工具栏「数字员工」中创建并配置决策/任务目标与职责说明。
+          </div>
+        </FormItem>
+        <FormItem v-if="needsRouting" label="默认数字员工（路由失败时）" required>
+          <Select
+            v-model="editForm.defaultEmployeeId"
+            allow-search
+            placeholder="路由失败时使用"
+            :options="defaultEmployeeOptions"
           />
         </FormItem>
+        <template v-if="needsRouting">
+          <FormItem label="路由模型">
+            <Select
+              v-model="editForm.routerModel"
+              allow-search
+              allow-create
+              placeholder="默认 deepseek-v4-flash"
+              :options="routerModelOptions"
+            />
+          </FormItem>
+          <FormItem label="路由 API Key（可选）">
+            <Input
+              v-model="editForm.routerApiKey"
+              type="password"
+              allow-clear
+              placeholder="留空则用服务端 DEEPSEEK_API_KEY；*** 表示不修改"
+            />
+          </FormItem>
+          <FormItem label="路由接口 Base URL（可选）">
+            <Input
+              v-model="editForm.routerBaseUrl"
+              allow-clear
+              :placeholder="defaultRouterBaseUrl"
+            />
+          </FormItem>
+        </template>
         <FormItem :label="`执行超时（秒，可选）`">
           <InputNumber
             v-model="editForm.executeTimeoutSec"
@@ -539,11 +786,11 @@ watch(
             allow-clear
             hide-button
             style="width: 100%;"
-            :placeholder="`留空则用全局默认 ${defaultExecuteTimeoutSec}s（FLOWGAME_ROBOT_EXECUTE_TIMEOUT_SEC）`"
+            :placeholder="timeoutPlaceholder"
           />
         </FormItem>
 
-        <FormItem label="输入映射（入站字段 → 流程变量）">
+        <FormItem :label="selectedEmployeeBindType === 'team' ? '输入映射（入站字段 → Team 黑板）' : '输入映射（入站字段 → 流程变量）'">
           <div class="robot-mapping-list">
             <div
               v-for="(row, idx) in editForm.inputMapping"
@@ -562,7 +809,7 @@ watch(
               <div class="robot-mapping-field">
                 <Input
                   :model-value="row.target"
-                  placeholder="目标 message/chatId…"
+                  placeholder="目标 message/chatId/topic…"
                   allow-clear
                   @update:model-value="(v) => { row.target = String(v ?? '') }"
                 />
@@ -574,10 +821,14 @@ watch(
             <Button size="mini" @click="addMappingRow('input')">
               加一行
             </Button>
+            <div v-if="selectedEmployeeBindType === 'team'" class="robot-mapping-hint">
+              系统会自动注入 robotId / employeeId / robotSpace / chatId / botId / wecomBotSecret / bindType / teamKey；
+              topic 为空时用 message（或原文）兜底。回发映射前会脱敏 secret。
+            </div>
           </div>
         </FormItem>
 
-        <FormItem label="输出映射（流程输出 → 回发）">
+        <FormItem :label="selectedEmployeeBindType === 'team' ? '输出映射（Team 输出 → 回发）' : '输出映射（流程输出 → 回发）'">
           <div class="robot-mapping-list">
             <div
               v-for="(row, idx) in editForm.outputMapping"
@@ -587,7 +838,7 @@ watch(
               <div class="robot-mapping-field">
                 <Input
                   :model-value="row.source"
-                  placeholder="源 assistantMessage…"
+                  :placeholder="selectedEmployeeBindType === 'team' ? '源 output / article…' : '源 assistantMessage…'"
                   allow-clear
                   @update:model-value="(v) => { row.source = String(v ?? '') }"
                 />
@@ -609,7 +860,15 @@ watch(
               加一行
             </Button>
             <div class="robot-mapping-hint">
-              结束节点输出字段名填在「源」。文字映射到 reply_markdown / reply_text；文件路径映射到 reply_file（字符串或路径数组）。两者都有时先发文字再发文件。
+              <template v-if="selectedEmployeeBindType === 'team'">
+                Team 默认映射 output → reply_markdown；也可映射 blackboard 字段名（如 article）。
+                未命中时会回退 Team.output。
+                若数字员工配置了决策流程，决策跳过时同样走本映射。
+              </template>
+              <template v-else>
+                结束节点输出字段名填在「源」。文字映射到 reply_markdown / reply_text；文件路径映射到 reply_file。
+                决策跳过与任务结束共用本映射。
+              </template>
             </div>
           </div>
         </FormItem>

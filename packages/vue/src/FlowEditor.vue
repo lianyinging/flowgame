@@ -17,6 +17,7 @@ import {
   FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT,
   FLOWGAME_OPEN_FLOW_LIST_EVENT,
   FLOWGAME_OPEN_AGENT_TEAM_EVENT,
+  FLOWGAME_OPEN_DIGITAL_EMPLOYEE_EVENT,
   FLOWGAME_OPEN_SESSION_ROBOT_EVENT,
   FLOWGAME_OPEN_NODE_INSPECTOR_EVENT,
   FLOWGAME_ASSIGN_BRANCH_EDGE_EVENT,
@@ -105,6 +106,7 @@ import FlowListPanelModal from './components/flow-editor/FlowListPanelModal.vue'
 import FlowKnowledgePanelModal from './components/flow-editor/FlowKnowledgePanelModal.vue'
 import FlowAgentConfigModal from './components/flow-editor/FlowAgentConfigModal.vue'
 import FlowAgentTeamPanelModal from './components/flow-editor/FlowAgentTeamPanelModal.vue'
+import FlowDigitalEmployeePanelModal from './components/flow-editor/FlowDigitalEmployeePanelModal.vue'
 import FlowSessionRobotPanelModal from './components/flow-editor/FlowSessionRobotPanelModal.vue'
 
 const props = withDefaults(defineProps<{
@@ -133,6 +135,7 @@ const emit = defineEmits<{
   'open-flow-list': []
   'open-flow-knowledge': []
   'open-agent-team': []
+  'open-digital-employee': []
   'open-session-robot': []
   saved: [payload: { flowName: string }]
   executed: [payload: { phase: 'success' | 'error' }]
@@ -175,6 +178,7 @@ const minimapVisible = ref(true)
 const flowListPanelVisible = ref(false)
 const flowKnowledgePanelVisible = ref(false)
 const agentTeamPanelVisible = ref(false)
+const digitalEmployeePanelVisible = ref(false)
 const sessionRobotPanelVisible = ref(false)
 const agentConfigVisible = ref(false)
 const agentConfigRecord = ref<FlowListIndexItem | null>(null)
@@ -592,6 +596,13 @@ function onOpenAgentTeamPanel() {
     emit('open-agent-team')
 }
 
+function onOpenDigitalEmployeePanel() {
+  if (props.builtinBusinessModals)
+    digitalEmployeePanelVisible.value = true
+  else
+    emit('open-digital-employee')
+}
+
 function onOpenSessionRobotPanel() {
   if (props.builtinBusinessModals)
     sessionRobotPanelVisible.value = true
@@ -750,7 +761,7 @@ function onAssignBranchEdgeFromCanvas(event: Event) {
 }
 
 const CANVAS_TOOLBAR_PANEL_LISTENER_ATTR = 'data-flowgame-toolbar-panel-listeners'
-const CANVAS_TOOLBAR_PANEL_LISTENER_VER = '2'
+const CANVAS_TOOLBAR_PANEL_LISTENER_VER = '3'
 
 function scheduleToolbarDomPatch() {
   if (toolbarPatchRaf)
@@ -772,6 +783,7 @@ function setupToolbarVariablesWatch() {
     canvas.removeEventListener(FLOWGAME_OPEN_FLOW_LIST_EVENT, onOpenFlowListPanel)
     canvas.removeEventListener(FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT, onOpenFlowKnowledgePanel)
     canvas.removeEventListener(FLOWGAME_OPEN_AGENT_TEAM_EVENT, onOpenAgentTeamPanel)
+    canvas.removeEventListener(FLOWGAME_OPEN_DIGITAL_EMPLOYEE_EVENT, onOpenDigitalEmployeePanel)
     canvas.removeEventListener(FLOWGAME_OPEN_SESSION_ROBOT_EVENT, onOpenSessionRobotPanel)
     canvas.removeEventListener(FLOWGAME_OPEN_NODE_INSPECTOR_EVENT, onOpenNodeInspectorFromCanvas)
     canvas.removeEventListener(FLOWGAME_ASSIGN_BRANCH_EDGE_EVENT, onAssignBranchEdgeFromCanvas)
@@ -779,6 +791,7 @@ function setupToolbarVariablesWatch() {
     canvas.addEventListener(FLOWGAME_OPEN_FLOW_LIST_EVENT, onOpenFlowListPanel)
     canvas.addEventListener(FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT, onOpenFlowKnowledgePanel)
     canvas.addEventListener(FLOWGAME_OPEN_AGENT_TEAM_EVENT, onOpenAgentTeamPanel)
+    canvas.addEventListener(FLOWGAME_OPEN_DIGITAL_EMPLOYEE_EVENT, onOpenDigitalEmployeePanel)
     canvas.addEventListener(FLOWGAME_OPEN_SESSION_ROBOT_EVENT, onOpenSessionRobotPanel)
     canvas.addEventListener(FLOWGAME_OPEN_NODE_INSPECTOR_EVENT, onOpenNodeInspectorFromCanvas)
     canvas.addEventListener(FLOWGAME_ASSIGN_BRANCH_EDGE_EVENT, onAssignBranchEdgeFromCanvas)
@@ -854,6 +867,7 @@ onUnmounted(() => {
     canvas.removeEventListener(FLOWGAME_OPEN_FLOW_LIST_EVENT, onOpenFlowListPanel)
     canvas.removeEventListener(FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT, onOpenFlowKnowledgePanel)
     canvas.removeEventListener(FLOWGAME_OPEN_AGENT_TEAM_EVENT, onOpenAgentTeamPanel)
+    canvas.removeEventListener(FLOWGAME_OPEN_DIGITAL_EMPLOYEE_EVENT, onOpenDigitalEmployeePanel)
     canvas.removeEventListener(FLOWGAME_OPEN_SESSION_ROBOT_EVENT, onOpenSessionRobotPanel)
     canvas.removeAttribute(CANVAS_TOOLBAR_PANEL_LISTENER_ATTR)
   }
@@ -1089,6 +1103,12 @@ defineExpose({
     <FlowAgentTeamPanelModal
       v-if="builtinBusinessModals"
       v-model:visible="agentTeamPanelVisible"
+      :editor-readonly="props.readonly"
+    />
+
+    <FlowDigitalEmployeePanelModal
+      v-if="builtinBusinessModals"
+      v-model:visible="digitalEmployeePanelVisible"
       :editor-readonly="props.readonly"
     />
 

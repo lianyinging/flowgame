@@ -80,8 +80,20 @@ export {
 export type {
   RobotFieldMapping,
   SessionRobot,
+  SessionRobotBindType,
   SessionRobotDefaults,
   SessionRobotStatus,
   SessionRobotType,
   SessionRobotWorkerStatus
 } from './robots'
+
+export {
+  deleteDigitalEmployeeApi,
+  getDigitalEmployeeDefaultsApi,
+  listDigitalEmployeesApi,
+  saveDigitalEmployeeApi
+} from './digital-employees'
+export type {
+  DigitalEmployee,
+  DigitalEmployeeDefaults
+} from './digital-employees'

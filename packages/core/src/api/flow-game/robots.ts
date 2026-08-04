@@ -5,6 +5,7 @@
 import flowgameRequest, { type FlowgameApiResponse } from '../client'
 
 export type SessionRobotType = 'wecom_aibot'
+export type SessionRobotBindType = 'flow' | 'team'
 export type SessionRobotStatus = 'stopped' | 'running' | 'connecting' | 'error' | 'offline'
 
 export interface RobotFieldMapping {
@@ -19,8 +20,29 @@ export interface SessionRobot {
   botId: string
   secret: string
   hasSecret?: boolean
+  /** 绑定的数字员工列表（≥2 时 LLM 按描述自动路由） */
+  employeeIds?: string[]
+  /** 兼容：等同 employeeIds[0] */
+  employeeId?: string
+  /** 路由失败时的默认员工 */
+  defaultEmployeeId?: string
+  employeeName?: string
+  employeeNames?: string[]
+  employeeSummaries?: string[]
+  employeeBound?: boolean
+  employeeBindLabel?: string
+  /** 路由 LLM API Key（脱敏）；空则回落服务端 DEEPSEEK_API_KEY */
+  routerApiKey?: string
+  hasRouterApiKey?: boolean
+  routerBaseUrl?: string
+  routerModel?: string
+  /** @deprecated 兼容旧数据：无员工时仍可用；有员工时列表会用员工覆盖展示 */
+  bindType?: SessionRobotBindType
   methodKey: string
-  /** 单机器人 /execute 超时（秒）；空则用环境变量 FLOWGAME_ROBOT_EXECUTE_TIMEOUT_SEC */
+  teamKey?: string
+  /** @deprecated 兼容旧数据 */
+  decisionMethodKey?: string
+  /** 执行超时（秒）；优先于数字员工；空则用员工或环境变量默认 */
   executeTimeoutSec?: number | null
   inputMapping: RobotFieldMapping[]
   outputMapping: RobotFieldMapping[]
@@ -41,12 +63,20 @@ export interface SessionRobotWorkerStatus {
 
 export interface SessionRobotDefaults {
   types: { value: SessionRobotType, label: string }[]
+  bindTypes?: { value: SessionRobotBindType, label: string }[]
+  routerModels?: { value: string, label: string }[]
+  defaultRouterModel?: string
+  defaultRouterBaseUrl?: string
+  note?: string
   inputMapping: RobotFieldMapping[]
   outputMapping: RobotFieldMapping[]
+  teamOutputMapping?: RobotFieldMapping[]
   inboundFields: string[]
   outputTargets: { value: string, label: string }[]
   /** 全局默认执行超时（秒），来自 FLOWGAME_ROBOT_EXECUTE_TIMEOUT_SEC */
   defaultExecuteTimeoutSec?: number
+  /** 绑 Team 时默认超时（秒） */
+  defaultTeamExecuteTimeoutSec?: number
 }
 
 function unwrap<T>(res: FlowgameApiResponse<T>, fallbackMsg: string): T {

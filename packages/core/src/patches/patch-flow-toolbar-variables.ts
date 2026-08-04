@@ -6,12 +6,14 @@ const BUSINESS_MENU_CLICK_ATTR = 'data-flowgame-business-menu-click'
 export const FLOWGAME_OPEN_FLOW_LIST_EVENT = 'flowgame:open-flow-list'
 export const FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT = 'flowgame:open-flow-knowledge'
 export const FLOWGAME_OPEN_AGENT_TEAM_EVENT = 'flowgame:open-agent-team'
+export const FLOWGAME_OPEN_DIGITAL_EMPLOYEE_EVENT = 'flowgame:open-digital-employee'
 export const FLOWGAME_OPEN_SESSION_ROBOT_EVENT = 'flowgame:open-session-robot'
 
 const BUSINESS_MENU_EVENTS: Record<string, string> = {
   'flow-list': FLOWGAME_OPEN_FLOW_LIST_EVENT,
   'flow-knowledge': FLOWGAME_OPEN_FLOW_KNOWLEDGE_EVENT,
   'agent-team': FLOWGAME_OPEN_AGENT_TEAM_EVENT,
+  'digital-employee': FLOWGAME_OPEN_DIGITAL_EMPLOYEE_EVENT,
   'session-robot': FLOWGAME_OPEN_SESSION_ROBOT_EVENT
 }
 
@@ -220,6 +222,7 @@ export function patchFlowToolbarVariables(canvas: HTMLElement | undefined): HTML
       { id: 'flow-list', title: '流程列表', icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 4H21V6H3V4ZM3 11H21V13H3V11ZM3 18H21V20H3V18Z"></path></svg>' },
       { id: 'flow-knowledge', title: '知识库配置', icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 5C13.567 5 12 6.567 12 8.5C12 10.433 13.567 12 15.5 12C17.433 12 19 10.433 19 8.5C19 6.567 17.433 5 15.5 5ZM10 8.5C10 5.46243 12.4624 3 15.5 3C18.5376 3 21 5.46243 21 8.5C21 9.6575 20.6424 10.7315 20.0317 11.6175L22.7071 14.2929L21.2929 15.7071L18.6175 13.0317C17.7315 13.6424 16.6575 14 15.5 14C12.4624 14 10 11.5376 10 8.5ZM3 4H8V6H3V4ZM3 11H8V13H3V11ZM21 18V20H3V18H21Z"></path></svg>' },
       { id: 'agent-team', title: 'AgentTeam', icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M2 22C2 17.5817 5.58172 14 10 14C14.4183 14 18 17.5817 18 22H16C16 18.6863 13.3137 16 10 16C6.68629 16 4 18.6863 4 22H2ZM10 13C6.685 13 4 10.315 4 7C4 3.685 6.685 1 10 1C13.315 1 16 3.685 16 7C16 10.315 13.315 13 10 13ZM10 11C12.21 11 14 9.21 14 7C14 4.79 12.21 3 10 3C7.79 3 6 4.79 6 7C6 9.21 7.79 11 10 11ZM18.2837 14.7028C21.0644 15.9561 23 18.752 23 22H21C21 19.3712 19.5409 17.1103 17.4152 16.0542L18.2837 14.7028ZM16.7099 1.2901C18.6112 2.33777 19.886 4.35259 19.886 6.65955C19.886 9.53055 17.9522 11.9506 15.3452 12.6843C15.1234 11.9882 14.7972 11.3377 14.3851 10.751C15.9659 10.0928 17.086 8.50916 17.086 6.65955C17.086 5.24246 16.3668 3.98997 15.2591 3.25451C15.6683 2.4995 16.1697 1.837 16.7099 1.2901Z"></path></svg>' },
+      { id: 'digital-employee', title: '数字员工', icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C14.7614 2 17 4.23858 17 7C17 9.76142 14.7614 12 12 12C9.23858 12 7 9.76142 7 7C7 4.23858 9.23858 2 12 2ZM12 4C10.3431 4 9 5.34315 9 7C9 8.65685 10.3431 10 12 10C13.6569 10 15 8.65685 15 7C15 5.34315 13.6569 4 12 4ZM4 20.5C4 16.9101 7.13401 14 11 14H13C16.866 14 20 16.9101 20 20.5V22H18V20.5C18 17.9086 15.7614 16 13 16H11C8.23858 16 6 17.9086 6 20.5V22H4V20.5ZM19.5 8L21 9.5L17.5 13L15.5 11L17 9.5L17.5 10L19.5 8Z"></path></svg>' },
       { id: 'session-robot', title: '会话机器人', icon: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22C10.3579 22 8.80715 21.6047 7.44721 20.899L2.5 21.5L3.60139 16.6276C2.59565 15.2001 2 13.4664 2 12C2 6.47715 6.47715 2 12 2ZM12 4C7.58172 4 4 7.58172 4 12C4 13.2027 4.26986 14.3416 4.75079 15.3574L4.789 15.437L4.21005 18.3827L7.26455 17.7754L7.35034 17.8238C8.3988 18.4157 9.61084 18.8 10.906 18.9485L11.172 18.974L11.414 18.991L11.656 18.999L12 19C16.4183 19 20 15.4183 20 11C20 6.58172 16.4183 3 12 3V4ZM8.5 11H10.5V13H8.5V11ZM13.5 11H15.5V13H13.5V11Z"></path></svg>' }
     ] as const
     for (const item of menus) {
@@ -233,9 +236,13 @@ export function patchFlowToolbarVariables(canvas: HTMLElement | undefined): HTML
           ? toolsEl.querySelector(`[${BUSINESS_LINK_ATTR}="flow-list"]`)?.nextSibling ?? null
           : item.id === 'agent-team'
             ? toolsEl.querySelector(`[${BUSINESS_LINK_ATTR}="flow-knowledge"]`)?.nextSibling ?? null
-            : item.id === 'session-robot'
+            : item.id === 'digital-employee'
               ? toolsEl.querySelector(`[${BUSINESS_LINK_ATTR}="agent-team"]`)?.nextSibling ?? null
-              : toolsEl.firstChild
+              : item.id === 'session-robot'
+                ? toolsEl.querySelector(`[${BUSINESS_LINK_ATTR}="digital-employee"]`)?.nextSibling
+                  ?? toolsEl.querySelector(`[${BUSINESS_LINK_ATTR}="agent-team"]`)?.nextSibling
+                  ?? null
+                : toolsEl.firstChild
         toolsEl.insertBefore(el, anchor)
       }
       if (canvas)
