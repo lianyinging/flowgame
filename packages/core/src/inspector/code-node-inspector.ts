@@ -22,7 +22,7 @@ export const DEFAULT_CODE_NODE_CODE_PYTHON = `result = {
 `
 
 export const CODE_NODE_CODE_PLACEHOLDER =
-  '请输入执行代码；JavaScript 用 IIFE 并 return 对象；Python 请赋值 result = {...}'
+  '请输入执行代码；可用 {{code}} 引用入参脚本。JavaScript 用 IIFE 并 return 对象；Python 请赋值 result = {...}'
 
 const LEGACY_ENGINE_MAP: Record<string, CodeNodeEngine> = {
   javascript: 'js',

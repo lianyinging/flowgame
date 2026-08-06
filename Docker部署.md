@@ -336,7 +336,7 @@ Redis 里的**流程 JSON** 不受影响；仅 Qdrant 向量数据被清。
 | 页面能开，保存/列表失败 | 检查 `redis` 容器是否运行：`docker compose ps redis` |
 | Qdrant 启动 Panic `unknown variant on_disk` | 卷内数据与当前 Qdrant 版本不兼容；可删旧数据后重启（知识库需重新上传），见下文「清空 Qdrant 数据」 |
 | 知识库失败 | 检查 `qdrant` 容器；配置 `EMBEDDING_API_URL` 或挂载本地模型 |
-| 试运行「模型调用」失败 | 在节点属性里检查 `apiKey`、`modelApiUrl`、`modelName`（存在流程 JSON 中） |
+| 试运行「模型调用」失败 | 在节点属性里检查 `apiKey`、`modelProvider`、`modelName`（存在流程 JSON 中） |
 | 试运行旧版「大模型」失败 | 检查 `.env` 中 `DEEPSEEK_API_KEY` 等（仅 `llmNode` 使用） |
 | 前端改了代码不生效 | 执行 `docker compose up -d --build web`（生产镜像是构建产物，非热更新） |
 | 端口冲突 | 修改 `deploy/.env` 中 `FLOWGAME_WEB_PORT` / `FLOWGAME_API_PORT` |

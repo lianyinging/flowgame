@@ -36,6 +36,9 @@ import {
   IF_NODE_TYPE,
   SWITCH_NODE_TYPE,
   WEB_SEARCH_NODE_TYPE,
+  LLMAPI_NODE_TYPE,
+  buildLlmApiProviderModelPatch,
+  buildLlmApiApiKeyPatch,
   isCodeNodeType,
   parseIfBranches,
   parseSwitchCases,
@@ -65,6 +68,7 @@ import HtmlTemplateEditorWithPreview from './HtmlTemplateEditorWithPreview.vue'
 import IfNodeBranchesBlock from './IfNodeBranchesBlock.vue'
 import SwitchNodeCasesBlock from './SwitchNodeCasesBlock.vue'
 import WebSearchEnginesBlock from './WebSearchEnginesBlock.vue'
+import LlmApiProviderModelBlock from './LlmApiProviderModelBlock.vue'
 import OutputDefInspectorRow from './OutputDefInspectorRow.vue'
 import { IconDelete, IconPlus } from '@arco-design/web-vue/es/icon'
 
@@ -106,6 +110,7 @@ const isMemoryReadNode = computed(() => nodeType.value === MEMORY_READ_NODE_TYPE
 const isStateMachineNode = computed(() => nodeType.value === STATE_MACHINE_NODE_TYPE)
 const isHtmlTemplateNode = computed(() => nodeType.value === HTML_TEMPLATE_NODE_TYPE)
 const isWebSearchNode = computed(() => nodeType.value === WEB_SEARCH_NODE_TYPE)
+const isLlmApiNode = computed(() => nodeType.value === LLMAPI_NODE_TYPE)
 const webSearchEngines = computed(() => nodeData.value.engines)
 const htmlTemplateText = computed(() => {
   const tpl = nodeData.value.template
@@ -357,7 +362,15 @@ function patchData(patch: Record<string, unknown>) {
 }
 
 function patchField(name: string, value: unknown) {
+  if (isLlmApiNode.value && name === 'apiKey') {
+    patchData(buildLlmApiApiKeyPatch(nodeData.value, String(value ?? '')))
+    return
+  }
   patchData({ [name]: value })
+}
+
+function onLlmApiProviderModelChange(payload: { modelProvider: string, modelName: string }) {
+  patchData(buildLlmApiProviderModelPatch(nodeData.value, payload))
 }
 
 function patchParameters(next: FlowParameter[]) {
@@ -848,6 +861,14 @@ function onTextInput(handler: (value: string) => void) {
         :engines="webSearchEngines"
         :readonly="readonly"
         @update:engines="(v) => patchField('engines', v)"
+      />
+
+      <LlmApiProviderModelBlock
+        v-if="isLlmApiNode"
+        :model-provider="nodeData.modelProvider"
+        :model-name="nodeData.modelName"
+        :readonly="readonly"
+        @change="onLlmApiProviderModelChange"
       />
 
       <!-- 2. 节点配置（forms：heading + setting-title / setting-item） -->

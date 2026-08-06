@@ -67,8 +67,8 @@ const editForm = reactive({
   secret: '',
   employeeIds: [] as string[],
   defaultEmployeeId: '',
+  routerProvider: 'deepseek',
   routerApiKey: '',
-  routerBaseUrl: '',
   routerModel: 'deepseek-v4-flash',
   /** 空 / undefined 表示未配置，走员工或全局默认 */
   executeTimeoutSec: undefined as number | undefined,
@@ -83,13 +83,50 @@ const defaultTeamOutput = ref<RobotFieldMapping[]>([
 ])
 const defaultExecuteTimeoutSec = ref(120)
 const defaultTeamExecuteTimeoutSec = ref(600)
+const defaultRouterProvider = ref('deepseek')
 const defaultRouterModel = ref('deepseek-v4-flash')
-const defaultRouterBaseUrl = ref('https://api.deepseek.com')
-const routerModelOptions = ref<{ label: string, value: string }[]>([
-  { label: 'deepseekFlash（deepseek-v4-flash）', value: 'deepseek-v4-flash' },
-  { label: 'deepseek-chat', value: 'deepseek-chat' },
-  { label: 'deepseek-reasoner', value: 'deepseek-reasoner' }
+const routerProviderOptions = ref<{ label: string, value: string }[]>([
+  { label: 'DeepSeek', value: 'deepseek' },
+  { label: 'OpenAI', value: 'openai' },
+  { label: '通义千问', value: 'qwen' },
+  { label: '月之暗面 Kimi', value: 'moonshot' },
+  { label: '智谱 GLM', value: 'zhipu' }
 ])
+const routerModelsByProvider = ref<Record<string, { label: string, value: string }[]>>({
+  deepseek: [
+    { label: 'deepseek-v4-flash', value: 'deepseek-v4-flash' },
+    { label: 'deepseek-chat', value: 'deepseek-chat' },
+    { label: 'deepseek-reasoner', value: 'deepseek-reasoner' }
+  ],
+  openai: [
+    { label: 'gpt-4o-mini', value: 'gpt-4o-mini' },
+    { label: 'gpt-4o', value: 'gpt-4o' },
+    { label: 'gpt-4.1-mini', value: 'gpt-4.1-mini' },
+    { label: 'o4-mini', value: 'o4-mini' }
+  ],
+  qwen: [
+    { label: 'qwen-plus', value: 'qwen-plus' },
+    { label: 'qwen-turbo', value: 'qwen-turbo' },
+    { label: 'qwen-max', value: 'qwen-max' },
+    { label: 'qwen-long', value: 'qwen-long' }
+  ],
+  moonshot: [
+    { label: 'moonshot-v1-8k', value: 'moonshot-v1-8k' },
+    { label: 'moonshot-v1-32k', value: 'moonshot-v1-32k' },
+    { label: 'moonshot-v1-128k', value: 'moonshot-v1-128k' }
+  ],
+  zhipu: [
+    { label: 'glm-4-flash', value: 'glm-4-flash' },
+    { label: 'glm-4-air', value: 'glm-4-air' },
+    { label: 'glm-4-plus', value: 'glm-4-plus' }
+  ]
+})
+const routerModelOptions = computed(() => {
+  const pid = editForm.routerProvider || defaultRouterProvider.value
+  return routerModelsByProvider.value[pid]
+    || routerModelsByProvider.value.deepseek
+    || []
+})
 
 const outputTargetOptions = [
   { label: 'reply_markdown（回发）', value: 'reply_markdown' },
@@ -195,12 +232,14 @@ async function loadDefaults() {
       defaultExecuteTimeoutSec.value = d.defaultExecuteTimeoutSec
     if (d.defaultTeamExecuteTimeoutSec && d.defaultTeamExecuteTimeoutSec > 0)
       defaultTeamExecuteTimeoutSec.value = d.defaultTeamExecuteTimeoutSec
-    if (d.routerModels?.length)
-      routerModelOptions.value = d.routerModels
+    if (d.routerProviders?.length)
+      routerProviderOptions.value = d.routerProviders
+    if (d.routerModelsByProvider && Object.keys(d.routerModelsByProvider).length)
+      routerModelsByProvider.value = d.routerModelsByProvider
+    if (d.defaultRouterProvider)
+      defaultRouterProvider.value = d.defaultRouterProvider
     if (d.defaultRouterModel)
       defaultRouterModel.value = d.defaultRouterModel
-    if (d.defaultRouterBaseUrl)
-      defaultRouterBaseUrl.value = d.defaultRouterBaseUrl
   }
   catch {
     defaultInput.value = [
@@ -325,6 +364,18 @@ function onPageSizeChange(pageSize: number) {
   applyFilterAndPage()
 }
 
+function syncRouterModelForProvider() {
+  const opts = routerModelOptions.value
+  if (!opts.length)
+    return
+  if (!opts.some(o => o.value === editForm.routerModel))
+    editForm.routerModel = opts[0].value
+}
+
+function onRouterProviderChange() {
+  syncRouterModelForProvider()
+}
+
 function resetEditForm() {
   editForm.robotId = ''
   editForm.name = ''
@@ -333,8 +384,8 @@ function resetEditForm() {
   editForm.secret = ''
   editForm.employeeIds = []
   editForm.defaultEmployeeId = ''
+  editForm.routerProvider = defaultRouterProvider.value
   editForm.routerApiKey = ''
-  editForm.routerBaseUrl = defaultRouterBaseUrl.value
   editForm.routerModel = defaultRouterModel.value
   editForm.executeTimeoutSec = undefined
   editForm.inputMapping = defaultInput.value.map(x => ({ ...x }))
@@ -370,9 +421,10 @@ function openEdit(row: SessionRobot) {
   editForm.defaultEmployeeId = row.defaultEmployeeId && ids.includes(row.defaultEmployeeId)
     ? row.defaultEmployeeId
     : (ids[0] || '')
+  editForm.routerProvider = row.routerProvider || defaultRouterProvider.value
   editForm.routerApiKey = row.hasRouterApiKey ? '***' : (row.routerApiKey || '')
-  editForm.routerBaseUrl = row.routerBaseUrl || defaultRouterBaseUrl.value
   editForm.routerModel = row.routerModel || defaultRouterModel.value
+  syncRouterModelForProvider()
   editForm.executeTimeoutSec
     = row.executeTimeoutSec != null && row.executeTimeoutSec > 0
       ? row.executeTimeoutSec
@@ -456,8 +508,8 @@ async function saveEdit() {
       secret: editForm.secret,
       employeeIds: editForm.employeeIds,
       defaultEmployeeId: editForm.defaultEmployeeId || editForm.employeeIds[0],
+      routerProvider: editForm.routerProvider || defaultRouterProvider.value,
       routerApiKey: editForm.routerApiKey,
-      routerBaseUrl: editForm.routerBaseUrl.trim(),
       routerModel: editForm.routerModel.trim() || defaultRouterModel.value,
       executeTimeoutSec,
       inputMapping: editForm.inputMapping.filter(m => m.source && m.target),
@@ -753,28 +805,29 @@ watch(
           />
         </FormItem>
         <template v-if="needsRouting">
-          <FormItem label="路由模型">
+          <FormItem label="路由模型厂家" required>
+            <Select
+              v-model="editForm.routerProvider"
+              allow-search
+              placeholder="选择厂家"
+              :options="routerProviderOptions"
+              @change="onRouterProviderChange"
+            />
+          </FormItem>
+          <FormItem label="路由模型名称" required>
             <Select
               v-model="editForm.routerModel"
               allow-search
               allow-create
-              placeholder="默认 deepseek-v4-flash"
+              placeholder="选择或输入模型名"
               :options="routerModelOptions"
             />
           </FormItem>
           <FormItem label="路由 API Key（可选）">
             <Input
               v-model="editForm.routerApiKey"
-              type="password"
               allow-clear
               placeholder="留空则用服务端 DEEPSEEK_API_KEY；*** 表示不修改"
-            />
-          </FormItem>
-          <FormItem label="路由接口 Base URL（可选）">
-            <Input
-              v-model="editForm.routerBaseUrl"
-              allow-clear
-              :placeholder="defaultRouterBaseUrl"
             />
           </FormItem>
         </template>

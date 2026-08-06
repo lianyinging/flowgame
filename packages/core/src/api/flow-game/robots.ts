@@ -31,9 +31,12 @@ export interface SessionRobot {
   employeeSummaries?: string[]
   employeeBound?: boolean
   employeeBindLabel?: string
+  /** 路由 LLM：厂家（与模型调用节点一致） */
+  routerProvider?: string
   /** 路由 LLM API Key（脱敏）；空则回落服务端 DEEPSEEK_API_KEY */
   routerApiKey?: string
   hasRouterApiKey?: boolean
+  /** @deprecated 有 routerProvider 时走预置地址 */
   routerBaseUrl?: string
   routerModel?: string
   /** @deprecated 兼容旧数据：无员工时仍可用；有员工时列表会用员工覆盖展示 */
@@ -64,8 +67,12 @@ export interface SessionRobotWorkerStatus {
 export interface SessionRobotDefaults {
   types: { value: SessionRobotType, label: string }[]
   bindTypes?: { value: SessionRobotBindType, label: string }[]
+  routerProviders?: { value: string, label: string }[]
+  routerModelsByProvider?: Record<string, { value: string, label: string }[]>
+  defaultRouterProvider?: string
   routerModels?: { value: string, label: string }[]
   defaultRouterModel?: string
+  /** @deprecated 有厂家时不再需要自定义 URL */
   defaultRouterBaseUrl?: string
   note?: string
   inputMapping: RobotFieldMapping[]

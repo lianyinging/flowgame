@@ -94,6 +94,34 @@ export { OSS_FILE_TYPES, DEFAULT_OSS_FILE_TYPE, getOssFileTypeMeta } from './oss
 export type { OssFileType } from './oss-file-types'
 export { ossNodeDefaultParameters, ossContentParameter, ossObjectKeyParameter } from './oss-node-parameters'
 export { ossNodeOutputDefs } from './oss-node-output-defs'
+export {
+  nodeLlmApi,
+  LLMAPI_NODE_TYPE,
+  DEFAULT_LLMAPI_PROVIDER,
+  DEFAULT_LLMAPI_MODEL_NAME,
+  LLMAPI_PROVIDER_OPTIONS,
+  LLMAPI_MODELS_BY_PROVIDER,
+  LLMAPI_PROVIDER_DEFAULT_MODEL,
+  LLMAPI_MODEL_OPTIONS,
+  normalizeLlmApiProvider,
+  getLlmApiModelOptions,
+  resolveLlmApiModelForProvider,
+  inferLlmApiProviderFromUrl,
+  isLlmApiTemplateValue
+} from './node-llmapi'
+export {
+  buildLlmApiProviderModelPatch,
+  buildLlmApiApiKeyPatch
+} from './llmapi-param-sync'
+export {
+  llmApiNodeDefaultParameters,
+  llmApiUserMessageParameter,
+  llmApiModelProviderParameter,
+  llmApiModelNameParameter,
+  llmApiApiKeyParameter,
+  LLMAPI_BINDABLE_PARAM_NAMES,
+  createLlmApiBindableParameter
+} from './llmapi-node-parameters'
 export { nodeWebSearch, WEB_SEARCH_NODE_TYPE } from './node-web-search'
 export {
   WEB_SEARCH_ENGINE_OPTIONS,

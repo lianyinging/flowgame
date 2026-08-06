@@ -60,6 +60,7 @@ const RESERVED_DATA_KEYS = new Set([
   'model',
   'provider',
   'modelApiUrl',
+  'modelProvider',
   'modelName',
   'size',
   'promptTemplate',
@@ -124,7 +125,11 @@ export function getInspectorForms(type?: string): CustomNodeForm[] {
   if (type === 'webSearchNode')
     return []
   const def = getCustomNodeDef(type)
-  return def?.forms ?? []
+  const forms = def?.forms ?? []
+  // 厂家/模型由侧栏 LlmApiProviderModelBlock 维护，去掉画布专用 heading 避免重复
+  if (type === 'llmapiNode')
+    return forms.filter(f => f.name !== 'llmapi-provider-model')
+  return forms
 }
 
 export function getInspectorFormFields(type?: string): CustomNodeForm[] {
